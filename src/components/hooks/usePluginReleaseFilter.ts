@@ -11,7 +11,6 @@ export default function usePluginReleaseFilter(
     const releases = useAppSelector((state) => state.releases.releases);
     const pluginSettings = useAppSelector((state) => state.obsidian.settings);
 
-    //TODO installed is going to change every 5 seconds, avoid recomputing...
     const allFilters = Object.assign({}, filters, DEFAULT_FILTERS);
     const filteredPlugins = React.useMemo(
         () => pluginFilter(allFilters, pluginSettings, installed, enabledPlugins, releases),

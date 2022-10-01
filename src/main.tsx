@@ -53,7 +53,6 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         store.dispatch(syncApp(this.app));
         this.registerInterval(
             window.setInterval(() => {
-                //TODO extract manifests and make dispatch conditonal on deep equality differences
                 store.dispatch(syncApp(this.app));
             }, INSTALLED_VERSION_POLLING_MS)
         );
