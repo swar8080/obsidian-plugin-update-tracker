@@ -58,6 +58,8 @@ Clicking *Code Changes* will bring you to a page like https://github.com/blacksm
 
 # Feature Ideas
 
+Vote on or suggest other features here: https://strawpoll.com/polls/NMnQBOJwWg6
+
 ## Keeping your update list clean
 - Option to hide/dismiss a new version of a plugin
 - Option to "snooze"/hide a new version of a plugin until a time that you specify
