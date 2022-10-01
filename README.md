@@ -10,6 +10,7 @@
       - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
 - [Feature Ideas](#feature-ideas)
   * [Keeping your plugin update list clean](#keeping-your-update-list-clean)
+  * [Install new versions through the plugin](#install-new-versions-through-the-plugin)
   * [More security heuristics](#more-security-heuristics)
 - [Checking for updates in other plugins using the API](#checking-for-updates-in-other-plugins-using-the-api)
 
