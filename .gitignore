@@ -1,16 +1,12 @@
-# vscode
-.vscode 
+/.env.local.dev
+/.env.local.prod
+*.js
 
 # Intellij
 *.iml
 .idea
 
-# npm
-node_modules
-
-# Don't include the compiled main.js file in the repo.
-# They should be uploaded to GitHub releases instead.
-main.js
+/node_modules/*
 
 # Exclude sourcemaps
 *.map

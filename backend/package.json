@@ -1,0 +1,32 @@
+{
+  "name": "obsidian-plugin-update-checker-backend",
+  "version": "0.1.0",
+  "bin": {
+    "backend": "bin/backend.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "test": "jest",
+    "deploydev": "OPUC_ENV=dev cdk deploy obsidian-plugin-update-checker-dev",
+    "deploystage": "OPUC_ENV=stage cdk deploy obsidian-plugin-update-checker-dev",
+    "deployprod": "OPUC_ENV=prod cdk deploy obsidian-plugin-update-checker-prod"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.5.2",
+    "@types/node": "16.11.7",
+    "@types/prettier": "2.6.0",
+    "aws-cdk": "2.40.0",
+    "dotenv": "^16.0.2",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.9.1",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.40.0",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21"
+  }
+}
