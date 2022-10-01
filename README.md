@@ -18,7 +18,7 @@
 
 ## Know when installed plugins have updates
 
-This subtle icon is added to the status bar:
+This small icon is added to the status bar:
 
 ![image](https://user-images.githubusercontent.com/17691679/193410461-5882744b-670a-4cf9-9606-2864dba148d1.png): When 5 plugins have updates
 
