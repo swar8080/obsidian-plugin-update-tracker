@@ -176,7 +176,7 @@ export class GetReleases {
                         (asset) => asset.name === 'main.js'
                     );
 
-                    let cachedRelease = (cachedReleases?.releases || []).find(
+                    const cachedRelease = (cachedReleases?.releases || []).find(
                         (cached) => cached.id === release.id
                     );
 
@@ -243,7 +243,6 @@ export class GetReleases {
                     currentManifestsByReleaseId[releaseId].manifestUpdatedTime >
                         cachedManifestsByReleaseId[releaseId].manifestUpdatedTime
             )
-            //todo need to get asset id here...
             .map((releaseId) => currentManifestsByReleaseId[releaseId].manifestAssetId)
             //Take the most recent
             .sort((v1, v2) => -(v1 - v2))

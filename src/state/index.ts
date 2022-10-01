@@ -9,7 +9,6 @@ export const store = configureStore({
         obsidian: ObsidianReducer,
         releases: ReleaseReducer,
     },
-    //TODO disable in prod
     middleware: (getDefaultMiddleware) => {
         if (process.env.OBSIDIAN_APP_ENABLE_REDUX_LOGGER === 'true') {
             return getDefaultMiddleware().concat(logger);
