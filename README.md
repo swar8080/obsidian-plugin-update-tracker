@@ -62,6 +62,9 @@ Clicking *Code Changes* will bring you to a page like https://github.com/blacksm
 - Setting to exclude disabled plugins from update counts
 - Add a toggle to show/hide disabled plugins
 
+## Install new versions through the plugin
+- Download the plugins main.js, style.css and manifest.json and replace the current ones installed
+
 ## More security heuristics
 - On a sandboxed machine, does building the `main.js` from source produce the same code as the github release asset?
 - Were new dependencies added to `package.json`?
