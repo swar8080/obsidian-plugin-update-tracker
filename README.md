@@ -1,73 +1,147 @@
-# Obsidian Sample Plugin
+# Obsidian Plugin Update Checker
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+- [Features](#features)
+  * [Know when installed plugins have updates](#know-when-installed-plugins-have-updates)
+  * [View a list of updates](#view-a-list-of-updates)
+  * [Read the release notes to see what's changed](#read-the-release-notes-to-see-whats-changed)
+  * [Evaluate the riskiness of upgrading](#evaluate-the-riskiness-of-upgrading)
+      - [Statistics on new versions](#statistics-on-new-versions)
+      - [Wait a few days before showing updates](#wait-a-few-days-before-showing-updates)
+      - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
+- [Feature Ideas](#feature-ideas)
+  * [Keeping your plugin update list clean](#keeping-your-update-list-clean)
+  * [More security heuristics](#more-security-heuristics)
+- [Checking for updates in other plugins using the API](#checking-for-updates-in-other-plugins-using-the-api)
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+# Features
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+## Know when installed plugins have updates
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+This subtle icon is added to the status bar:
 
-## First time developing plugins?
+![image](https://user-images.githubusercontent.com/17691679/193410461-5882744b-670a-4cf9-9606-2864dba148d1.png): When 5 plugins have updates
 
-Quick starting guide for new plugin devs:
+![image](https://user-images.githubusercontent.com/17691679/193410447-395cb124-289d-4e92-b236-4d313bdc6bc8.png): When all plugins are up-to-date
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## View a list of updates
 
-## Releasing new releases
+Click the plugin icon to see the list:
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+![image](https://user-images.githubusercontent.com/17691679/193410392-09211af5-d875-444b-9a5e-3d06c00d7e35.png)
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+## Read the release notes to see what's changed
 
-## Adding your plugin to the community plugin list
+Release notes are safely rendered as markdown
 
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+![image](https://user-images.githubusercontent.com/17691679/193410513-047060a1-c631-4b48-81f1-204ff6011714.png)
 
-## How to use
+![image](https://user-images.githubusercontent.com/17691679/193410498-88444760-8c97-4da2-a0ac-9d4e384886d8.png)
 
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
+## Evaluate the riskiness of upgrading
 
-## Manually installing the plugin
+#### Statistics on new versions
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+Older versions with more downloads are likely more stable and secure
+![image](https://user-images.githubusercontent.com/17691679/193410588-aa858192-7c17-447a-825c-a2a8e55cf15b.png)
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+#### Wait a few days before showing updates
+
+![image](https://user-images.githubusercontent.com/17691679/193410812-78bfeb0f-02a5-41f5-8632-c1c682b85830.png)
+
+#### View code changes between versions of a plugin 
+
+Clicking *Code Changes* will bring you to a page like https://github.com/blacksmithgu/obsidian-dataview/compare/0.5.43...0.5.46#files_bucket.
+
+<sub>⚠️ The code in the git diff may be different than what's installed. Obsidian downloads a separate `main.js` file from the github release, which the author could add any code to.</sub>
+
+# Feature Ideas
+
+## Keeping your update list clean
+- Option to hide/dismiss a new version of a plugin
+- Option to "snooze"/hide a new version of a plugin until a time that you specify
+- Setting to exclude disabled plugins from update counts
+- Add a toggle to show/hide disabled plugins
+
+## More security heuristics
+- On a sandboxed machine, does building the `main.js` from source produce the same code as the github release asset?
+- Were new dependencies added to `package.json`?
+- Has the `main.js` github release asset been updated since the version was published?
+
+# Checking for updates in other plugins using the API
+
+The API used to get plugin version info is free for anyone to use. This could be helpful for alerting your plugin's users about updates in a custom way.
+
+The API uses cacheing/servless to keep costs low, avoid hitting github rate limits, and scale automatically. Note that results are currently cached for 30 minutes, and a cache miss can have a couple seconds latency.
 
 
-## API Documentation
+Request:
 
-See https://github.com/obsidianmd/obsidian-api
+```
+POST https://jc5gpa3gs7o2uge6iq5mgjd53q0daomi.lambda-url.us-east-1.on.aws
+
+{
+    "currentPluginVersions": [
+        {
+            "obsidianPluginId": "dataview",
+            "version": "0.5.44"
+        },
+        {
+            "obsidianPluginId": "obsidian-excalidraw",
+            "version": "1.7.15"
+        }
+    ]
+}
+```
+
+Response, which contains info on the 10 latest versions of the plugin that are greater than the version requested:
+```
+[
+    {
+        "obsidianPluginId": "dataview",
+        "pluginName": "Dataview",
+        "pluginRepositoryUrl": "https://github.com/blacksmithgu/obsidian-dataview",
+        "newVersions": [
+            {
+                "releaseId": 76774596,
+                "versionName": "0.5.46",
+                "versionNumber": "0.5.46",
+                "minObsidianAppVersion": "0.13.11",
+                "notes": "# 0.5.46\n\n- Fix #1412: Fix bad `file.cday` and `file.ctime` comparisons due to wrong timezone being set. Ugh.\n",
+                "areNotesTruncated": false,
+                "downloads": 32002,
+                "publishedAt": "2022-09-10T00:17:38Z",
+                "updatedAt": "2022-09-10T00:17:38Z"
+            },
+            {
+                "releaseId": 76553504,
+                "versionName": "0.5.45",
+                "versionNumber": "0.5.45",
+                "minObsidianAppVersion": "0.13.11",
+                "notes": "# 0.5.45\n\n- #1400: Properly use the group by field for the group name.\n- Fix bad table highlighting in some themes.\n",
+                "areNotesTruncated": false,
+                "downloads": 4198,
+                "publishedAt": "2022-09-08T05:24:23Z",
+                "updatedAt": "2022-09-08T05:24:23Z"
+            }
+        ]
+    },
+    {
+        "obsidianPluginId": "obsidian-excalidraw-plugin",
+        "pluginName": "Excalidraw",
+        "pluginRepositoryUrl": "https://github.com/zsviczian/obsidian-excalidraw-plugin",
+        "newVersions": [
+            {
+                "releaseId": 78165428,
+                "versionName": "Excalidraw 1.7.22",
+                "versionNumber": "1.7.22",
+                "minObsidianAppVersion": "0.15.6",
+                "notes": "# Fixed\r\n- Text size in sticky notes increased when opening the drawing or when editing a sticky note [#824](https://github.com/zsviczian/obsidian-excalidraw-plugin/issues/824)\r\n- ToDo rendering did not work properly when there were parsed links in the text\r\n- Horizontal text alignment in sticky notes did not honor text alignment setting when resizing text. The text was always aligned center even when text alignment was left or right. [#5720](https://github.com/excalidraw/excalidraw/issues/5720)",
+                "areNotesTruncated": false,
+                "downloads": 6955,
+                "publishedAt": "2022-09-26T17:43:53Z",
+                "updatedAt": "2022-09-26T17:43:27Z"
+            }
+        ]
+    }
+]
+```
