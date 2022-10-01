@@ -10,7 +10,8 @@
       - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
 - [Feature Ideas](#feature-ideas)
   * [Keeping your plugin update list clean](#keeping-your-update-list-clean)
-  * [Install new versions through the plugin](#install-new-versions-through-the-plugin)
+  * [Install new versions through the plugin](#install-new-versions-through-this-plugin)
+  * [Theme update tracking](#theme-update-tracking)
   * [More security heuristics](#more-security-heuristics)
 - [Checking for updates in other plugins using the API](#checking-for-updates-in-other-plugins-using-the-api)
 
@@ -65,6 +66,8 @@ Clicking *Code Changes* will bring you to a page like https://github.com/blacksm
 
 ## Install new versions through this plugin
 - Save the user from having to go to `Settings > Community Plugins > Check for Updates` to make the update
+
+## Theme Update Tracking
 
 ## More security heuristics
 - On a sandboxed machine, does building the `main.js` from source produce the same code as the github release asset?
