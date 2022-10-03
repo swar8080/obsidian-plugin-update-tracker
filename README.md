@@ -1,4 +1,4 @@
-# Obsidian Plugin Update Checker
+# Obsidian Plugin Update Tracker
 
 - [Features](#features)
   * [Know when installed plugins have updates](#know-when-installed-plugins-have-updates)
