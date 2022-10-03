@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-plugin-update-checker",
-  "version": "1.0.0",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "name": "obsidian-plugin-update-tracker",
+  "version": "0.0.1",
+  "description": "Know when installed plugins have updates and evaluate the risk of upgrading",
   "main": "main.js",
   "scripts": {
     "setup": "npm i && git config core.hooksPath .githooks/",
