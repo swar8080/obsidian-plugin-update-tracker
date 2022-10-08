@@ -109,11 +109,24 @@ export class GetReleases {
         }
 
         console.log(`Fetching releases for ${plugin.id}`);
-        const releasesApiResponse = await this.releaseApi.fetchReleases(
-            plugin.repo,
-            this.config.releasesFetchedPerPlugin,
-            cachedReleases?.lastFetchedETag
-        );
+        let releasesApiResponse: ApiReleaseResponse;
+        try {
+            releasesApiResponse = await this.releaseApi.fetchReleases(
+                plugin.repo,
+                this.config.releasesFetchedPerPlugin,
+                cachedReleases?.lastFetchedETag
+            );
+        } catch (err) {
+            if (cachedReleases != null) {
+                console.error(
+                    `Error fetching releases for ${plugin.id}, falling back to cached value`,
+                    err
+                );
+                return cachedReleases;
+            }
+            console.error(`Error fetching releases for ${plugin.id}, no cached values exist`, err);
+            throw err;
+        }
 
         if (!releasesApiResponse.hasChanges) {
             //no changes means we have an etag, so cachedReleases is defined
