@@ -5,7 +5,7 @@ import {
     BatchGetCommandOutput,
     BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { isEmpty } from './util';
+import { isEmpty, partition } from './util';
 
 export interface ReleaseRepository {
     //Sorted from most to least recent
@@ -35,6 +35,8 @@ export type PluginReleasesRecord = {
     lastFetchedFromGithub: string;
     lastFetchedETag: string;
 };
+
+const DDB_MAX_WRITE_BATCH_SIZE = 25;
 
 export class DynamoDBReleaseRepository implements ReleaseRepository {
     private tableName: string;
@@ -78,16 +80,20 @@ export class DynamoDBReleaseRepository implements ReleaseRepository {
             return;
         }
 
-        const command = new BatchWriteCommand({
-            RequestItems: {
-                [this.tableName]: records.map((record) => ({
-                    PutRequest: {
-                        Item: record,
-                    },
-                })),
-            },
-        });
+        const batches = partition(records, DDB_MAX_WRITE_BATCH_SIZE);
 
-        await this.dynamodb.send(command);
+        for (const batch of batches) {
+            const command = new BatchWriteCommand({
+                RequestItems: {
+                    [this.tableName]: batch.map((record) => ({
+                        PutRequest: {
+                            Item: record,
+                        },
+                    })),
+                },
+            });
+
+            await this.dynamodb.send(command);
+        }
     }
 }

@@ -6,7 +6,7 @@ import { GetReleases, GetReleasesConfiguration } from './get-releases';
 import { GithubReleaseApi } from './ReleaseApi';
 import { S3PluginRepository } from './PluginRepository';
 
-const MAX_PLUGIN_REQUEST_LENGTH = 75;
+const MAX_PLUGIN_REQUEST_LENGTH = 100;
 
 let _getReleases: GetReleases | null = null;
 
@@ -32,19 +32,25 @@ export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         MAX_PLUGIN_REQUEST_LENGTH
     );
 
-    const getReleases: GetReleases = buildGetReleases();
-    const response = await getReleases.execute(request);
+    try {
+        const getReleases: GetReleases = buildGetReleases();
+        const response = await getReleases.execute(request);
 
-    return {
-        body: JSON.stringify(response),
-        statusCode: 200,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-        },
-    };
+        return {
+            body: JSON.stringify(response),
+            statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+        };
+    } catch (err) {
+        console.error('Failed handling request', request, err);
+        throw err;
+    }
 }
 
 function badRequest(message: string) {
+    console.warn('Bad request: ', message);
     return {
         body: message,
         statusCode: 400,

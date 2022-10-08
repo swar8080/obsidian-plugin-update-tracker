@@ -12,3 +12,12 @@ export function groupById<T>(items: T[], idKey: keyof T): Record<string, T> {
         return prev;
     }, {} as Record<string, T>);
 }
+
+export function partition<T>(items: T[], chunkSize: number): T[][] {
+    const partitions = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+        partitions.push(chunk);
+    }
+    return partitions;
+}
