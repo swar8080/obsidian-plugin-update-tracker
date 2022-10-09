@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { NewPluginVersionRequest, PluginReleases } from 'shared-types';
-import releaseApi from '../domain/releaseApi';
+import { getReleases } from '../domain/api';
 import { State } from './index';
 
 type ReleaseState = {
@@ -25,7 +25,7 @@ export const fetchReleases = createAsyncThunk('releases/fetch', async (_: void, 
         })),
     };
 
-    return await releaseApi(request);
+    return await getReleases(request);
 });
 
 const releaseReducer = createSlice({

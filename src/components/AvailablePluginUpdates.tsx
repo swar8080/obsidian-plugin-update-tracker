@@ -10,6 +10,8 @@ import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import * as React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useAppDispatch } from 'src/state';
+import { updatePlugins } from 'src/state/obsidianReducer';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
@@ -23,6 +25,7 @@ interface AvailablePluginUpdatesProps {
 
 const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = ({ titleEl }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
+    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
         let titleText = 'Available Plugin Updates';
@@ -35,6 +38,10 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
         }
     }, [titleEl, allPluginReleases.length]);
 
+    function handleClickInstall(pluginIds: string[]) {
+        dispatch(updatePlugins(pluginIds));
+    }
+
     const plugins: PluginViewModel[] = React.useMemo(
         () =>
             allPluginReleases.map((pluginReleases) => ({
@@ -45,24 +52,26 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
                 githubRepositoryUrl: pluginReleases.getPluginRepositoryUrl(),
                 installedVersionNumber: pluginReleases.getInstalledVersionNumber(),
                 latestInstallableVersionNumber: pluginReleases.getLatestVersionNumber(),
-                releaseNotes: pluginReleases.getNewReleases(true).map((release) => ({
+                releaseNotes: pluginReleases.getUninstalledNewReleases(true).map((release) => ({
                     releaseId: release.releaseId,
                     versionName: release.versionName,
                     versionNumber: release.versionNumber,
                     notes: release.notes,
                 })),
+                hasInstallableReleaseAssets: !!pluginReleases.getLatestReleaseAssetIds(),
             })),
         [allPluginReleases]
     );
 
-    return <PluginUpdatesList plugins={plugins} />;
+    return <PluginUpdatesList plugins={plugins} handleInstall={handleClickInstall} />;
 };
 
 export const PluginUpdatesList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
-}> = ({ plugins, isInitiallyExpanded }) => {
-    const [selectedPlugins, setSelectedPlugins] = React.useState(new Set());
+    handleInstall: (pluginIds: string[]) => any;
+}> = ({ plugins, isInitiallyExpanded, handleInstall }) => {
+    const [selectedPlugins, setSelectedPlugins] = React.useState(new Set<string>());
 
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
@@ -96,7 +105,10 @@ export const PluginUpdatesList: React.FC<{
         setSelectedPlugins(new Set(selectedPlugins));
     }
 
-    function handleClickInstall() {}
+    function handleClickInstall() {
+        const pluginIds = Array.from(selectedPlugins.values());
+        handleInstall(pluginIds);
+    }
 
     return (
         <>
@@ -106,6 +118,7 @@ export const PluginUpdatesList: React.FC<{
                         plugin={plugin}
                         key={plugin.id}
                         isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
+                        selectable={plugin.hasInstallableReleaseAssets}
                         selected={selectedPlugins.has(plugin.id)}
                         onToggleSelected={(e) => handleToggleSelected(plugin.id, e)}
                     />
@@ -138,11 +151,13 @@ export type PluginViewModel = {
         versionNumber: string;
         notes: string;
     }[];
+    hasInstallableReleaseAssets: boolean;
 };
 
 const PluginUpdates: React.FC<{
     plugin: PluginViewModel;
     isInitiallyExpanded: boolean;
+    selectable: boolean;
     selected: boolean;
     onToggleSelected: (e: React.SyntheticEvent) => void;
 }> = ({ plugin, isInitiallyExpanded, selected, onToggleSelected }) => {
@@ -375,7 +390,7 @@ const ActionBarContainer = styled.div`
         }
     }
     animation-name: slideInFromRight;
-    animation-duration: 0.6s;
+    animation-duration: 0.5s;
     animation-timing-function: ease-in-out;
 `;
 

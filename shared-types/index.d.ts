@@ -11,6 +11,7 @@ export type PluginReleases = {
     obsidianPluginId: string;
     pluginName: string;
     pluginRepositoryUrl: string;
+    pluginRepoPath: string;
     newVersions: ReleaseVersion[];
 };
 

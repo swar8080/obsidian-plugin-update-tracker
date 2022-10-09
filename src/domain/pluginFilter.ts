@@ -32,7 +32,7 @@ const filter = (
     return allPlugins.filter((plugin) => {
         let include = true;
 
-        const newReleases = plugin.getNewReleases(filters.excludeIncompatibleVersions);
+        const newReleases = plugin.getUninstalledNewReleases(filters.excludeIncompatibleVersions);
 
         if (newReleases.length == 0) {
             include = false;

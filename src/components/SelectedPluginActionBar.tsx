@@ -17,12 +17,13 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
     return (
         <DivSelectedPluginActionBarContainer>
             <h4>{headerText}</h4>
+            <button onClick={onClickInstall}>Update Plugins</button>
         </DivSelectedPluginActionBarContainer>
     );
 };
 
 const DivSelectedPluginActionBarContainer = styled.div`
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 2rem;
 
     h4 {
         margin: 0;
@@ -32,6 +33,7 @@ const DivSelectedPluginActionBarContainer = styled.div`
     background-color: var(--background-secondary);
 
     border: 3px var(--background-modifier-border) solid;
+    border-bottom: none;
 `;
 
 export default SelectedPluginActionBar;
