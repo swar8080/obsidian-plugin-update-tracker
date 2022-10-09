@@ -127,7 +127,12 @@ const PluginUpdates: React.FC<{ plugin: PluginViewModel; isInitiallyExpanded: bo
 
     return (
         <DivPluginUpdateContainer>
-            <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
+            <DivPluginUpdateHeaderContainer>
+                <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
+                <div>
+                    <input type="checkbox" />
+                </div>
+            </DivPluginUpdateHeaderContainer>
             <DivReleaseSummaryContainer>
                 {isLastUpdatedTimeKnown && (
                     <DivLastUpdated
@@ -207,10 +212,16 @@ const DivPluginUpdateContainer = styled.div`
     border-radius: 0.25rem;
 `;
 
-const H2PluginName = styled.h2`
-    text-align: center;
+const DivPluginUpdateHeaderContainer = styled.div`
+    display: flex;
+    flex-direction: row;
 
     border-bottom: ${BORDER};
+`;
+
+const H2PluginName = styled.h2`
+    flex-grow: 1;
+    text-align: center;
 
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
