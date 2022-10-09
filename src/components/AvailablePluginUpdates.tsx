@@ -14,6 +14,7 @@ import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
+import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
 
 interface AvailablePluginUpdatesProps {
@@ -95,18 +96,31 @@ export const PluginUpdatesList: React.FC<{
         setSelectedPlugins(new Set(selectedPlugins));
     }
 
+    function handleClickInstall() {}
+
     return (
-        <DivPluginUpdateListContainer>
-            {sortedAndFormattedPluginData.map((plugin) => (
-                <PluginUpdates
-                    plugin={plugin}
-                    key={plugin.id}
-                    isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
-                    selected={selectedPlugins.has(plugin.id)}
-                    onToggleSelected={(e) => handleToggleSelected(plugin.id, e)}
-                />
-            ))}
-        </DivPluginUpdateListContainer>
+        <>
+            <DivPluginUpdateListContainer>
+                {sortedAndFormattedPluginData.map((plugin) => (
+                    <PluginUpdates
+                        plugin={plugin}
+                        key={plugin.id}
+                        isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
+                        selected={selectedPlugins.has(plugin.id)}
+                        onToggleSelected={(e) => handleToggleSelected(plugin.id, e)}
+                    />
+                ))}
+            </DivPluginUpdateListContainer>
+
+            {true && (
+                <ActionBarContainer>
+                    <SelectedPluginActionBar
+                        numberOfPluginsSelected={selectedPlugins.size}
+                        onClickInstall={handleClickInstall}
+                    />
+                </ActionBarContainer>
+            )}
+        </>
     );
 };
 
@@ -344,6 +358,17 @@ const DivReleaeseName = styled.div`
     font-size: 1.75rem;
     font-weight: bold;
     text-decoration: underline;
+`;
+
+const ActionBarContainer = styled.div`
+    position: fixed;
+
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+
+    z-score: 2;
+    background-color: var(--background-primary);
 `;
 
 const DivReleaseNoteText = styled.div``;
