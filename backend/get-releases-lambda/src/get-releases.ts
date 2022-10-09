@@ -360,6 +360,7 @@ export class GetReleases {
             obsidianPluginId: releasesRecord.pluginId,
             pluginName: plugin.name,
             pluginRepositoryUrl,
+            pluginRepoPath: plugin.repo,
             newVersions: clientReleaseVersions,
         };
     }
