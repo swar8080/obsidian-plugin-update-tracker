@@ -22,7 +22,7 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
 };
 
 const DivSelectedPluginActionBarContainer = styled.div`
-    padding: 0.5rem 0;
+    padding: 0.5rem 1rem;
 
     h4 {
         margin: 0;
