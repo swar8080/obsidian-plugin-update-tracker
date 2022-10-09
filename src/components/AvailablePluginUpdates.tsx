@@ -38,8 +38,8 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
         }
     }, [titleEl, allPluginReleases.length]);
 
-    function handleClickInstall(pluginIds: string[]) {
-        dispatch(updatePlugins(pluginIds));
+    function handleClickInstall(pluginIds: string[]): Promise<any> {
+        return dispatch(updatePlugins(pluginIds));
     }
 
     const plugins: PluginViewModel[] = React.useMemo(
@@ -69,7 +69,7 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
 export const PluginUpdatesList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
-    handleInstall: (pluginIds: string[]) => any;
+    handleInstall: (pluginIds: string[]) => Promise<any>;
 }> = ({ plugins, isInitiallyExpanded, handleInstall }) => {
     const [selectedPlugins, setSelectedPlugins] = React.useState(new Set<string>());
 
@@ -105,9 +105,10 @@ export const PluginUpdatesList: React.FC<{
         setSelectedPlugins(new Set(selectedPlugins));
     }
 
-    function handleClickInstall() {
+    async function handleClickInstall() {
         const pluginIds = Array.from(selectedPlugins.values());
-        handleInstall(pluginIds);
+        await handleInstall(pluginIds);
+        setSelectedPlugins(new Set());
     }
 
     return (
