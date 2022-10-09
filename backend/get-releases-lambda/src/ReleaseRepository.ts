@@ -5,6 +5,7 @@ import {
     BatchGetCommandOutput,
     BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
+import { PluginFileAssetIds } from '../../../shared-types';
 import { isEmpty, partition } from './util';
 
 export interface ReleaseRepository {
@@ -26,8 +27,7 @@ export type PluginReleasesRecord = {
         downloads: number;
         publishedAt: string;
         sourceCodeUpdatedAt: string;
-
-        manifestAssetId?: number;
+        fileAssetIds?: PluginFileAssetIds;
         minObsidianVersion?: string;
         manifestLastUpdatedAt?: string;
     }[];
