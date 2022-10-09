@@ -61,6 +61,8 @@ export const PluginUpdatesList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
 }> = ({ plugins, isInitiallyExpanded }) => {
+    const [selectedPlugins, setSelectedPlugins] = React.useState<Record<string, boolean>>({});
+
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
             plugins
@@ -83,6 +85,14 @@ export const PluginUpdatesList: React.FC<{
         [plugins]
     );
 
+    function handleToggleSelected(pluginId: string, e: React.SyntheticEvent) {
+        const checkbox = e.target as HTMLInputElement;
+        setSelectedPlugins((prev) => ({
+            ...prev,
+            [pluginId]: checkbox.checked,
+        }));
+    }
+
     return (
         <DivPluginUpdateListContainer>
             {sortedAndFormattedPluginData.map((plugin) => (
@@ -90,6 +100,8 @@ export const PluginUpdatesList: React.FC<{
                     plugin={plugin}
                     key={plugin.id}
                     isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
+                    selected={selectedPlugins[plugin.id]}
+                    onToggleSelected={(e) => handleToggleSelected(plugin.id, e)}
                 />
             ))}
         </DivPluginUpdateListContainer>
@@ -112,10 +124,12 @@ export type PluginViewModel = {
     }[];
 };
 
-const PluginUpdates: React.FC<{ plugin: PluginViewModel; isInitiallyExpanded: boolean }> = ({
-    plugin,
-    isInitiallyExpanded,
-}) => {
+const PluginUpdates: React.FC<{
+    plugin: PluginViewModel;
+    isInitiallyExpanded: boolean;
+    selected: boolean;
+    onToggleSelected: (e: React.SyntheticEvent) => void;
+}> = ({ plugin, isInitiallyExpanded, selected, onToggleSelected }) => {
     const [isReleaseNotesExpanded, setIsReleaseNotesExpanded] = React.useState(isInitiallyExpanded);
     const hasReleaseNotes =
         find(plugin.releaseNotes, (releaseNote) => !isEmpty(releaseNote.notes)) != null;
@@ -130,7 +144,7 @@ const PluginUpdates: React.FC<{ plugin: PluginViewModel; isInitiallyExpanded: bo
             <DivPluginUpdateHeaderContainer>
                 <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
                 <div>
-                    <input type="checkbox" />
+                    <input type="checkbox" checked={selected} onChange={onToggleSelected} />
                 </div>
             </DivPluginUpdateHeaderContainer>
             <DivReleaseSummaryContainer>
