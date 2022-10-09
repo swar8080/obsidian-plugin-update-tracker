@@ -112,7 +112,7 @@ export const PluginUpdatesList: React.FC<{
                 ))}
             </DivPluginUpdateListContainer>
 
-            {true && (
+            {selectedPlugins.size > 0 && (
                 <ActionBarContainer>
                     <SelectedPluginActionBar
                         numberOfPluginsSelected={selectedPlugins.size}
@@ -361,14 +361,23 @@ const DivReleaeseName = styled.div`
 `;
 
 const ActionBarContainer = styled.div`
+    width: 100%;
     position: fixed;
-
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 
-    z-score: 2;
-    background-color: var(--background-primary);
+    @keyframes slideInFromRight {
+        0% {
+            left: 200%;
+        }
+        100% {
+            left: 50%;
+        }
+    }
+    animation-name: slideInFromRight;
+    animation-duration: 0.6s;
+    animation-timing-function: ease-in-out;
 `;
 
 const DivReleaseNoteText = styled.div``;
