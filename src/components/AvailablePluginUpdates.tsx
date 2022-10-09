@@ -61,7 +61,7 @@ export const PluginUpdatesList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
 }> = ({ plugins, isInitiallyExpanded }) => {
-    const [selectedPlugins, setSelectedPlugins] = React.useState<Record<string, boolean>>({});
+    const [selectedPlugins, setSelectedPlugins] = React.useState(new Set());
 
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
@@ -87,10 +87,12 @@ export const PluginUpdatesList: React.FC<{
 
     function handleToggleSelected(pluginId: string, e: React.SyntheticEvent) {
         const checkbox = e.target as HTMLInputElement;
-        setSelectedPlugins((prev) => ({
-            ...prev,
-            [pluginId]: checkbox.checked,
-        }));
+        if (checkbox.checked) {
+            selectedPlugins.add(pluginId);
+        } else {
+            selectedPlugins.delete(pluginId);
+        }
+        setSelectedPlugins(new Set(selectedPlugins));
     }
 
     return (
@@ -100,7 +102,7 @@ export const PluginUpdatesList: React.FC<{
                     plugin={plugin}
                     key={plugin.id}
                     isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
-                    selected={selectedPlugins[plugin.id]}
+                    selected={selectedPlugins.has(plugin.id)}
                     onToggleSelected={(e) => handleToggleSelected(plugin.id, e)}
                 />
             ))}
