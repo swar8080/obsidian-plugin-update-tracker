@@ -6,6 +6,8 @@ import { PluginUpdatesList, PluginViewModel } from './AvailablePluginUpdates';
 type Story = ComponentStory<typeof PluginUpdatesList>;
 
 const PLUGIN_UPDATE_LIST_BASE = {
+    selectedPluginsById: {},
+    handleToggleSelection: () => {},
     handleInstall: () => Promise.resolve(),
 };
 

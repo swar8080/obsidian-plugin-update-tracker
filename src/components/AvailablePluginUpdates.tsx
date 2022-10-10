@@ -14,7 +14,8 @@ import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
 import { useAppDispatch, useAppSelector } from '../state';
-import { updatePlugins } from '../state/obsidianReducer';
+import { updatePlugins } from '../state/actionProducers/updatePlugins';
+import { togglePluginSelection } from '../state/obsidianReducer';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
@@ -26,6 +27,7 @@ interface AvailablePluginUpdatesProps {
 const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = ({ titleEl }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
     const dispatch = useAppDispatch();
+    const selectedPluginsById = useAppSelector((state) => state.obsidian.selectedPluginsById);
     const showUpdateProgressTracker = useAppSelector(
         (state) => state.obsidian.isUpdatingPlugins && !state.obsidian.isUpdateResultAcknowledged
     );
@@ -41,8 +43,12 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
         }
     }, [titleEl, allPluginReleases.length]);
 
-    function handleClickInstall(pluginIds: string[]): Promise<any> {
-        return dispatch(updatePlugins(pluginIds));
+    function handleToggleSelection(pluginId: string, selected: boolean) {
+        dispatch(togglePluginSelection({ pluginId, selected }));
+    }
+
+    function handleClickInstall(): Promise<any> {
+        return dispatch(updatePlugins());
     }
 
     const plugins: PluginViewModel[] = React.useMemo(
@@ -66,16 +72,29 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
         [allPluginReleases]
     );
 
-    return <PluginUpdatesList plugins={plugins} handleInstall={handleClickInstall} />;
+    return (
+        <PluginUpdatesList
+            plugins={plugins}
+            selectedPluginsById={selectedPluginsById}
+            handleToggleSelection={handleToggleSelection}
+            handleInstall={handleClickInstall}
+        />
+    );
 };
 
 export const PluginUpdatesList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
-    handleInstall: (pluginIds: string[]) => Promise<any>;
-}> = ({ plugins, isInitiallyExpanded, handleInstall }) => {
-    const [selectedPlugins, setSelectedPlugins] = React.useState(new Set<string>());
-
+    selectedPluginsById: Record<string, boolean>;
+    handleToggleSelection: (pluginId: string, selected: boolean) => any;
+    handleInstall: () => Promise<any>;
+}> = ({
+    plugins,
+    isInitiallyExpanded,
+    selectedPluginsById,
+    handleToggleSelection,
+    handleInstall,
+}) => {
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
             plugins
@@ -98,20 +117,22 @@ export const PluginUpdatesList: React.FC<{
         [plugins]
     );
 
-    function handleToggleSelected(pluginId: string, e: React.SyntheticEvent) {
+    const selectedPluginCount = React.useMemo(
+        () =>
+            Object.values(selectedPluginsById).reduce(
+                (count, isSelected) => count + (isSelected ? 1 : 0),
+                0
+            ),
+        [selectedPluginsById]
+    );
+
+    function handleToggleSelectedClicked(pluginId: string, e: React.SyntheticEvent) {
         const checkbox = e.target as HTMLInputElement;
-        if (checkbox.checked) {
-            selectedPlugins.add(pluginId);
-        } else {
-            selectedPlugins.delete(pluginId);
-        }
-        setSelectedPlugins(new Set(selectedPlugins));
+        handleToggleSelection(pluginId, checkbox.checked);
     }
 
     async function handleClickInstall() {
-        const pluginIds = Array.from(selectedPlugins.values());
-        await handleInstall(pluginIds);
-        setSelectedPlugins(new Set());
+        await handleInstall();
     }
 
     return (
@@ -123,16 +144,16 @@ export const PluginUpdatesList: React.FC<{
                         key={plugin.id}
                         isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
                         selectable={plugin.hasInstallableReleaseAssets}
-                        selected={selectedPlugins.has(plugin.id)}
-                        onToggleSelected={(e) => handleToggleSelected(plugin.id, e)}
+                        selected={!!selectedPluginsById[plugin.id]}
+                        onToggleSelectedClicked={(e) => handleToggleSelectedClicked(plugin.id, e)}
                     />
                 ))}
             </DivPluginUpdateListContainer>
 
-            {selectedPlugins.size > 0 && (
+            {selectedPluginCount > 0 && (
                 <ActionBarContainer>
                     <SelectedPluginActionBar
-                        numberOfPluginsSelected={selectedPlugins.size}
+                        numberOfPluginsSelected={selectedPluginCount}
                         onClickInstall={handleClickInstall}
                     />
                 </ActionBarContainer>
@@ -163,8 +184,8 @@ const PluginUpdates: React.FC<{
     isInitiallyExpanded: boolean;
     selectable: boolean;
     selected: boolean;
-    onToggleSelected: (e: React.SyntheticEvent) => void;
-}> = ({ plugin, isInitiallyExpanded, selected, onToggleSelected }) => {
+    onToggleSelectedClicked: (e: React.SyntheticEvent) => void;
+}> = ({ plugin, isInitiallyExpanded, selected, onToggleSelectedClicked }) => {
     const [isReleaseNotesExpanded, setIsReleaseNotesExpanded] = React.useState(isInitiallyExpanded);
     const hasReleaseNotes =
         find(plugin.releaseNotes, (releaseNote) => !isEmpty(releaseNote.notes)) != null;
@@ -179,7 +200,7 @@ const PluginUpdates: React.FC<{
             <DivPluginUpdateHeaderContainer>
                 <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
                 <div>
-                    <input type="checkbox" checked={selected} onChange={onToggleSelected} />
+                    <input type="checkbox" checked={selected} onChange={onToggleSelectedClicked} />
                 </div>
             </DivPluginUpdateHeaderContainer>
             <DivReleaseSummaryContainer>

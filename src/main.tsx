@@ -6,8 +6,9 @@ import AvailablePluginUpdates from './components/AvailablePluginUpdates';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { store } from './state';
-import { syncApp, syncSettings } from './state/obsidianReducer';
-import { fetchReleases } from './state/releasesReducer';
+import { fetchReleases } from './state/actionProducers/fetchReleases';
+import { syncApp } from './state/actionProducers/syncApp';
+import { syncSettings } from './state/obsidianReducer';
 
 const AVAILABLE_PLUGIN_UPDATES_VIEW_TYPE = 'swar8080/AVAILABLE_PLUGIN_UPDATES';
 
