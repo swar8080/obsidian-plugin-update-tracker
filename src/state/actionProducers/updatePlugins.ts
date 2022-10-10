@@ -3,8 +3,11 @@ import { normalizePath } from 'obsidian';
 import { State } from '..';
 import { getReleaseAsset } from '../../domain/api';
 import InstalledPluginReleases from '../../domain/InstalledPluginReleases';
+import { sleep } from '../../domain/util/sleep';
 import { ObsidianApp, PluginUpdateResult } from '../obsidianReducer';
 import { syncApp } from './syncApp';
+
+const SIMULATE_UPDATE_PLUGINS = process.env['OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'] === 'true';
 
 export const updatePlugins = createAsyncThunk(
     'obsidian/updatePlugins',
@@ -49,30 +52,37 @@ export const updatePlugins = createAsyncThunk(
                     continue;
                 }
 
+                if (SIMULATE_UPDATE_PLUGINS) {
+                }
+
                 // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
                 await app.plugins.disablePlugin(pluginId);
 
-                //download and install seperately to reduce the chances of only some of the new files being written to disk
-                const [mainJs, manifestJson, styleCss] = await Promise.all([
-                    downloadPluginFile(latestReleaseAssetIds.mainJs, pluginRepoPath),
-                    downloadPluginFile(latestReleaseAssetIds.manifestJson, pluginRepoPath),
-                    downloadPluginFile(latestReleaseAssetIds.styleCss, pluginRepoPath),
-                ]);
-                await Promise.all([
-                    installPluginFile(pluginId, 'main.js', mainJs),
-                    installPluginFile(pluginId, 'manifest.json', manifestJson),
-                    installPluginFile(pluginId, 'styles.css', styleCss),
-                ]);
-
-                if (isPluginEnabled) {
-                    await app.plugins.enablePlugin(pluginId);
+                if (!SIMULATE_UPDATE_PLUGINS) {
+                    //download and install seperately to reduce the chances of only some of the new files being written to disk
+                    const [mainJs, manifestJson, styleCss] = await Promise.all([
+                        downloadPluginFile(latestReleaseAssetIds.mainJs, pluginRepoPath),
+                        downloadPluginFile(latestReleaseAssetIds.manifestJson, pluginRepoPath),
+                        downloadPluginFile(latestReleaseAssetIds.styleCss, pluginRepoPath),
+                    ]);
+                    await Promise.all([
+                        installPluginFile(pluginId, 'main.js', mainJs),
+                        installPluginFile(pluginId, 'manifest.json', manifestJson),
+                        installPluginFile(pluginId, 'styles.css', styleCss),
+                    ]);
+                    success = true;
+                } else {
+                    await sleep(Math.random() * 5000);
+                    success = Math.random() > 0.2;
                 }
-
-                success = true;
             } catch (err) {
                 //this could happen if hitting the public github api rate limit of 60 requests/hour per ip
                 console.warn('Error updating ' + pluginId, err);
                 success = false;
+            } finally {
+                if (isPluginEnabled && app.plugins?.enablePlugin) {
+                    await app.plugins.enablePlugin(pluginId);
+                }
             }
 
             const updateResult: PluginUpdateResult = {

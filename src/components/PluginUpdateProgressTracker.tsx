@@ -1,25 +1,43 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import { useAppSelector } from '../state';
-import { PluginUpdateResult } from '../state/obsidianReducer';
+import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
+import { pluralize } from '../domain/util/pluralize';
+import { useAppDispatch, useAppSelector } from '../state';
+import { acknowledgePluginUpdateResults, PluginUpdateResult } from '../state/obsidianReducer';
 
 interface PluginUpdateProgressTrackerProps {
-    numberOfPluginsBeingUpdated: number;
-    onAcknowledgeResults: () => any;
+    titleEl: HTMLElement | undefined;
 }
 
 const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTrackerProps> = ({
-    numberOfPluginsBeingUpdated,
-    onAcknowledgeResults,
+    titleEl,
 }) => {
     const updateResults = useAppSelector((state) => state.obsidian.pluginUpdateProgress);
     const isUpdatingPlugins = useAppSelector((state) => state.obsidian.isUpdatingPlugins);
+    const selectedPluginCount = useAppSelector(countSelectedPlugins);
+    const dispatch = useAppDispatch();
+
+    React.useEffect(() => {
+        if (titleEl) {
+            if (isUpdatingPlugins) {
+                titleEl.innerText = `Updating ${selectedPluginCount} ${pluralize(
+                    'Plugin',
+                    selectedPluginCount
+                )}...`;
+            } else {
+                titleEl.innerText = `Finished Updating Plugins`;
+            }
+        }
+    }, [titleEl, selectedPluginCount, isUpdatingPlugins]);
+
+    function onAcknowledgeResults() {
+        dispatch(acknowledgePluginUpdateResults());
+    }
 
     return (
         <PluginUpdateProgressTracker
             updateResults={updateResults}
             isUpdatingPlugins={isUpdatingPlugins}
-            numberOfPluginsBeingUpdated={numberOfPluginsBeingUpdated}
             onAcknowledgeResults={onAcknowledgeResults}
         />
     );
@@ -28,19 +46,8 @@ const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTracker
 export const PluginUpdateProgressTracker: React.FC<{
     updateResults: PluginUpdateResult[];
     isUpdatingPlugins: boolean;
-    numberOfPluginsBeingUpdated: number;
     onAcknowledgeResults: () => any;
-}> = ({ updateResults, isUpdatingPlugins, numberOfPluginsBeingUpdated, onAcknowledgeResults }) => {
-    let headerMsg: string;
-    const numberOfPluginsText = `${numberOfPluginsBeingUpdated} Plugin${
-        numberOfPluginsBeingUpdated === 1 ? '' : 's'
-    }`;
-    if (isUpdatingPlugins) {
-        headerMsg = `Updating ${numberOfPluginsText}...`;
-    } else {
-        headerMsg = `Finished Updating ${numberOfPluginsText}`;
-    }
-
+}> = ({ updateResults, isUpdatingPlugins, onAcknowledgeResults }) => {
     const failureCount = updateResults.reduce(
         (count, result) => count + (result.success ? 0 : 1),
         0
@@ -48,7 +55,7 @@ export const PluginUpdateProgressTracker: React.FC<{
 
     return (
         <DivPluginUpdateProgressTracker>
-            <H2PluginUpdateProgressTracker>{headerMsg}</H2PluginUpdateProgressTracker>
+            {/* <H2PluginUpdateProgressTracker>{headerMsg}</H2PluginUpdateProgressTracker> */}
             {updateResults.map((updateResult) => (
                 <PluginUpdateResultView updateResult={updateResult} key={updateResult.pluginName} />
             ))}
@@ -91,8 +98,6 @@ const PluginUpdateResultView: React.FC<{ updateResult: PluginUpdateResult }> = (
 };
 
 const DivPluginUpdateProgressTracker = styled.div``;
-
-const H2PluginUpdateProgressTracker = styled.h2``;
 
 const DivPluginUpdateResult = styled.div`
     display: flex;

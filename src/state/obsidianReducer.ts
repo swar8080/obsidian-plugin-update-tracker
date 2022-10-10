@@ -86,6 +86,10 @@ const obsidianStateSlice = createSlice({
     },
 });
 
-export const { syncSettings, syncPluginManifests, togglePluginSelection } =
-    obsidianStateSlice.actions;
+export const {
+    syncSettings,
+    syncPluginManifests,
+    togglePluginSelection,
+    acknowledgePluginUpdateResults,
+} = obsidianStateSlice.actions;
 export default obsidianStateSlice.reducer;

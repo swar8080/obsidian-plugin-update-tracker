@@ -1,12 +1,13 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import dayjs from 'dayjs';
 import React from 'react';
-import { PluginUpdatesList, PluginViewModel } from './AvailablePluginUpdates';
+import { PluginUpdateList, PluginViewModel } from './PluginUpdateList';
 
-type Story = ComponentStory<typeof PluginUpdatesList>;
+type Story = ComponentStory<typeof PluginUpdateList>;
 
 const PLUGIN_UPDATE_LIST_BASE = {
     selectedPluginsById: {},
+    selectedPluginCount: 0,
     handleToggleSelection: () => {},
     handleInstall: () => Promise.resolve(),
 };
@@ -62,7 +63,7 @@ export const MixOfPlugins: Story = () => {
         name: 'Plugin 4',
     };
     return (
-        <PluginUpdatesList
+        <PluginUpdateList
             plugins={[PLUGIN_VIEW_MODEL_BASE, noReleaseNotes, plugin3, plugin4]}
             {...PLUGIN_UPDATE_LIST_BASE}
         />
@@ -87,7 +88,7 @@ export const MarkdownParsingAndEnrichment: Story = () => {
     }
 
     return (
-        <PluginUpdatesList
+        <PluginUpdateList
             isInitiallyExpanded
             plugins={[
                 pluginWithNotes('Dupe version name', '1.2.3 Beta\r\n- Note 1'),
@@ -105,6 +106,6 @@ export const MarkdownParsingAndEnrichment: Story = () => {
 };
 
 export default {
-    title: 'AvailablePluginUpdates',
-    component: PluginUpdatesList,
-} as ComponentMeta<typeof PluginUpdatesList>;
+    title: 'PluginUpdateList',
+    component: PluginUpdateList,
+} as ComponentMeta<typeof PluginUpdateList>;

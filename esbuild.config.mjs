@@ -32,6 +32,7 @@ const define = [
 	'OBSIDIAN_APP_RELEASE_POLLING_SECONDS',
 	'OBSIDIAN_APP_INSTALLED_VERSION_POLLING_SECONDS',
 	'OBSIDIAN_APP_ENABLE_REDUX_LOGGER',
+	'OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'
 ].reduce((prev, current) => {
 	prev[`process.env.${current}`] = JSON.stringify(process.env[current])
 	return prev

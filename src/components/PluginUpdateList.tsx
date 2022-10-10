@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
+import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
 import { useAppDispatch, useAppSelector } from '../state';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
 import { togglePluginSelection } from '../state/obsidianReducer';
@@ -20,17 +21,15 @@ import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
 
-interface AvailablePluginUpdatesProps {
+interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
 }
 
-const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = ({ titleEl }) => {
+const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
-    const dispatch = useAppDispatch();
     const selectedPluginsById = useAppSelector((state) => state.obsidian.selectedPluginsById);
-    const showUpdateProgressTracker = useAppSelector(
-        (state) => state.obsidian.isUpdatingPlugins && !state.obsidian.isUpdateResultAcknowledged
-    );
+    const selectedPluginCount = useAppSelector(countSelectedPlugins);
+    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
         let titleText = 'Available Plugin Updates';
@@ -73,8 +72,9 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
     );
 
     return (
-        <PluginUpdatesList
+        <PluginUpdateList
             plugins={plugins}
+            selectedPluginCount={selectedPluginCount}
             selectedPluginsById={selectedPluginsById}
             handleToggleSelection={handleToggleSelection}
             handleInstall={handleClickInstall}
@@ -82,16 +82,18 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
     );
 };
 
-export const PluginUpdatesList: React.FC<{
+export const PluginUpdateList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
     selectedPluginsById: Record<string, boolean>;
+    selectedPluginCount: number;
     handleToggleSelection: (pluginId: string, selected: boolean) => any;
     handleInstall: () => Promise<any>;
 }> = ({
     plugins,
     isInitiallyExpanded,
     selectedPluginsById,
+    selectedPluginCount,
     handleToggleSelection,
     handleInstall,
 }) => {
@@ -115,15 +117,6 @@ export const PluginUpdatesList: React.FC<{
                     })),
                 })),
         [plugins]
-    );
-
-    const selectedPluginCount = React.useMemo(
-        () =>
-            Object.values(selectedPluginsById).reduce(
-                (count, isSelected) => count + (isSelected ? 1 : 0),
-                0
-            ),
-        [selectedPluginsById]
     );
 
     function handleToggleSelectedClicked(pluginId: string, e: React.SyntheticEvent) {
@@ -421,4 +414,4 @@ const ActionBarContainer = styled.div`
 
 const DivReleaseNoteText = styled.div``;
 
-export default AvailablePluginUpdatesContainer;
+export default PluginUpdateListConnected;
