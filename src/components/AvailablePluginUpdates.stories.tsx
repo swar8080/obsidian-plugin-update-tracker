@@ -5,6 +5,10 @@ import { PluginUpdatesList, PluginViewModel } from './AvailablePluginUpdates';
 
 type Story = ComponentStory<typeof PluginUpdatesList>;
 
+const PLUGIN_UPDATE_LIST_BASE = {
+    handleInstall: () => Promise.resolve(),
+};
+
 const MOST_RECENTLY_UPDATED_PLUGIN_TIME = dayjs().subtract(32, 'hours');
 
 let pluginId = 10;
@@ -31,6 +35,7 @@ const PLUGIN_VIEW_MODEL_BASE: PluginViewModel = {
             notes: 'Some release notes',
         },
     ],
+    hasInstallableReleaseAssets: true,
 };
 
 export const MixOfPlugins: Story = () => {
@@ -55,7 +60,10 @@ export const MixOfPlugins: Story = () => {
         name: 'Plugin 4',
     };
     return (
-        <PluginUpdatesList plugins={[PLUGIN_VIEW_MODEL_BASE, noReleaseNotes, plugin3, plugin4]} />
+        <PluginUpdatesList
+            plugins={[PLUGIN_VIEW_MODEL_BASE, noReleaseNotes, plugin3, plugin4]}
+            {...PLUGIN_UPDATE_LIST_BASE}
+        />
     );
 };
 
@@ -89,6 +97,7 @@ export const MarkdownParsingAndEnrichment: Story = () => {
                 pluginWithNotes('Contains HTML', '<h2>h2 header</h2><script>alert(1)</script>'),
                 pluginWithNotes('Contains emoji', 'fix: 🐛'),
             ]}
+            {...PLUGIN_UPDATE_LIST_BASE}
         />
     );
 };

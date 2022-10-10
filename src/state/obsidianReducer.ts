@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import values from 'lodash/values';
 import { App, normalizePath, PluginManifest } from 'obsidian';
-import { getReleaseAsset } from 'src/domain/api';
-import InstalledPluginReleases from 'src/domain/InstalledPluginReleases';
 import { State } from '.';
+import { getReleaseAsset } from '../domain/api';
+import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from '../domain/pluginSettings';
 
 export type ObsidianApp = App & {
