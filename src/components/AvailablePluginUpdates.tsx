@@ -13,7 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
-import { useAppDispatch } from '../state';
+import { useAppDispatch, useAppSelector } from '../state';
 import { updatePlugins } from '../state/obsidianReducer';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
@@ -26,6 +26,9 @@ interface AvailablePluginUpdatesProps {
 const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = ({ titleEl }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
     const dispatch = useAppDispatch();
+    const showUpdateProgressTracker = useAppSelector(
+        (state) => state.obsidian.isUpdatingPlugins && !state.obsidian.isUpdateResultAcknowledged
+    );
 
     React.useEffect(() => {
         let titleText = 'Available Plugin Updates';

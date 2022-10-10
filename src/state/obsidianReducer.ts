@@ -21,6 +21,7 @@ type ObsidianState = {
     settings: PluginSettings;
     isUpdatingPlugins: boolean;
     pluginUpdateProgress: PluginUpdateResult[];
+    isUpdateResultAcknowledged: boolean;
 };
 
 const DEFAULT_STATE: ObsidianState = {
@@ -29,6 +30,7 @@ const DEFAULT_STATE: ObsidianState = {
     settings: DEFAULT_PLUGIN_SETTINGS,
     isUpdatingPlugins: false,
     pluginUpdateProgress: [],
+    isUpdateResultAcknowledged: true,
 };
 
 export const updatePlugins = createAsyncThunk(
@@ -149,12 +151,16 @@ const obsidianStateSlice = createSlice({
         pluginUpdateFinished(state, action: PayloadAction<PluginUpdateResult>) {
             state.pluginUpdateProgress.push(action.payload);
         },
+        acknowledgePluginUpdateResults(state) {
+            state.isUpdateResultAcknowledged = true;
+        },
     },
     extraReducers: (builder) => {
         builder
             .addCase(updatePlugins.pending, (state) => {
                 state.isUpdatingPlugins = true;
                 state.pluginUpdateProgress = [];
+                state.isUpdateResultAcknowledged = false;
             })
             .addCase(updatePlugins.fulfilled, (state) => {
                 state.isUpdatingPlugins = false;
