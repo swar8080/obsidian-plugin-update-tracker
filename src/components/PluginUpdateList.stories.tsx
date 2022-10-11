@@ -9,6 +9,7 @@ const PLUGIN_UPDATE_LIST_BASE = {
     selectedPluginsById: {},
     selectedPluginCount: 0,
     handleToggleSelection: () => {},
+    handleToggleSelectAll: () => {},
     handleInstall: () => Promise.resolve(),
 };
 

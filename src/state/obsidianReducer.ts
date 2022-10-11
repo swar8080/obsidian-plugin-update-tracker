@@ -80,6 +80,17 @@ const obsidianStateSlice = createSlice({
             const { pluginId, selected } = action.payload;
             state.selectedPluginsById[pluginId] = selected;
         },
+        toggleSelectAllPlugins(
+            state,
+            action: PayloadAction<{ select: boolean; pluginIds: string[] }>
+        ) {
+            const { select, pluginIds } = action.payload;
+            state.selectedPluginsById = {};
+
+            if (select) {
+                pluginIds.forEach((pluginId) => (state.selectedPluginsById[pluginId] = true));
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -103,6 +114,7 @@ export const {
     syncSettings,
     syncPluginManifests,
     togglePluginSelection,
+    toggleSelectAllPlugins,
     pluginUpdateStatusChange,
     acknowledgePluginUpdateResults,
 } = obsidianStateSlice.actions;

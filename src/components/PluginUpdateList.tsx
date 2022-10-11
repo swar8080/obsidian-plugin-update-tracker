@@ -16,7 +16,7 @@ import enrichReleaseNotes from '../domain/releaseNoteEnricher';
 import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
 import { useAppDispatch, useAppSelector } from '../state';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
-import { togglePluginSelection } from '../state/obsidianReducer';
+import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
@@ -44,6 +44,11 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
 
     function handleToggleSelection(pluginId: string, selected: boolean) {
         dispatch(togglePluginSelection({ pluginId, selected }));
+    }
+
+    function handleToggleSelectAll(selectAll: boolean) {
+        const visiblePluginIds = allPluginReleases.map((release) => release.getPluginId());
+        dispatch(toggleSelectAllPlugins({ select: selectAll, pluginIds: visiblePluginIds }));
     }
 
     function handleClickInstall(): Promise<any> {
@@ -77,6 +82,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
             selectedPluginCount={selectedPluginCount}
             selectedPluginsById={selectedPluginsById}
             handleToggleSelection={handleToggleSelection}
+            handleToggleSelectAll={handleToggleSelectAll}
             handleInstall={handleClickInstall}
         />
     );
@@ -88,6 +94,7 @@ export const PluginUpdateList: React.FC<{
     selectedPluginsById: Record<string, boolean>;
     selectedPluginCount: number;
     handleToggleSelection: (pluginId: string, selected: boolean) => any;
+    handleToggleSelectAll: (selectAll: boolean) => void;
     handleInstall: () => Promise<any>;
 }> = ({
     plugins,
@@ -95,6 +102,7 @@ export const PluginUpdateList: React.FC<{
     selectedPluginsById,
     selectedPluginCount,
     handleToggleSelection,
+    handleToggleSelectAll,
     handleInstall,
 }) => {
     const sortedAndFormattedPluginData = React.useMemo(
@@ -124,12 +132,26 @@ export const PluginUpdateList: React.FC<{
         handleToggleSelection(pluginId, checkbox.checked);
     }
 
-    async function handleClickInstall() {
-        await handleInstall();
+    function handleClickInstall() {
+        handleInstall();
+    }
+
+    function handleClickSelectAll(e: React.SyntheticEvent) {
+        const checkbox = e.target as HTMLInputElement;
+        handleToggleSelectAll(checkbox.checked);
     }
 
     return (
         <>
+            {plugins.length > 1 && (
+                <DivSelectAll>
+                    <input
+                        type="checkbox"
+                        onClick={handleClickSelectAll}
+                        checked={selectedPluginCount === plugins.length}
+                    />
+                </DivSelectAll>
+            )}
             <DivPluginUpdateListContainer>
                 {sortedAndFormattedPluginData.map((plugin) => (
                     <PluginUpdates
@@ -263,6 +285,8 @@ const DivPluginUpdateListContainer = styled.div`
     background-color: var(--background-primary);
     color: var(--text-normal);
 `;
+
+const DivSelectAll = styled.div``;
 
 const DivPluginUpdateContainer = styled.div`
     display: flex;
