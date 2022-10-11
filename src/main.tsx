@@ -75,11 +75,11 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         statusIconEl.style.marginRight = '-0.25rem';
         renderRootComponent(
             statusIconEl,
-            <UpdateStatusIcon onClickViewUpdates={() => this.showAvailableUpdatesView()} />
+            <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
         );
     }
 
-    async showAvailableUpdatesView() {
+    async showPluginUpdateManagerView() {
         this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
 
         await this.app.workspace.getLeaf(false).setViewState({

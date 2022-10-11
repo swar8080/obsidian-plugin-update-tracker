@@ -72,7 +72,7 @@ export const PluginUpdateProgressTracker: React.FC<{
     let errorInstructions = '';
     if (githubRateLimitTimestamp) {
         const time = dayjs(githubRateLimitTimestamp);
-        errorInstructions = `Try again ${time.fromNow()}, and if that doesn't fix it report an issue `;
+        errorInstructions = `Try again ${time.fromNow()}, and if that doesn't fix it then report an issue `;
     } else {
         errorInstructions = `Try again or report an issue `;
     }

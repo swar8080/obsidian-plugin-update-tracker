@@ -29,6 +29,7 @@ export const updatePlugins = createAsyncThunk(
             (pluginId) => state.obsidian.selectedPluginsById[pluginId]
         );
 
+        let isRateLimited = false;
         for (const pluginId of selectedPluginIds) {
             const installedPlugin = allPluginsById[pluginId];
             const latestReleaseAssetIds = installedPlugin.getLatestReleaseAssetIds();
@@ -52,23 +53,18 @@ export const updatePlugins = createAsyncThunk(
                     !app.plugins?.enablePlugin ||
                     !app.plugins?.loadManifests
                 ) {
-                    success = false;
-                    continue;
+                    throw new Error('missing obsidian api');
                 }
                 if (!latestReleaseAssetIds?.mainJs || !latestReleaseAssetIds?.manifestJson) {
-                    success = false;
-                    continue;
+                    throw new Error('missing asset ids');
                 }
                 if (!pluginRepoPath) {
-                    success = false;
-                    continue;
+                    throw new Error('missing github repository path');
                 }
 
-                // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
-                await app.plugins.disablePlugin(pluginId);
-                didDisable = true;
-
-                if (!SIMULATE_UPDATE_PLUGINS) {
+                if (isRateLimited) {
+                    success = false;
+                } else if (!SIMULATE_UPDATE_PLUGINS) {
                     //download and install seperately to reduce the chances of only some of the new files being written to disk
                     const [mainJs, manifestJson, styleCss] = await Promise.all([
                         downloadPluginFile(latestReleaseAssetIds.mainJs, pluginRepoPath, dispatch),
@@ -83,6 +79,11 @@ export const updatePlugins = createAsyncThunk(
                             dispatch
                         ),
                     ]);
+
+                    // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
+                    await app.plugins.disablePlugin(pluginId);
+                    didDisable = true;
+
                     await Promise.all([
                         installPluginFile(pluginId, 'main.js', mainJs),
                         installPluginFile(pluginId, 'manifest.json', manifestJson),
@@ -100,12 +101,15 @@ export const updatePlugins = createAsyncThunk(
                     await app.plugins.enablePlugin(pluginId);
                 }
             } catch (err) {
-                //this could happen if hitting the public github api rate limit of 60 requests/hour per ip
-                console.warn('Error updating ' + pluginId, err);
+                console.error('Error updating ' + pluginId, err);
                 success = false;
 
+                if (err instanceof GithubRateLimitError) {
+                    isRateLimited = true;
+                }
+
                 if (isPluginEnabled && didDisable && app.plugins?.enablePlugin) {
-                    app.plugins.enablePlugin(pluginId);
+                    await app.plugins.enablePlugin(pluginId);
                 }
             }
 
@@ -138,9 +142,12 @@ async function downloadPluginFile(
 
     if (result.rateLimitResetTimestamp) {
         dispatch(githubRateLimit(result.rateLimitResetTimestamp));
+        throw new GithubRateLimitError();
     }
-    throw new Error('Rate limit error fetching file ' + assetId);
+    throw new Error('Unexpected error fetching file ' + assetId);
 }
+
+class GithubRateLimitError extends Error {}
 
 async function installPluginFile(pluginId: string, fileName: string, fileContents: string) {
     const configDir = normalizePath(app.vault.configDir);
