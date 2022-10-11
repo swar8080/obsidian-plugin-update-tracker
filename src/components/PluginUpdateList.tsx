@@ -141,6 +141,8 @@ export const PluginUpdateList: React.FC<{
         handleToggleSelectAll(checkbox.checked);
     }
 
+    const isSelectAllChecked = selectedPluginCount === plugins.length;
+
     return (
         <>
             {plugins.length > 1 && (
@@ -148,7 +150,8 @@ export const PluginUpdateList: React.FC<{
                     <input
                         type="checkbox"
                         onClick={handleClickSelectAll}
-                        checked={selectedPluginCount === plugins.length}
+                        checked={isSelectAllChecked}
+                        title={isSelectAllChecked ? 'Deselect All' : 'Select All'}
                     />
                 </DivSelectAll>
             )}
@@ -286,7 +289,13 @@ const DivPluginUpdateListContainer = styled.div`
     color: var(--text-normal);
 `;
 
-const DivSelectAll = styled.div``;
+const DivSelectAll = styled.div`
+    display: flex;
+    justify-content: flex-end;
+
+    padding-right: 0.1rem;
+    margin-bottom: 0.25rem;
+`;
 
 const DivPluginUpdateContainer = styled.div`
     display: flex;
