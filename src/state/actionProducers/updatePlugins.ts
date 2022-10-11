@@ -1,10 +1,10 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, ThunkDispatch } from '@reduxjs/toolkit';
 import { normalizePath } from 'obsidian';
 import { State } from '..';
 import { getReleaseAsset } from '../../domain/api';
 import InstalledPluginReleases from '../../domain/InstalledPluginReleases';
 import { sleep } from '../../domain/util/sleep';
-import { ObsidianApp, pluginUpdateStatusChange } from '../obsidianReducer';
+import { githubRateLimit, ObsidianApp, pluginUpdateStatusChange } from '../obsidianReducer';
 import { syncApp } from './syncApp';
 
 const SIMULATE_UPDATE_PLUGINS = process.env['OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'] === 'true';
@@ -71,9 +71,17 @@ export const updatePlugins = createAsyncThunk(
                 if (!SIMULATE_UPDATE_PLUGINS) {
                     //download and install seperately to reduce the chances of only some of the new files being written to disk
                     const [mainJs, manifestJson, styleCss] = await Promise.all([
-                        downloadPluginFile(latestReleaseAssetIds.mainJs, pluginRepoPath),
-                        downloadPluginFile(latestReleaseAssetIds.manifestJson, pluginRepoPath),
-                        downloadPluginFile(latestReleaseAssetIds.styleCss, pluginRepoPath),
+                        downloadPluginFile(latestReleaseAssetIds.mainJs, pluginRepoPath, dispatch),
+                        downloadPluginFile(
+                            latestReleaseAssetIds.manifestJson,
+                            pluginRepoPath,
+                            dispatch
+                        ),
+                        downloadPluginFile(
+                            latestReleaseAssetIds.styleCss,
+                            pluginRepoPath,
+                            dispatch
+                        ),
                     ]);
                     await Promise.all([
                         installPluginFile(pluginId, 'main.js', mainJs),
@@ -116,12 +124,22 @@ export const updatePlugins = createAsyncThunk(
 
 async function downloadPluginFile(
     assetId: number | undefined,
-    gitRepoPath: string
+    gitRepoPath: string,
+    dispatch: ThunkDispatch<any, any, any>
 ): Promise<string> {
     if (!assetId) {
         return '';
     }
-    return await getReleaseAsset(assetId, gitRepoPath);
+    const result = await getReleaseAsset(assetId, gitRepoPath);
+
+    if (result.success) {
+        return result.fileContents || '';
+    }
+
+    if (result.rateLimitResetTimestamp) {
+        dispatch(githubRateLimit(result.rateLimitResetTimestamp));
+    }
+    throw new Error('Rate limit error fetching file ' + assetId);
 }
 
 async function installPluginFile(pluginId: string, fileName: string, fileContents: string) {

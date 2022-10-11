@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import * as React from 'react';
 import styled from 'styled-components';
 import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
@@ -25,6 +26,9 @@ const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTracker
     const updateResults = useAppSelector((state) => state.obsidian.pluginUpdateProgress);
     const isUpdatingPlugins = useAppSelector((state) => state.obsidian.isUpdatingPlugins);
     const selectedPluginCount = useAppSelector(countSelectedPlugins);
+    const githubRateLimitTimestamp = useAppSelector(
+        (state) => state.obsidian.githubRateLimitResetTimestamp
+    );
     const dispatch = useAppDispatch();
 
     React.useEffect(() => {
@@ -49,6 +53,7 @@ const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTracker
             updateResults={updateResults}
             isUpdatingPlugins={isUpdatingPlugins}
             onAcknowledgeResults={onAcknowledgeResults}
+            githubRateLimitTimestamp={githubRateLimitTimestamp}
         />
     );
 };
@@ -56,12 +61,21 @@ const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTracker
 export const PluginUpdateProgressTracker: React.FC<{
     updateResults: PluginUpdateResult[];
     isUpdatingPlugins: boolean;
+    githubRateLimitTimestamp?: number;
     onAcknowledgeResults: () => any;
-}> = ({ updateResults, isUpdatingPlugins, onAcknowledgeResults }) => {
+}> = ({ updateResults, isUpdatingPlugins, githubRateLimitTimestamp, onAcknowledgeResults }) => {
     const failureCount = updateResults.reduce(
         (count, result) => count + (result.status === 'failure' ? 1 : 0),
         0
     );
+
+    let errorInstructions = '';
+    if (githubRateLimitTimestamp) {
+        const time = dayjs(githubRateLimitTimestamp);
+        errorInstructions = `Try again ${time.fromNow()}, and if that doesn't fix it report an issue `;
+    } else {
+        errorInstructions = `Try again or report an issue `;
+    }
 
     return (
         <DivPluginUpdateProgressTracker>
@@ -86,7 +100,7 @@ export const PluginUpdateProgressTracker: React.FC<{
                                 failureCount
                             )}`}</p>
                             <p>
-                                <span>Try again in an hour or report an issue </span>
+                                <span>{errorInstructions}</span>
                                 <a
                                     href="https://github.com/swar8080/obsidian-plugin-update-tracker/issues"
                                     target="_blank"

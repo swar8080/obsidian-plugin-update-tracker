@@ -22,6 +22,7 @@ type ObsidianState = {
     isUpdatingPlugins: boolean;
     pluginUpdateProgress: PluginUpdateResult[];
     isUpdateResultAcknowledged: boolean;
+    githubRateLimitResetTimestamp?: number;
 };
 
 const DEFAULT_STATE: ObsidianState = {
@@ -92,6 +93,9 @@ const obsidianStateSlice = createSlice({
                 pluginIds.forEach((pluginId) => (state.selectedPluginsById[pluginId] = true));
             }
         },
+        githubRateLimit(state, action: PayloadAction<number>) {
+            state.githubRateLimitResetTimestamp = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -99,6 +103,7 @@ const obsidianStateSlice = createSlice({
                 state.isUpdatingPlugins = true;
                 state.pluginUpdateProgress = [];
                 state.isUpdateResultAcknowledged = false;
+                state.githubRateLimitResetTimestamp = undefined;
             })
             .addCase(updatePlugins.fulfilled, (state) => {
                 state.isUpdatingPlugins = false;
@@ -118,5 +123,6 @@ export const {
     toggleSelectAllPlugins,
     pluginUpdateStatusChange,
     acknowledgePluginUpdateResults,
+    githubRateLimit,
 } = obsidianStateSlice.actions;
 export default obsidianStateSlice.reducer;
