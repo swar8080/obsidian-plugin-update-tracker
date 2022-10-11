@@ -3,11 +3,21 @@ import styled from 'styled-components';
 import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
 import { pluralize } from '../domain/util/pluralize';
 import { useAppDispatch, useAppSelector } from '../state';
-import { acknowledgePluginUpdateResults, PluginUpdateResult } from '../state/obsidianReducer';
+import {
+    acknowledgePluginUpdateResults,
+    PluginUpdateResult,
+    PluginUpdateStatus,
+} from '../state/obsidianReducer';
 
 interface PluginUpdateProgressTrackerProps {
     titleEl: HTMLElement | undefined;
 }
+
+const UPDATE_STATUS_ICON: Record<PluginUpdateStatus, string> = {
+    loading: '⌛',
+    success: '✅',
+    failure: '❌',
+};
 
 const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTrackerProps> = ({
     titleEl,
@@ -49,23 +59,32 @@ export const PluginUpdateProgressTracker: React.FC<{
     onAcknowledgeResults: () => any;
 }> = ({ updateResults, isUpdatingPlugins, onAcknowledgeResults }) => {
     const failureCount = updateResults.reduce(
-        (count, result) => count + (result.success ? 0 : 1),
+        (count, result) => count + (result.status === 'failure' ? 1 : 0),
         0
     );
 
     return (
         <DivPluginUpdateProgressTracker>
-            {/* <H2PluginUpdateProgressTracker>{headerMsg}</H2PluginUpdateProgressTracker> */}
             {updateResults.map((updateResult) => (
                 <PluginUpdateResultView updateResult={updateResult} key={updateResult.pluginName} />
             ))}
             {!isUpdatingPlugins && (
                 <DivCompletedNextSteps>
+                    <hr></hr>
+                    {failureCount === 0 && (
+                        <div>
+                            <p>{`${pluralize(
+                                'Plugin',
+                                updateResults.length
+                            )} successfully installed!`}</p>
+                        </div>
+                    )}
                     {failureCount > 0 && (
                         <div>
-                            <p>{`Completed with ${failureCount} failure${
-                                failureCount > 1 ? 's' : ''
-                            }`}</p>
+                            <p>{`Completed with ${failureCount} ${pluralize(
+                                'failure',
+                                failureCount
+                            )}`}</p>
                             <p>
                                 <span>Try again in an hour or report an issue </span>
                                 <a
@@ -91,7 +110,7 @@ const PluginUpdateResultView: React.FC<{ updateResult: PluginUpdateResult }> = (
         <DivPluginUpdateResult>
             <DivPluginUpdateResultName>{updateResult.pluginName}</DivPluginUpdateResultName>
             <DivPluginUpdateResultOutcome>
-                {updateResult.success ? '✅' : '❌'}
+                {UPDATE_STATUS_ICON[updateResult.status]}
             </DivPluginUpdateResultOutcome>
         </DivPluginUpdateResult>
     );

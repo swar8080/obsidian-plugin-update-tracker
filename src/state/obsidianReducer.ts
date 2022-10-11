@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import find from 'lodash/find';
 import { App, PluginManifest } from 'obsidian';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from '../domain/pluginSettings';
 import { updatePlugins } from './actionProducers/updatePlugins';
@@ -34,8 +35,10 @@ const DEFAULT_STATE: ObsidianState = {
 
 export type PluginUpdateResult = {
     pluginName: string;
-    success: boolean;
+    status: PluginUpdateStatus;
 };
+
+export type PluginUpdateStatus = 'loading' | 'success' | 'failure';
 
 const obsidianStateSlice = createSlice({
     name: 'obsidian',
@@ -54,8 +57,18 @@ const obsidianStateSlice = createSlice({
         syncSettings(state, action: PayloadAction<PluginSettings>) {
             state.settings = action.payload;
         },
-        pluginUpdateFinished(state, action: PayloadAction<PluginUpdateResult>) {
-            state.pluginUpdateProgress.push(action.payload);
+        pluginUpdateStatusChange(state, action: PayloadAction<PluginUpdateResult>) {
+            const update = action.payload;
+
+            const existing = find(
+                state.pluginUpdateProgress,
+                (plugin) => plugin.pluginName === update.pluginName
+            );
+            if (existing) {
+                existing.status = update.status;
+            } else {
+                state.pluginUpdateProgress.push(update);
+            }
         },
         acknowledgePluginUpdateResults(state) {
             state.isUpdateResultAcknowledged = true;
@@ -90,6 +103,7 @@ export const {
     syncSettings,
     syncPluginManifests,
     togglePluginSelection,
+    pluginUpdateStatusChange,
     acknowledgePluginUpdateResults,
 } = obsidianStateSlice.actions;
 export default obsidianStateSlice.reducer;

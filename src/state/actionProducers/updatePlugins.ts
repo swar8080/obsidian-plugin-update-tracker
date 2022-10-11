@@ -4,7 +4,7 @@ import { State } from '..';
 import { getReleaseAsset } from '../../domain/api';
 import InstalledPluginReleases from '../../domain/InstalledPluginReleases';
 import { sleep } from '../../domain/util/sleep';
-import { ObsidianApp, PluginUpdateResult } from '../obsidianReducer';
+import { ObsidianApp, pluginUpdateStatusChange } from '../obsidianReducer';
 import { syncApp } from './syncApp';
 
 const SIMULATE_UPDATE_PLUGINS = process.env['OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'] === 'true';
@@ -38,6 +38,13 @@ export const updatePlugins = createAsyncThunk(
 
             let success: boolean;
             try {
+                dispatch(
+                    pluginUpdateStatusChange({
+                        pluginName: installedPlugin.getPluginName(),
+                        status: 'loading',
+                    })
+                );
+
                 //Just to be safe, since these are undocumented apis
                 if (!app.plugins?.disablePlugin || !app.plugins?.enablePlugin) {
                     success = false;
@@ -50,9 +57,6 @@ export const updatePlugins = createAsyncThunk(
                 if (!pluginRepoPath) {
                     success = false;
                     continue;
-                }
-
-                if (SIMULATE_UPDATE_PLUGINS) {
                 }
 
                 // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
@@ -85,11 +89,12 @@ export const updatePlugins = createAsyncThunk(
                 }
             }
 
-            const updateResult: PluginUpdateResult = {
-                success,
-                pluginName: installedPlugin.getPluginName(),
-            };
-            dispatch({ type: 'obsidian/pluginUpdateFinished', payload: updateResult });
+            dispatch(
+                pluginUpdateStatusChange({
+                    pluginName: installedPlugin.getPluginName(),
+                    status: success ? 'success' : 'failure',
+                })
+            );
         }
 
         //update snapshot of plugin manifests which also will filter out the plugins that are now up-to-date

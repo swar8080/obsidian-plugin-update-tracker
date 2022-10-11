@@ -10,21 +10,21 @@ const BASE_PLUGIN_UPDATE_PROGRESS_TRACKER = {
 };
 
 const MULTIPLE_RESULTS: PluginUpdateResult[] = [
-    { pluginName: 'Plugin1', success: false },
-    { pluginName: 'Plugin2', success: true },
-    { pluginName: 'Plugin3', success: false },
-    { pluginName: 'Very Long Plugin Name That Takes Up Lots of Space', success: false },
-    { pluginName: 'Medium Length Plugin Name', success: false },
-    { pluginName: 'Plugin4', success: false },
-    { pluginName: 'Plugin5', success: true },
-    { pluginName: 'Plugin6', success: true },
+    { pluginName: 'Plugin1', status: 'failure' },
+    { pluginName: 'Plugin2', status: 'success' },
+    { pluginName: 'Plugin3', status: 'failure' },
+    { pluginName: 'Very Long Plugin Name That Takes Up Lots of Space', status: 'failure' },
+    { pluginName: 'Medium Length Plugin Name', status: 'failure' },
+    { pluginName: 'Plugin4', status: 'failure' },
+    { pluginName: 'Plugin5', status: 'success' },
+    { pluginName: 'Plugin6', status: 'success' },
+    { pluginName: 'Plugin7', status: 'loading' },
 ];
 
 export const AllUpdatesInProgress_1Plugin: Story = () => (
     <PluginUpdateProgressTracker
         isUpdatingPlugins={true}
         updateResults={[]}
-        numberOfPluginsBeingUpdated={1}
         {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
     />
 );
@@ -33,7 +33,6 @@ export const AllUpdatesInProgress_10Plugins: Story = () => (
     <PluginUpdateProgressTracker
         isUpdatingPlugins={true}
         updateResults={[]}
-        numberOfPluginsBeingUpdated={10}
         {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
     />
 );
@@ -41,8 +40,7 @@ export const AllUpdatesInProgress_10Plugins: Story = () => (
 export const OneUpdateSuccessful: Story = () => (
     <PluginUpdateProgressTracker
         isUpdatingPlugins={true}
-        updateResults={[{ pluginName: 'Plugin1', success: true }]}
-        numberOfPluginsBeingUpdated={1}
+        updateResults={[{ pluginName: 'Plugin1', status: 'success' }]}
         {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
     />
 );
@@ -50,8 +48,7 @@ export const OneUpdateSuccessful: Story = () => (
 export const OneUpdateFailed: Story = () => (
     <PluginUpdateProgressTracker
         isUpdatingPlugins={true}
-        updateResults={[{ pluginName: 'Plugin1', success: false }]}
-        numberOfPluginsBeingUpdated={1}
+        updateResults={[{ pluginName: 'Plugin1', status: 'failure' }]}
         {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
     />
 );
@@ -60,7 +57,25 @@ export const MultipleResults: Story = () => (
     <PluginUpdateProgressTracker
         isUpdatingPlugins={true}
         updateResults={MULTIPLE_RESULTS}
-        numberOfPluginsBeingUpdated={MULTIPLE_RESULTS.length}
+        {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
+    />
+);
+
+export const CompletedSuccessfullyOnePlugin: Story = () => (
+    <PluginUpdateProgressTracker
+        isUpdatingPlugins={false}
+        updateResults={[{ pluginName: 'Plugin1', status: 'success' }]}
+        {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
+    />
+);
+
+export const CompletedSuccessfullyMultiplePlugins: Story = () => (
+    <PluginUpdateProgressTracker
+        isUpdatingPlugins={false}
+        updateResults={[
+            { pluginName: 'Plugin1', status: 'success' },
+            { pluginName: 'Plugin2', status: 'success' },
+        ]}
         {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
     />
 );
@@ -69,7 +84,6 @@ export const CompletedWithMultipleResults: Story = () => (
     <PluginUpdateProgressTracker
         isUpdatingPlugins={false}
         updateResults={MULTIPLE_RESULTS}
-        numberOfPluginsBeingUpdated={MULTIPLE_RESULTS.length}
         {...BASE_PLUGIN_UPDATE_PROGRESS_TRACKER}
     />
 );

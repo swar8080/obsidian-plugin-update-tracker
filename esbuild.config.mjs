@@ -20,10 +20,10 @@ dotenv.config({
 })
 
 if (prod && existsSync('.env.local.prod')) {
-	dotenv.config({path: '.env.local.prod'})
+	dotenv.config({path: '.env.local.prod', override: true})
 }
 else if (existsSync('.env.local.dev')) {
-	dotenv.config({path: '.env.local.dev'})
+	dotenv.config({path: '.env.local.dev', override: true})
 }
 
 
