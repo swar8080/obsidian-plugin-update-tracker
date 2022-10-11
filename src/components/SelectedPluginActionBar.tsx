@@ -23,10 +23,14 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
 };
 
 const DivSelectedPluginActionBarContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
     padding: 0.5rem 2rem;
 
     h4 {
-        margin: 0;
+        margin: 0 0 0.25rem 0;
         text-align: center;
     }
 
