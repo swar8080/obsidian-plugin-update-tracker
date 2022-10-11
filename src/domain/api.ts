@@ -18,5 +18,10 @@ export const getReleaseAsset = async (assetId: number, githubRepo: string): Prom
         headers: new Headers({
             Accept: 'application/octet-stream',
         }),
-    }).then((res) => res.text());
+    }).then((res) => {
+        if (res.status !== 200) {
+            throw res;
+        }
+        return res.text();
+    });
 };
