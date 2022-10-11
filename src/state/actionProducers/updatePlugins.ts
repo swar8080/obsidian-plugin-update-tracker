@@ -37,6 +37,7 @@ export const updatePlugins = createAsyncThunk(
                 state.obsidian.enabledPlugins != null && pluginId in state.obsidian.enabledPlugins;
 
             let success: boolean;
+            let didDisable = false;
             try {
                 dispatch(
                     pluginUpdateStatusChange({
@@ -46,7 +47,11 @@ export const updatePlugins = createAsyncThunk(
                 );
 
                 //Just to be safe, since these are undocumented apis
-                if (!app.plugins?.disablePlugin || !app.plugins?.enablePlugin) {
+                if (
+                    !app.plugins?.disablePlugin ||
+                    !app.plugins?.enablePlugin ||
+                    !app.plugins?.loadManifests
+                ) {
                     success = false;
                     continue;
                 }
@@ -61,6 +66,7 @@ export const updatePlugins = createAsyncThunk(
 
                 // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
                 await app.plugins.disablePlugin(pluginId);
+                didDisable = true;
 
                 if (!SIMULATE_UPDATE_PLUGINS) {
                     //download and install seperately to reduce the chances of only some of the new files being written to disk
@@ -79,13 +85,19 @@ export const updatePlugins = createAsyncThunk(
                     await sleep(Math.random() * 5000);
                     success = Math.random() > 0.2;
                 }
+
+                //thanks https://github.com/TfTHacker/obsidian42-brat/blob/main/src/features/BetaPlugins.ts
+                await app.plugins.loadManifests();
+                if (isPluginEnabled) {
+                    await app.plugins.enablePlugin(pluginId);
+                }
             } catch (err) {
                 //this could happen if hitting the public github api rate limit of 60 requests/hour per ip
                 console.warn('Error updating ' + pluginId, err);
                 success = false;
-            } finally {
-                if (isPluginEnabled && app.plugins?.enablePlugin) {
-                    await app.plugins.enablePlugin(pluginId);
+
+                if (isPluginEnabled && didDisable && app.plugins?.enablePlugin) {
+                    app.plugins.enablePlugin(pluginId);
                 }
             }
 

@@ -10,6 +10,7 @@ export type ObsidianApp = App & {
         enabledPlugins?: Set<string>;
         disablePlugin?: (pluginId: string) => Promise<any>;
         enablePlugin?: (pluginId: string) => Promise<any>;
+        loadManifests?: () => Promise<any>;
     };
 };
 
