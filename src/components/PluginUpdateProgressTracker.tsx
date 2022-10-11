@@ -108,10 +108,12 @@ const PluginUpdateResultView: React.FC<{ updateResult: PluginUpdateResult }> = (
 }) => {
     return (
         <DivPluginUpdateResult>
-            <DivPluginUpdateResultName>{updateResult.pluginName}</DivPluginUpdateResultName>
-            <DivPluginUpdateResultOutcome>
-                {UPDATE_STATUS_ICON[updateResult.status]}
-            </DivPluginUpdateResultOutcome>
+            <DivPluginUpdateResultText>
+                <span>{updateResult.pluginName}</span>
+                <SpanUpdateResultIcon>
+                    {UPDATE_STATUS_ICON[updateResult.status]}
+                </SpanUpdateResultIcon>
+            </DivPluginUpdateResultText>
         </DivPluginUpdateResult>
     );
 };
@@ -123,10 +125,16 @@ const DivPluginUpdateResult = styled.div`
     flex-direction: row;
 `;
 
-const DivPluginUpdateResultName = styled.div``;
+const DivPluginUpdateResultText = styled.div``;
 
-const DivPluginUpdateResultOutcome = styled.div``;
+const SpanUpdateResultIcon = styled.span`
+    padding-left: 0.35rem;
+`;
 
-const DivCompletedNextSteps = styled.div``;
+const DivCompletedNextSteps = styled.div`
+    hr {
+        margin: 1rem 0 0.5rem 0;
+    }
+`;
 
 export default PluginUpdateProgressTrackerConnected;
