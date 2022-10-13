@@ -1,4 +1,12 @@
-import { App, ItemView, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from 'obsidian';
+import {
+    App,
+    ItemView,
+    Plugin,
+    PluginSettingTab,
+    requireApiVersion,
+    Setting,
+    WorkspaceLeaf,
+} from 'obsidian';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -69,9 +77,13 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
     renderUpdateStatusIcon() {
         const statusIconEl = this.addStatusBarItem();
-        statusIconEl.style.padding = '0';
-        statusIconEl.style.marginLeft = '-0.25rem';
-        statusIconEl.style.marginRight = '-0.25rem';
+
+        if (!requireApiVersion('1.0.0')) {
+            statusIconEl.style.padding = '0';
+            statusIconEl.style.marginLeft = '-0.25rem';
+            statusIconEl.style.marginRight = '-0.25rem';
+        }
+
         renderRootComponent(
             statusIconEl,
             <UpdateStatusIcon onClickViewUpdates={() => this.showAvailableUpdatesView()} />
