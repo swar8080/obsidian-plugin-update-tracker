@@ -217,9 +217,9 @@ const PluginUpdates: React.FC<{
         <DivPluginUpdateContainer>
             <DivPluginUpdateHeaderContainer>
                 <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
-                <div>
+                <DivSelectPluginContainer>
                     <input type="checkbox" checked={selected} onChange={onToggleSelectedClicked} />
-                </div>
+                </DivSelectPluginContainer>
             </DivPluginUpdateHeaderContainer>
             <DivReleaseSummaryContainer>
                 {isLastUpdatedTimeKnown && (
@@ -275,7 +275,8 @@ const PluginUpdates: React.FC<{
     );
 };
 
-const BORDER = '2px var(--background-modifier-border) solid';
+const BORDER_WIDTH = '2px';
+const BORDER = `${BORDER_WIDTH} var(--background-modifier-border) solid`;
 
 const DivPluginUpdateListContainer = styled.div`
     display: flex;
@@ -293,8 +294,12 @@ const DivSelectAll = styled.div`
     display: flex;
     justify-content: flex-end;
 
-    padding-right: 0.1rem;
-    margin-bottom: 0.25rem;
+    border: ${BORDER_WIDTH} transparent solid;
+    padding-bottom: 0.25rem;
+    padding-right: 0.25rem;
+    input {
+        margin: 0;
+    }
 `;
 
 const DivPluginUpdateContainer = styled.div`
@@ -322,6 +327,14 @@ const H2PluginName = styled.h2`
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
     padding-bottom: 0.5rem;
+`;
+
+const DivSelectPluginContainer = styled.div`
+    padding-top: 0.25rem;
+    padding-right: 0.25rem;
+    input {
+        margin: 0;
+    }
 `;
 
 const DivReleaseSummaryContainer = styled.div`
