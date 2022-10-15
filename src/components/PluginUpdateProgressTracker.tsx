@@ -4,11 +4,8 @@ import styled from 'styled-components';
 import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
 import { pluralize } from '../domain/util/pluralize';
 import { useAppDispatch, useAppSelector } from '../state';
-import {
-    acknowledgePluginUpdateResults,
-    PluginUpdateResult,
-    PluginUpdateStatus,
-} from '../state/obsidianReducer';
+import { acknowledgeUpdateResult } from '../state/actionProducers/acknowledgeUpdateResult';
+import { PluginUpdateResult, PluginUpdateStatus } from '../state/obsidianReducer';
 
 interface PluginUpdateProgressTrackerProps {
     titleEl: HTMLElement | undefined;
@@ -45,7 +42,7 @@ const PluginUpdateProgressTrackerConnected: React.FC<PluginUpdateProgressTracker
     }, [titleEl, selectedPluginCount, isUpdatingPlugins]);
 
     function onAcknowledgeResults() {
-        dispatch(acknowledgePluginUpdateResults());
+        dispatch(acknowledgeUpdateResult());
     }
 
     return (

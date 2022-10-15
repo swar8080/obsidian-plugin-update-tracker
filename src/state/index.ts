@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { AnyAction, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import logger from 'redux-logger';
 import ObsidianReducer from './obsidianReducer';
@@ -22,3 +22,5 @@ type Dispatcher = typeof store.dispatch;
 
 export const useAppDispatch: () => Dispatcher = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<State> = useSelector;
+
+export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, State, unknown, AnyAction>;

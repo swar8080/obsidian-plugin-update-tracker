@@ -21,13 +21,14 @@ export const DEFAULT_FILTERS: PluginFilters = {
 };
 
 const filter = (
-    filters: PluginFilters,
+    filterOverrides: Partial<PluginFilters>,
     pluginSettings: PluginSettings,
     installedPlugins: PluginManifest[],
     enabledPlugins: Record<string, boolean> | undefined,
     releases: PluginReleases[]
 ): InstalledPluginReleases[] => {
     const allPlugins = InstalledPluginReleases.create(installedPlugins, releases);
+    const filters = Object.assign({}, filterOverrides, DEFAULT_FILTERS);
 
     return allPlugins.filter((plugin) => {
         let include = true;

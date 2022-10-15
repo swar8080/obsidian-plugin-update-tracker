@@ -38,7 +38,10 @@ export class S3PluginRepository implements PluginRepository {
         const fullPluginMap = await this.getFullPluginMap();
 
         return pluginIds
-            .filter((pluginId) => pluginId in fullPluginMap)
+            .filter(
+                (pluginId) =>
+                    pluginId in fullPluginMap || pluginId === 'obsidian-plugin-update-tracker'
+            )
             .reduce((combined, pluginId) => {
                 combined[pluginId] = fullPluginMap[pluginId];
                 return combined;

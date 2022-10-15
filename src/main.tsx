@@ -18,7 +18,7 @@ import { fetchReleases } from './state/actionProducers/fetchReleases';
 import { syncApp } from './state/actionProducers/syncApp';
 import { syncSettings } from './state/obsidianReducer';
 
-const PLUGIN_UPDATES_MANAGER_VIEW_TYPE = 'swar8080/AVAILABLE_PLUGIN_UPDATES';
+export const PLUGIN_UPDATES_MANAGER_VIEW_TYPE = 'swar8080/AVAILABLE_PLUGIN_UPDATES';
 
 const PLUGIN_UPDATE_POLLING_MS =
     parseInt(process.env['OBSIDIAN_APP_RELEASE_POLLING_SECONDS'] || '99999999') * 1000;

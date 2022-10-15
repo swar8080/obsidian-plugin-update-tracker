@@ -72,7 +72,7 @@ const obsidianStateSlice = createSlice({
                 state.pluginUpdateProgress.push(update);
             }
         },
-        acknowledgePluginUpdateResults(state) {
+        acknowledgedPluginUpdateResults(state) {
             state.isUpdateResultAcknowledged = true;
         },
         togglePluginSelection(
@@ -122,7 +122,7 @@ export const {
     togglePluginSelection,
     toggleSelectAllPlugins,
     pluginUpdateStatusChange,
-    acknowledgePluginUpdateResults,
+    acknowledgedPluginUpdateResults,
     githubRateLimit,
 } = obsidianStateSlice.actions;
 export default obsidianStateSlice.reducer;
