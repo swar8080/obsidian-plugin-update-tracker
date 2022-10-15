@@ -13,10 +13,10 @@ import { Provider } from 'react-redux';
 import PluginUpdateManager from './components/PluginUpdateManager';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
-import { store } from './state';
+import { RESET_ACTION, store } from './state';
 import { fetchReleases } from './state/actionProducers/fetchReleases';
 import { syncApp } from './state/actionProducers/syncApp';
-import { syncSettings } from './state/obsidianReducer';
+import { syncSettings, syncThisPluginId } from './state/obsidianReducer';
 
 export const PLUGIN_UPDATES_MANAGER_VIEW_TYPE = 'swar8080/AVAILABLE_PLUGIN_UPDATES';
 
@@ -33,6 +33,10 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
             PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
             (leaf) => new PluginUpdateManagerView(leaf)
         );
+
+        //reset the store in-case this plugin was just updated and then reloaded
+        store.dispatch(RESET_ACTION);
+        store.dispatch(syncThisPluginId(this.manifest.id));
 
         await this.loadSettings();
         this.pollForInstalledPluginVersions();

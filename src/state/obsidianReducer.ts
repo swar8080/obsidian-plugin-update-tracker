@@ -15,6 +15,7 @@ export type ObsidianApp = App & {
 };
 
 type ObsidianState = {
+    thisPluginId: string;
     pluginManifests: PluginManifest[];
     enabledPlugins?: Record<string, boolean>;
     settings: PluginSettings;
@@ -26,6 +27,7 @@ type ObsidianState = {
 };
 
 const DEFAULT_STATE: ObsidianState = {
+    thisPluginId: '',
     pluginManifests: [],
     enabledPlugins: undefined,
     settings: DEFAULT_PLUGIN_SETTINGS,
@@ -36,6 +38,7 @@ const DEFAULT_STATE: ObsidianState = {
 };
 
 export type PluginUpdateResult = {
+    pluginId: string;
     pluginName: string;
     status: PluginUpdateStatus;
 };
@@ -55,6 +58,9 @@ const obsidianStateSlice = createSlice({
         ) {
             state.pluginManifests = action.payload.manifests;
             state.enabledPlugins = action.payload.enabledPlugins;
+        },
+        syncThisPluginId(state, action: PayloadAction<string>) {
+            state.thisPluginId = action.payload;
         },
         syncSettings(state, action: PayloadAction<PluginSettings>) {
             state.settings = action.payload;
@@ -117,6 +123,7 @@ const obsidianStateSlice = createSlice({
 });
 
 export const {
+    syncThisPluginId,
     syncSettings,
     syncPluginManifests,
     togglePluginSelection,

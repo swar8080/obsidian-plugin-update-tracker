@@ -149,7 +149,7 @@ export const PluginUpdateList: React.FC<{
                 <DivSelectAll>
                     <input
                         type="checkbox"
-                        onClick={handleClickSelectAll}
+                        onChange={handleClickSelectAll}
                         checked={isSelectAllChecked}
                         title={isSelectAllChecked ? 'Deselect All' : 'Select All'}
                     />

@@ -5,6 +5,6 @@
 	"minAppVersion": "0.15.0",
 	"description": "Know when installed plugins have updates and evaluate the risk of upgrading",
 	"author": "Obsidian",
-	"authorUrl": "https://github.com/swar8080/obsidian-plugin-update-checker",
+	"authorUrl": "https://github.com/swar8080/obsidian-plugin-update-tracker",
 	"isDesktopOnly": false
 }

@@ -36,12 +36,14 @@ export const updatePlugins = createAsyncThunk(
             const pluginRepoPath = installedPlugin.getRepoPath();
             const isPluginEnabled =
                 state.obsidian.enabledPlugins != null && pluginId in state.obsidian.enabledPlugins;
+            const isUpdatingThisPlugin = pluginId === state.obsidian.thisPluginId;
 
             let success: boolean;
             let didDisable = false;
             try {
                 dispatch(
                     pluginUpdateStatusChange({
+                        pluginId,
                         pluginName: installedPlugin.getPluginName(),
                         status: 'loading',
                     })
@@ -80,9 +82,11 @@ export const updatePlugins = createAsyncThunk(
                         ),
                     ]);
 
-                    // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
-                    await app.plugins.disablePlugin(pluginId);
-                    didDisable = true;
+                    if (!isUpdatingThisPlugin) {
+                        // Wait for any other queued/in-progress reloads to finish, based on https://github.com/pjeby/hot-reload/blob/master/main.js
+                        await app.plugins.disablePlugin(pluginId);
+                        didDisable = true;
+                    }
 
                     await Promise.all([
                         installPluginFile(pluginId, 'main.js', mainJs),
@@ -97,7 +101,7 @@ export const updatePlugins = createAsyncThunk(
 
                 //thanks https://github.com/TfTHacker/obsidian42-brat/blob/main/src/features/BetaPlugins.ts
                 await app.plugins.loadManifests();
-                if (isPluginEnabled) {
+                if (isPluginEnabled && didDisable) {
                     await app.plugins.enablePlugin(pluginId);
                 }
             } catch (err) {
@@ -115,6 +119,7 @@ export const updatePlugins = createAsyncThunk(
 
             dispatch(
                 pluginUpdateStatusChange({
+                    pluginId,
                     pluginName: installedPlugin.getPluginName(),
                     status: success ? 'success' : 'failure',
                 })
