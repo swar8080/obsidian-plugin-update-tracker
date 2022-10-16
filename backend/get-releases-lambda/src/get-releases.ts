@@ -91,7 +91,9 @@ export class GetReleases {
         }
 
         try {
-            await this.pluginReleaseRepository.save(releaseRecordUpdates);
+            if (releaseRecordUpdates.length > 0) {
+                await this.pluginReleaseRepository.save(releaseRecordUpdates);
+            }
         } catch (err) {
             console.error('Error saving release record updates', releaseRecordUpdates, err);
         }
