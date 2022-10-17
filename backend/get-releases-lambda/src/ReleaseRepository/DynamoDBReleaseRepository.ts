@@ -5,36 +5,8 @@ import {
     BatchGetCommandOutput,
     BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { PluginFileAssetIds } from '../../../shared-types';
-import { isEmpty, partition } from './util';
-
-export interface ReleaseRepository {
-    //Sorted from most to least recent
-    getReleases(pluginIds: string[]): Promise<PluginReleasesRecord[]>;
-    save(records: PluginReleasesRecord[]): Promise<void>;
-}
-
-export type PluginReleasesRecord = {
-    pluginId: string;
-    pluginRepo: string;
-
-    releases: {
-        id: number;
-        versionName: string;
-        versionNumber: string;
-        notes: string;
-        areNotesTruncated: boolean;
-        downloads: number;
-        publishedAt: string;
-        sourceCodeUpdatedAt: string;
-        fileAssetIds?: PluginFileAssetIds;
-        minObsidianVersion?: string;
-        manifestLastUpdatedAt?: string;
-    }[];
-
-    lastFetchedFromGithub: string;
-    lastFetchedETag: string;
-};
+import { PluginReleasesRecord, ReleaseRepository } from '.';
+import { isEmpty, partition } from '../util';
 
 const DDB_MAX_WRITE_BATCH_SIZE = 25;
 
