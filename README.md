@@ -80,7 +80,7 @@ Vote on or suggest other features here: https://strawpoll.com/polls/NMnQBOJwWg6
 
 The API used to get plugin version info is free for anyone to use. This could be helpful for alerting your plugin's users about updates in a custom way.
 
-The API uses cacheing/servless to keep costs low, avoid hitting github rate limits, and scale automatically. Note that results are currently cached for 30 minutes, and a cache miss can have a couple seconds latency.
+The API uses cacheing/servless to keep costs low, avoid hitting github rate limits, and scale automatically. Note that results are currently cached for 30 minutes so a large number of cache misses can cause high latency.
 
 
 Request:

@@ -31,7 +31,12 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
                     'OPUC_RELEASES_FETCHED_PER_PLUGIN',
                     'OPUC_MAX_RELEASE_NOTE_LENGTH',
                     'OPUC_MAX_MANIFESTS_TO_FETCH_PER_PLUGIN',
+                    'OPUC_USE_DYNAMODB_RELEASE_REPOSITORY',
+                    'OPUC_USE_REDIS_RELEASE_REPOSITORY',
+                    'OPUC_REDIS_URL',
+                    'OPUC_REDIS_PASSWORD',
                 ]),
+                OPUC_IS_PROD: deployment.isProd.toString(),
             },
             bundling: {
                 minify: false,
