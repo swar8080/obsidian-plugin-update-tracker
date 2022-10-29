@@ -13,15 +13,23 @@ import ReactMarkdown from 'react-markdown';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
+import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
+import { useAppDispatch, useAppSelector } from '../state';
+import { updatePlugins } from '../state/actionProducers/updatePlugins';
+import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
+import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
 
-interface AvailablePluginUpdatesProps {
+interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
 }
 
-const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = ({ titleEl }) => {
+const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
+    const selectedPluginsById = useAppSelector((state) => state.obsidian.selectedPluginsById);
+    const selectedPluginCount = useAppSelector(countSelectedPlugins);
+    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
         let titleText = 'Available Plugin Updates';
@@ -34,6 +42,19 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
         }
     }, [titleEl, allPluginReleases.length]);
 
+    function handleToggleSelection(pluginId: string, selected: boolean) {
+        dispatch(togglePluginSelection({ pluginId, selected }));
+    }
+
+    function handleToggleSelectAll(selectAll: boolean) {
+        const visiblePluginIds = allPluginReleases.map((release) => release.getPluginId());
+        dispatch(toggleSelectAllPlugins({ select: selectAll, pluginIds: visiblePluginIds }));
+    }
+
+    function handleClickInstall(): Promise<any> {
+        return dispatch(updatePlugins());
+    }
+
     const plugins: PluginViewModel[] = React.useMemo(
         () =>
             allPluginReleases.map((pluginReleases) => ({
@@ -44,23 +65,46 @@ const AvailablePluginUpdatesContainer: React.FC<AvailablePluginUpdatesProps> = (
                 githubRepositoryUrl: pluginReleases.getPluginRepositoryUrl(),
                 installedVersionNumber: pluginReleases.getInstalledVersionNumber(),
                 latestInstallableVersionNumber: pluginReleases.getLatestVersionNumber(),
-                releaseNotes: pluginReleases.getNewReleases(true).map((release) => ({
+                releaseNotes: pluginReleases.getUninstalledNewReleases(true).map((release) => ({
                     releaseId: release.releaseId,
                     versionName: release.versionName,
                     versionNumber: release.versionNumber,
                     notes: release.notes,
                 })),
+                hasInstallableReleaseAssets: !!pluginReleases.getLatestReleaseAssetIds(),
             })),
         [allPluginReleases]
     );
 
-    return <PluginUpdatesList plugins={plugins} />;
+    return (
+        <PluginUpdateList
+            plugins={plugins}
+            selectedPluginCount={selectedPluginCount}
+            selectedPluginsById={selectedPluginsById}
+            handleToggleSelection={handleToggleSelection}
+            handleToggleSelectAll={handleToggleSelectAll}
+            handleInstall={handleClickInstall}
+        />
+    );
 };
 
-export const PluginUpdatesList: React.FC<{
+export const PluginUpdateList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
-}> = ({ plugins, isInitiallyExpanded }) => {
+    selectedPluginsById: Record<string, boolean>;
+    selectedPluginCount: number;
+    handleToggleSelection: (pluginId: string, selected: boolean) => any;
+    handleToggleSelectAll: (selectAll: boolean) => void;
+    handleInstall: () => Promise<any>;
+}> = ({
+    plugins,
+    isInitiallyExpanded,
+    selectedPluginsById,
+    selectedPluginCount,
+    handleToggleSelection,
+    handleToggleSelectAll,
+    handleInstall,
+}) => {
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
             plugins
@@ -83,16 +127,56 @@ export const PluginUpdatesList: React.FC<{
         [plugins]
     );
 
+    function handleToggleSelectedClicked(pluginId: string, e: React.SyntheticEvent) {
+        const checkbox = e.target as HTMLInputElement;
+        handleToggleSelection(pluginId, checkbox.checked);
+    }
+
+    function handleClickInstall() {
+        handleInstall();
+    }
+
+    function handleClickSelectAll(e: React.SyntheticEvent) {
+        const checkbox = e.target as HTMLInputElement;
+        handleToggleSelectAll(checkbox.checked);
+    }
+
+    const isSelectAllChecked = selectedPluginCount === plugins.length;
+
     return (
-        <DivPluginUpdateListContainer>
-            {sortedAndFormattedPluginData.map((plugin) => (
-                <PluginUpdates
-                    plugin={plugin}
-                    key={plugin.id}
-                    isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
-                />
-            ))}
-        </DivPluginUpdateListContainer>
+        <>
+            {plugins.length > 1 && (
+                <DivSelectAll>
+                    <input
+                        type="checkbox"
+                        onChange={handleClickSelectAll}
+                        checked={isSelectAllChecked}
+                        title={isSelectAllChecked ? 'Deselect All' : 'Select All'}
+                    />
+                </DivSelectAll>
+            )}
+            <DivPluginUpdateListContainer>
+                {sortedAndFormattedPluginData.map((plugin) => (
+                    <PluginUpdates
+                        plugin={plugin}
+                        key={plugin.id}
+                        isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
+                        selectable={plugin.hasInstallableReleaseAssets}
+                        selected={!!selectedPluginsById[plugin.id]}
+                        onToggleSelectedClicked={(e) => handleToggleSelectedClicked(plugin.id, e)}
+                    />
+                ))}
+            </DivPluginUpdateListContainer>
+
+            {selectedPluginCount > 0 && (
+                <ActionBarContainer>
+                    <SelectedPluginActionBar
+                        numberOfPluginsSelected={selectedPluginCount}
+                        onClickInstall={handleClickInstall}
+                    />
+                </ActionBarContainer>
+            )}
+        </>
     );
 };
 
@@ -110,12 +194,16 @@ export type PluginViewModel = {
         versionNumber: string;
         notes: string;
     }[];
+    hasInstallableReleaseAssets: boolean;
 };
 
-const PluginUpdates: React.FC<{ plugin: PluginViewModel; isInitiallyExpanded: boolean }> = ({
-    plugin,
-    isInitiallyExpanded,
-}) => {
+const PluginUpdates: React.FC<{
+    plugin: PluginViewModel;
+    isInitiallyExpanded: boolean;
+    selectable: boolean;
+    selected: boolean;
+    onToggleSelectedClicked: (e: React.SyntheticEvent) => void;
+}> = ({ plugin, isInitiallyExpanded, selected, onToggleSelectedClicked }) => {
     const [isReleaseNotesExpanded, setIsReleaseNotesExpanded] = React.useState(isInitiallyExpanded);
     const hasReleaseNotes =
         find(plugin.releaseNotes, (releaseNote) => !isEmpty(releaseNote.notes)) != null;
@@ -127,7 +215,12 @@ const PluginUpdates: React.FC<{ plugin: PluginViewModel; isInitiallyExpanded: bo
 
     return (
         <DivPluginUpdateContainer>
-            <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
+            <DivPluginUpdateHeaderContainer>
+                <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
+                <DivSelectPluginContainer>
+                    <input type="checkbox" checked={selected} onChange={onToggleSelectedClicked} />
+                </DivSelectPluginContainer>
+            </DivPluginUpdateHeaderContainer>
             <DivReleaseSummaryContainer>
                 {isLastUpdatedTimeKnown && (
                     <DivLastUpdated
@@ -182,7 +275,8 @@ const PluginUpdates: React.FC<{ plugin: PluginViewModel; isInitiallyExpanded: bo
     );
 };
 
-const BORDER = '2px var(--background-modifier-border) solid';
+const BORDER_WIDTH = '2px';
+const BORDER = `${BORDER_WIDTH} var(--background-modifier-border) solid`;
 
 const DivPluginUpdateListContainer = styled.div`
     display: flex;
@@ -196,6 +290,18 @@ const DivPluginUpdateListContainer = styled.div`
     color: var(--text-normal);
 `;
 
+const DivSelectAll = styled.div`
+    display: flex;
+    justify-content: flex-end;
+
+    border: ${BORDER_WIDTH} transparent solid;
+    padding-bottom: 0.25rem;
+    padding-right: 0.25rem;
+    input {
+        margin: 0;
+    }
+`;
+
 const DivPluginUpdateContainer = styled.div`
     display: flex;
     flex-direction: column;
@@ -207,14 +313,28 @@ const DivPluginUpdateContainer = styled.div`
     border-radius: 0.25rem;
 `;
 
-const H2PluginName = styled.h2`
-    text-align: center;
+const DivPluginUpdateHeaderContainer = styled.div`
+    display: flex;
+    flex-direction: row;
 
     border-bottom: ${BORDER};
+`;
+
+const H2PluginName = styled.h2`
+    flex-grow: 1;
+    text-align: center;
 
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
     padding-bottom: 0.5rem;
+`;
+
+const DivSelectPluginContainer = styled.div`
+    padding-top: 0.25rem;
+    padding-right: 0.25rem;
+    input {
+        margin: 0;
+    }
 `;
 
 const DivReleaseSummaryContainer = styled.div`
@@ -319,6 +439,25 @@ const DivReleaeseName = styled.div`
     text-decoration: underline;
 `;
 
+const ActionBarContainer = styled.div`
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+
+    @keyframes slideInFromRight {
+        0% {
+            left: 200%;
+        }
+        100% {
+            left: 50%;
+        }
+    }
+    animation-name: slideInFromRight;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+`;
+
 const DivReleaseNoteText = styled.div``;
 
-export default AvailablePluginUpdatesContainer;
+export default PluginUpdateListConnected;

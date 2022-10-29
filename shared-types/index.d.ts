@@ -11,6 +11,7 @@ export type PluginReleases = {
     obsidianPluginId: string;
     pluginName: string;
     pluginRepositoryUrl: string;
+    pluginRepoPath: string;
     newVersions: ReleaseVersion[];
 };
 
@@ -23,5 +24,12 @@ type ReleaseVersion = {
     areNotesTruncated: boolean;
     downloads: number;
     publishedAt: string;
+    fileAssetIds?: PluginFileAssetIds;
     updatedAt: string;
+};
+
+export type PluginFileAssetIds = {
+    mainJs: number;
+    manifestJson: number;
+    styleCss?: number;
 };

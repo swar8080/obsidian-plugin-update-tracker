@@ -20,10 +20,10 @@ dotenv.config({
 })
 
 if (prod && existsSync('.env.local.prod')) {
-	dotenv.config({path: '.env.local.prod'})
+	dotenv.config({path: '.env.local.prod', override: true})
 }
 else if (existsSync('.env.local.dev')) {
-	dotenv.config({path: '.env.local.dev'})
+	dotenv.config({path: '.env.local.dev', override: true})
 }
 
 
@@ -32,6 +32,7 @@ const define = [
 	'OBSIDIAN_APP_RELEASE_POLLING_SECONDS',
 	'OBSIDIAN_APP_INSTALLED_VERSION_POLLING_SECONDS',
 	'OBSIDIAN_APP_ENABLE_REDUX_LOGGER',
+	'OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'
 ].reduce((prev, current) => {
 	prev[`process.env.${current}`] = JSON.stringify(process.env[current])
 	return prev
