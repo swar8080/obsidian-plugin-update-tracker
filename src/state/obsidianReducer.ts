@@ -14,7 +14,7 @@ export type ObsidianApp = App & {
     };
 };
 
-type ObsidianState = {
+export type ObsidianState = {
     thisPluginId: string;
     pluginManifests: PluginManifest[];
     enabledPlugins?: Record<string, boolean>;

@@ -41,7 +41,7 @@ Release notes are safely rendered as markdown
 
 ## Install Plugin Updates
 
-![Screen Recording 2022-10-29 at 3 43 48 PM](https://user-images.githubusercontent.com/17691679/198850083-dd65fb66-22a1-4d0d-99aa-e88331d6e94f.gif)
+![Screen_Recording_2022-10-29_at_3_43_48_PM_AdobeExpress (1)](https://user-images.githubusercontent.com/17691679/198850850-5f61dba0-31a7-4d9e-aab5-8776850d3897.gif)
 
 ## Evaluate the riskiness of upgrading
 
