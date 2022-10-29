@@ -192,7 +192,7 @@ export class GetReleases {
                         (asset) => asset.name === 'main.js'
                     );
                     const styleCssAsset = (release.assets || []).find(
-                        (asset) => asset.name === 'style.css'
+                        (asset) => asset.name === 'styles.css'
                     );
 
                     const cachedRelease = (cachedReleases?.releases || []).find(

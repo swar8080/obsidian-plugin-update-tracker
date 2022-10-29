@@ -11,6 +11,7 @@ const awsResourceNamespace = process.env['OPUC_RESOURCE_NAMESPACE'];
 process.env['OPUC_PLUGINS_LIST_BUCKET_NAME'] = `plugin-list-bucket-dev-${awsResourceNamespace}`;
 process.env['OPUC_PLUGIN_RELEASES_TABLE_NAME'] = 'plugin-releases-table-dev';
 process.env['OPUC_METRIC_NAMESPACE'] = 'obsidian-plugin-update-checker-dev';
+process.env['OPUC_IS_PROD'] = 'false';
 
 const requestFile = process.env['OPUC_LOCAL_REQUEST_FILE'] || 'single-plugin-request.json';
 const requestFileContents = fs.readFileSync(path.resolve(__dirname, requestFile));
