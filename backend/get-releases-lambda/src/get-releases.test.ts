@@ -112,12 +112,6 @@ describe('get-releases', () => {
                     download_count: 1200,
                     updated_at: '2022-09-16T08:00:01Z',
                 },
-                {
-                    id: id++,
-                    name: 'style.css',
-                    download_count: 1001,
-                    updated_at: '2022-09-16T01:00:00Z',
-                },
             ],
         };
         plugin1SecondRelease = {
@@ -170,6 +164,12 @@ describe('get-releases', () => {
                     download_count: 1200,
                     updated_at: '2022-07-16T08:00:01Z',
                 },
+                {
+                    id: 3334,
+                    name: 'style.css',
+                    download_count: 2002,
+                    updated_at: '2022-07-17T10:00:02Z',
+                },
             ],
         };
 
@@ -188,7 +188,6 @@ describe('get-releases', () => {
                     downloads: 3000,
                     publishedAt: plugin2Release1.published_at,
                     sourceCodeUpdatedAt: '2022-07-16T09:00:00Z',
-                    manifestAssetId: PLUGIN2_MANIFEST_ID,
                     minObsidianVersion: '15.15.0',
                     manifestLastUpdatedAt: '2022-07-16T08:00:01Z',
                 },
@@ -314,9 +313,13 @@ describe('get-releases', () => {
                     notes: plugin1SecondRelease.body,
                     areNotesTruncated: false,
                     downloads: 2000,
+                    fileAssetIds: {
+                        manifestJson: PLUGIN1_RELEASE2_MANIFEST_ID,
+                        mainJs: PLUGIN1_RELEASE_2_MAIN_JS_ID,
+                        styleCss: 2324,
+                    },
                     publishedAt: plugin1SecondRelease.published_at,
                     sourceCodeUpdatedAt: '2022-07-17T10:00:00Z',
-                    manifestAssetId: PLUGIN1_RELEASE2_MANIFEST_ID,
                     minObsidianVersion: '16.0.0',
                     manifestLastUpdatedAt: '2022-07-17T10:00:01Z',
                 })
@@ -329,9 +332,13 @@ describe('get-releases', () => {
                     notes: plugin1FirstRelease.body,
                     areNotesTruncated: false,
                     downloads: 1000,
+                    fileAssetIds: {
+                        manifestJson: PLUGIN1_RELEASE1_MANIFEST_ID,
+                        mainJs: PLUGIN1_RELEASE_1_MAIN_JS_ID,
+                        styleCss: undefined,
+                    },
                     publishedAt: plugin1FirstRelease.published_at,
                     sourceCodeUpdatedAt: '2022-09-16T09:00:00Z',
-                    manifestAssetId: PLUGIN1_RELEASE1_MANIFEST_ID,
                     minObsidianVersion: '15.16.0',
                     manifestLastUpdatedAt: '2022-09-16T08:00:01Z',
                 })
@@ -350,9 +357,13 @@ describe('get-releases', () => {
                     notes: plugin2Release1.body,
                     areNotesTruncated: false,
                     downloads: 3000,
+                    fileAssetIds: {
+                        manifestJson: PLUGIN2_MANIFEST_ID,
+                        mainJs: PLUGIN2_MAIN_JS_ID,
+                        styleCss: 3334,
+                    },
                     publishedAt: plugin2Release1.published_at,
                     sourceCodeUpdatedAt: '2022-07-16T09:00:00Z',
-                    manifestAssetId: PLUGIN2_MANIFEST_ID,
                     minObsidianVersion: '15.15.0',
                     manifestLastUpdatedAt: '2022-07-16T08:00:01Z',
                 })

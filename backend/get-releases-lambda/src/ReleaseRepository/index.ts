@@ -1,3 +1,5 @@
+import { PluginFileAssetIds } from '../../../../shared-types';
+
 export interface ReleaseRepository {
     //Sorted from most to least recent
     getReleases(pluginIds: string[]): Promise<PluginReleasesRecord[]>;
@@ -18,6 +20,7 @@ export type PluginReleasesRecord = {
         publishedAt: string;
         sourceCodeUpdatedAt: string;
 
+        fileAssetIds?: PluginFileAssetIds;
         manifestAssetId?: number;
         minObsidianVersion?: string;
         manifestLastUpdatedAt?: string;
