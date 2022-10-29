@@ -1,6 +1,8 @@
 /.env.local.dev
 /.env.local.prod
 *.js
+manifest.json.bak
+styles.css
 
 # Intellij
 *.iml

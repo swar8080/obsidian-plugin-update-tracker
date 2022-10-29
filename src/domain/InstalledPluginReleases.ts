@@ -3,7 +3,7 @@ import filter from 'lodash/filter';
 import map from 'lodash/map';
 import orderBy from 'lodash/orderBy';
 import { PluginManifest, requireApiVersion } from 'obsidian';
-import { PluginReleases, ReleaseVersion } from 'shared-types';
+import { PluginFileAssetIds, PluginReleases, ReleaseVersion } from 'shared-types';
 export default class InstalledPluginReleases {
     private plugin: PluginManifest;
     private releases: PluginReleases | undefined;
@@ -40,7 +40,11 @@ export default class InstalledPluginReleases {
         this.releases = releases;
     }
 
-    public getNewReleases(versionCompatabilityCheck: boolean): ReleaseVersion[] {
+    public getUninstalledNewReleases(versionCompatabilityCheck: boolean): ReleaseVersion[] {
+        if (this.getInstalledVersionNumber() == this.getLatestVersionNumber()) {
+            return [];
+        }
+
         return filter(
             this.releases?.newVersions,
             (version) =>
@@ -84,6 +88,15 @@ export default class InstalledPluginReleases {
 
     public getPluginRepositoryUrl(): string {
         return this.releases?.pluginRepositoryUrl || '';
+    }
+
+    public getLatestReleaseAssetIds(): PluginFileAssetIds | undefined {
+        const newReleaseVersion = this.getNewReleaseVersion();
+        return newReleaseVersion?.fileAssetIds;
+    }
+
+    public getRepoPath(): string | undefined {
+        return this.releases?.pluginRepoPath;
     }
 
     private getNewReleaseVersion(): ReleaseVersion | undefined {

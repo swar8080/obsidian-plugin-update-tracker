@@ -99,6 +99,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
         chipText = (pluginsWithUpdatesCount || 0).toString();
         chipColour = '#FF4F00';
         padding = '0.3rem';
+        leftOffset = '0.08rem';
         if (chipText.length > 1) {
             width = '0.65rem';
             padding = '0.3rem 0.4rem';
@@ -109,7 +110,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
         isClickable = true;
     } else {
         chipText = '✓';
-        chipColour = 'var(--interactive-success)';
+        chipColour = '#197300';
         title = 'All plugins up-to-date';
         cursor = 'default';
     }

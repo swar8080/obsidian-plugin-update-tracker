@@ -1,7 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { NewPluginVersionRequest, PluginReleases } from 'shared-types';
-import releaseApi from '../domain/releaseApi';
-import { State } from './index';
+import { createSlice } from '@reduxjs/toolkit';
+import { PluginReleases } from 'shared-types';
+import { fetchReleases } from './actionProducers/fetchReleases';
 
 type ReleaseState = {
     isLoadingReleases: boolean;
@@ -14,19 +13,6 @@ const DEFAULT_STATE: ReleaseState = {
     isErrorLoadingReleases: false,
     releases: [],
 };
-
-export const fetchReleases = createAsyncThunk('releases/fetch', async (_: void, thunkAPI) => {
-    const state = thunkAPI.getState() as State;
-
-    const request: NewPluginVersionRequest = {
-        currentPluginVersions: state.obsidian.pluginManifests.map((manifest) => ({
-            obsidianPluginId: manifest.id,
-            version: manifest.version,
-        })),
-    };
-
-    return await releaseApi(request);
-});
 
 const releaseReducer = createSlice({
     name: 'release',

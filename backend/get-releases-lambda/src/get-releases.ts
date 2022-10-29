@@ -4,6 +4,7 @@ import {
     PluginReleases,
     InstalledPluginVersion,
     ReleaseVersion,
+    PluginFileAssetIds,
 } from '../../../shared-types';
 import { ReleaseApi, ApiReleaseResponse, ApiPluginManifest } from './ReleaseApi';
 import { PluginRepository, PluginRecord } from './PluginRepository';
@@ -190,10 +191,22 @@ export class GetReleases {
                     const mainJsAsset = (release.assets || []).find(
                         (asset) => asset.name === 'main.js'
                     );
+                    const styleCssAsset = (release.assets || []).find(
+                        (asset) => asset.name === 'styles.css'
+                    );
 
                     const cachedRelease = (cachedReleases?.releases || []).find(
                         (cached) => cached.id === release.id
                     );
+
+                    let fileAssetIds: PluginFileAssetIds | undefined = undefined;
+                    if (manifestJsonAsset && mainJsAsset) {
+                        fileAssetIds = {
+                            manifestJson: manifestJsonAsset.id,
+                            mainJs: mainJsAsset.id,
+                            styleCss: styleCssAsset?.id,
+                        };
+                    }
 
                     return {
                         id: release.id,
@@ -204,7 +217,7 @@ export class GetReleases {
                         downloads: mainJsAsset?.download_count || 0,
                         publishedAt: release.published_at,
                         sourceCodeUpdatedAt: mainJsAsset?.updated_at || release.published_at,
-                        manifestAssetId: manifestJsonAsset?.id,
+                        fileAssetIds,
                         minObsidianVersion: cachedRelease?.minObsidianVersion,
                         manifestLastUpdatedAt: manifestJsonAsset?.updated_at,
                     };
@@ -239,10 +252,10 @@ export class GetReleases {
 
         const cachedManifestsByReleaseId = (cachedReleases?.releases || []).reduce(
             (prev, current) => {
-                if (current.manifestAssetId && current.manifestLastUpdatedAt) {
+                if (current.fileAssetIds?.manifestJson && current.manifestLastUpdatedAt) {
                     prev[current.id.toString()] = {
                         manifestUpdatedTime: current.manifestLastUpdatedAt,
-                        manifestAssetId: current.manifestAssetId,
+                        manifestAssetId: current.fileAssetIds.manifestJson,
                     };
                 }
                 return prev;
@@ -340,6 +353,7 @@ export class GetReleases {
                 notes: release.notes,
                 areNotesTruncated: release.areNotesTruncated,
                 downloads: release.downloads,
+                fileAssetIds: release.fileAssetIds,
                 publishedAt: release.publishedAt,
                 updatedAt: release.sourceCodeUpdatedAt,
             }));
@@ -348,6 +362,7 @@ export class GetReleases {
             obsidianPluginId: releasesRecord.pluginId,
             pluginName: plugin.name,
             pluginRepositoryUrl,
+            pluginRepoPath: plugin.repo,
             newVersions: clientReleaseVersions,
         };
     }
