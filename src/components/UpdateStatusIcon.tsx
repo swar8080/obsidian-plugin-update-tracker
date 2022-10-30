@@ -112,7 +112,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
         chipText = '✓';
         chipColour = '#197300';
         title = 'All plugins up-to-date';
-        cursor = 'default';
+        cursor = 'none';
     }
 
     const isHighlighted = isMouseOver && isClickable;
@@ -128,6 +128,8 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
             onClick={handleClick}
             cursor={cursor}
             title={title}
+            aria-label={title}
+            aria-label-position="top"
             onMouseOver={() => setIsMouseOver(true)}
             onMouseLeave={() => setIsMouseOver(false)}
             isHighlighted={isHighlighted}
