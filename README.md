@@ -27,7 +27,7 @@ This small icon is added to the status bar:
 
 ## View a list of updates
 
-Click the plugin icon to see the list:
+When updates are available, click the plugin icon to see the list:
 
 <img width="1169" alt="image" src="https://user-images.githubusercontent.com/17691679/198849416-6186f041-eac5-431b-8e39-b1ae4d41a656.png">
 
