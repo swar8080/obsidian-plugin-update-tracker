@@ -131,7 +131,7 @@ class PluginUpdateManagerView extends ItemView {
     }
 
     getDisplayText() {
-        return '';
+        return 'Plugin Updates';
     }
 
     async onOpen() {
