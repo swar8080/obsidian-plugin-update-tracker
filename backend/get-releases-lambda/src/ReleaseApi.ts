@@ -49,10 +49,8 @@ export class GithubReleaseApi implements ReleaseApi {
 
             this.emitRateLimitMetric(response);
 
-            const releases: ExtendedApiReleases[] = response.data;
-            const filteredReleases = releases
-                .filter((release) => !release.draft && !release.prerelease)
-                .slice(0, limit);
+            const releases: ApiReleases[] = response.data;
+            const filteredReleases = releases.filter((release) => !release.draft).slice(0, limit);
 
             return {
                 hasChanges: true,
@@ -114,11 +112,6 @@ type ApiReleaseAsset = {
     name: string;
     download_count: number;
     updated_at: string;
-};
-
-type ExtendedApiReleases = ApiReleases & {
-    draft: boolean;
-    prerelease: boolean;
 };
 
 export type ApiPluginManifest = {
