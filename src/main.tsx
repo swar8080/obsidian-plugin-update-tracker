@@ -27,6 +27,7 @@ const INSTALLED_VERSION_POLLING_MS =
 
 export default class PluginUpdateCheckerPlugin extends Plugin {
     settings: PluginSettings;
+    private statusIconRootComponent: ReactDOM.Root | undefined;
 
     async onload() {
         this.registerView(
@@ -45,10 +46,6 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         this.renderUpdateStatusIcon();
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
-    }
-
-    onunload() {
-        this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
     }
 
     async loadSettings() {
@@ -89,27 +86,42 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
             statusIconEl.style.marginRight = '-0.25rem';
         }
 
-        renderRootComponent(
+        this.statusIconRootComponent = renderRootComponent(
             statusIconEl,
             <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
         );
     }
 
     async showPluginUpdateManagerView() {
+        if (!this.app.workspace.getActiveViewOfType(PluginUpdateManagerView)) {
+            this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
+
+            await this.app.workspace.getLeaf(false).setViewState({
+                type: PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
+                active: true,
+            });
+
+            const pluginLeaf = this.app.workspace.getLeavesOfType(
+                PLUGIN_UPDATES_MANAGER_VIEW_TYPE
+            )[0];
+            if (pluginLeaf) {
+                this.app.workspace.revealLeaf(pluginLeaf);
+            }
+        }
+    }
+
+    onunload() {
         this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
 
-        await this.app.workspace.getLeaf(false).setViewState({
-            type: PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
-            active: true,
-        });
-
-        this.app.workspace.revealLeaf(
-            this.app.workspace.getLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE)[0]
-        );
+        if (this.statusIconRootComponent) {
+            this.statusIconRootComponent.unmount();
+        }
     }
 }
 
 class PluginUpdateManagerView extends ItemView {
+    private rootComponent: ReactDOM.Root | undefined;
+
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
     }
@@ -129,10 +141,17 @@ class PluginUpdateManagerView extends ItemView {
         //@ts-ignore
         const titleEl = this.titleEl as HTMLElement;
 
-        renderRootComponent(container, <PluginUpdateManager titleEl={titleEl} />);
+        this.rootComponent = renderRootComponent(
+            container,
+            <PluginUpdateManager titleEl={titleEl} />
+        );
     }
 
-    async onClose() {}
+    async onClose() {
+        if (this.rootComponent) {
+            this.rootComponent.unmount();
+        }
+    }
 }
 
 class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
@@ -174,7 +193,8 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
     }
 }
 
-function renderRootComponent(rootEl: Element, component: JSX.Element) {
+function renderRootComponent(rootEl: Element, component: JSX.Element): ReactDOM.Root {
     const root = ReactDOM.createRoot(rootEl);
     root.render(<Provider store={store}>{component}</Provider>);
+    return root;
 }
