@@ -302,6 +302,7 @@ const DivSelectAll = styled.div`
     padding-right: 0.25rem;
     input {
         margin: 0;
+        cursor: pointer;
     }
 `;
 
@@ -337,6 +338,7 @@ const DivSelectPluginContainer = styled.div`
     padding-right: 0.25rem;
     input {
         margin: 0;
+        cursor: pointer;
     }
 `;
 
