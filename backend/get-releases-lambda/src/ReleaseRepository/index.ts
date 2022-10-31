@@ -21,8 +21,8 @@ export type PluginReleasesRecord = {
         sourceCodeUpdatedAt: string;
 
         fileAssetIds?: PluginFileAssetIds;
-        manifestAssetId?: number;
         minObsidianVersion?: string;
+        manifestVersionId?: string;
         manifestLastUpdatedAt?: string;
     }[];
 
