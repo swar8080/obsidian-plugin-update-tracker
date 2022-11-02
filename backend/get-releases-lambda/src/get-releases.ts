@@ -11,6 +11,8 @@ import { PluginRepository, PluginRecord } from './PluginRepository';
 import { ReleaseRepository, PluginReleasesRecord } from './ReleaseRepository';
 import { isEmpty, groupById } from './util';
 
+const THIS_PLUGIN_ID = 'obsidian-plugin-update-tracker';
+
 export class GetReleases {
     private config: GetReleasesConfiguration;
     private pluginRepository: PluginRepository;
@@ -67,6 +69,12 @@ export class GetReleases {
         const releaseRecordUpdates: PluginReleasesRecord[] = [];
         for (const pluginId of pluginIds) {
             console.log(`Processing ${pluginId}`);
+
+            if (this.config.ignoreReleasesForThisPlugin && pluginId === THIS_PLUGIN_ID) {
+                //disable surfacing updates for this plugin so that testing can be done before releasing it
+                continue;
+            }
+
             const plugin = plugins[pluginId];
             const cachedReleases = cachedReleasesByPluginId[pluginId];
             const installed = installedPluginsById[pluginId];
@@ -383,4 +391,5 @@ export type GetReleasesConfiguration = {
     releasesFetchedPerPlugin: number;
     maxReleaseNoteLength: number;
     maxManifestsToFetchPerPlugin: number;
+    ignoreReleasesForThisPlugin: boolean;
 };
