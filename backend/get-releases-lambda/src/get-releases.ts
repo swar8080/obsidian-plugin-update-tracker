@@ -148,12 +148,6 @@ export class GetReleases {
             cachedReleases
         );
 
-        //Exclude beta releases that re-use a previous plugin version (for now)
-        releasesRecord.releases = releasesRecord.releases.filter(
-            (release) =>
-                release.versionNumber === release.manifestVersionId || !release.manifestVersionId
-        );
-
         if (releasesApiResponse.hasChanges || didUpdateManifests) {
             releaseRecordUpdates.push(releasesRecord);
         }
@@ -243,40 +237,41 @@ export class GetReleases {
             return false;
         }
 
-        const fetchedManifestsByAssetId = releasesApiResponse.releases.reduce((prev, release) => {
-            const manifestAsset = (release.assets || []).find(
+        const currentManifestsByReleaseId = releasesApiResponse.releases.reduce((prev, current) => {
+            const manifestAsset = (current.assets || []).find(
                 (asset) => asset.name === 'manifest.json'
             );
             if (manifestAsset?.updated_at) {
-                prev[manifestAsset.id.toString()] = {
+                prev[current.id.toString()] = {
                     manifestUpdatedTime: manifestAsset.updated_at,
-                    releaseId: release.id,
+                    manifestAssetId: manifestAsset.id,
                 };
             }
             return prev;
-        }, {} as Record<string, { manifestUpdatedTime: string; releaseId: number }>);
+        }, {} as Record<string, { manifestAssetId: number; manifestUpdatedTime: string }>);
 
-        const cachedManifestsByAssetId = (cachedReleases?.releases || []).reduce(
+        const cachedManifestsByReleaseId = (cachedReleases?.releases || []).reduce(
             (prev, current) => {
                 if (current.fileAssetIds?.manifestJson && current.manifestLastUpdatedAt) {
-                    prev[current.fileAssetIds.manifestJson.toString()] = {
+                    prev[current.id.toString()] = {
                         manifestUpdatedTime: current.manifestLastUpdatedAt,
+                        manifestAssetId: current.fileAssetIds.manifestJson,
                     };
                 }
                 return prev;
             },
-            {} as Record<string, { manifestUpdatedTime: string }>
+            {} as Record<string, { manifestAssetId: number; manifestUpdatedTime: string }>
         );
 
-        const manifestAssetIdsToFetch = Object.keys(fetchedManifestsByAssetId)
+        const manifestAssetIdsToFetch = Object.keys(currentManifestsByReleaseId)
             .filter(
-                (assetId) =>
+                (releaseId) =>
                     //include if never fetched manifest or manifest has been updated
-                    !(assetId in cachedManifestsByAssetId) ||
-                    fetchedManifestsByAssetId[assetId].manifestUpdatedTime >
-                        cachedManifestsByAssetId[assetId].manifestUpdatedTime
+                    !(releaseId in cachedManifestsByReleaseId) ||
+                    currentManifestsByReleaseId[releaseId].manifestUpdatedTime >
+                        cachedManifestsByReleaseId[releaseId].manifestUpdatedTime
             )
-            .map((assetId) => parseInt(assetId))
+            .map((releaseId) => currentManifestsByReleaseId[releaseId].manifestAssetId)
             //Take the most recent
             .sort((v1, v2) => -(v1 - v2))
             //Fetch a fixed amount to minimize impact on rate limit
@@ -301,24 +296,13 @@ export class GetReleases {
             console.error('Error fetching manifests', manifestRequests, err);
         }
 
-        //update releases with missing or out-of-date values
+        //update min app version for releases with missing or out-of-date values
         let hasUpdates = false;
-
-        const releasesToUpdateById = groupById(releasesToUpdate.releases, 'id');
-        for (let i = 0; i < manifestAssetIdsToFetch.length; i++) {
-            const manifestAssetId = manifestAssetIdsToFetch[i];
-            const manifest = manifests[i];
-
-            const fetchedReleaseManifest = fetchedManifestsByAssetId[manifestAssetId];
-            const release = releasesToUpdateById[fetchedReleaseManifest.releaseId];
-
-            if (
-                release &&
-                (release.minObsidianVersion !== manifest.minAppVersion ||
-                    release.manifestVersionId !== manifest.version)
-            ) {
+        const releaseByVersion = groupById(releasesToUpdate.releases, 'versionNumber');
+        for (const manifest of manifests) {
+            const release = releaseByVersion[manifest.version || ''];
+            if (release && release.minObsidianVersion !== manifest.minAppVersion) {
                 release.minObsidianVersion = manifest.minAppVersion;
-                release.manifestVersionId = manifest.version;
                 hasUpdates = true;
             }
         }
