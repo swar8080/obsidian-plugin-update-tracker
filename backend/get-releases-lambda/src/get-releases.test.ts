@@ -60,6 +60,7 @@ describe('get-releases', () => {
             maxReleaseNoteLength: 100,
             releasesCacheLengthSeconds: 10,
             maxManifestsToFetchPerPlugin: 2,
+            ignoreReleasesForThisPlugin: false,
         };
 
         pluginRepository = {
@@ -137,7 +138,7 @@ describe('get-releases', () => {
                 },
                 {
                     id: 2324,
-                    name: 'style.css',
+                    name: 'styles.css',
                     download_count: 2002,
                     updated_at: '2022-07-17T10:00:02Z',
                 },
@@ -166,7 +167,7 @@ describe('get-releases', () => {
                 },
                 {
                     id: 3334,
-                    name: 'style.css',
+                    name: 'styles.css',
                     download_count: 2002,
                     updated_at: '2022-07-17T10:00:02Z',
                 },

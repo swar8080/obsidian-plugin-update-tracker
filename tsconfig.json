@@ -11,8 +11,9 @@
     "importHelpers": true,
     "isolatedModules": true,
     "jsx": "react",
-    "allowSyntheticDefaultImports": true,
-	"strictNullChecks": true,
+    "allowSyntheticDefaultImports": true,	
+    "esModuleInterop": true,
+    "strictNullChecks": true,
     "lib": [
       "DOM",
       "ES5",
