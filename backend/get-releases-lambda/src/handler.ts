@@ -102,6 +102,7 @@ function buildGetReleases(): GetReleases {
         releasesFetchedPerPlugin: getIntEnv('OPUC_RELEASES_FETCHED_PER_PLUGIN'),
         maxReleaseNoteLength: getIntEnv('OPUC_MAX_RELEASE_NOTE_LENGTH'),
         maxManifestsToFetchPerPlugin: getIntEnv('OPUC_MAX_MANIFESTS_TO_FETCH_PER_PLUGIN'),
+        ignoreReleasesForThisPlugin: getBooleanEnv('OPUC_IGNORE_RELEASES_FOR_THIS_PLUGIN'),
     };
 
     _getReleases = new GetReleases(config, pluginRepository, fallbackReleaseRepository, releaseApi);

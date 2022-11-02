@@ -33,6 +33,7 @@ export const updatePlugins = createAsyncThunk(
         for (const pluginId of selectedPluginIds) {
             const installedPlugin = allPluginsById[pluginId];
             const latestReleaseAssetIds = installedPlugin.getLatestReleaseAssetIds();
+            const latestVersionNumber = installedPlugin.getLatestVersionNumber();
             const pluginRepoPath = installedPlugin.getRepoPath();
             const isPluginEnabled =
                 state.obsidian.enabledPlugins != null && pluginId in state.obsidian.enabledPlugins;
@@ -90,7 +91,12 @@ export const updatePlugins = createAsyncThunk(
 
                     await Promise.all([
                         installPluginFile(pluginId, 'main.js', mainJs),
-                        installPluginFile(pluginId, 'manifest.json', manifestJson),
+                        installManifestFile(
+                            pluginId,
+                            'manifest.json',
+                            manifestJson,
+                            latestVersionNumber
+                        ),
                         installPluginFile(pluginId, 'styles.css', styleCss),
                     ]);
                     success = true;
@@ -153,6 +159,22 @@ async function downloadPluginFile(
 }
 
 class GithubRateLimitError extends Error {}
+
+async function installManifestFile(
+    pluginId: string,
+    fileName: string,
+    fileContents: string,
+    versionNumber: string
+) {
+    /**
+     * Do not trust the version number in the downloaded manifest file as some beta releases (installed using something like BART) use a previous version number.
+     * Instead, use the github version number.
+     * An example is periodic-notes version 1.0.0-beta.3 that uses version 0.0.17 in its manifest.
+     */
+    const manifestJson = JSON.parse(fileContents);
+    manifestJson.version = versionNumber;
+    await installPluginFile(pluginId, fileName, JSON.stringify(manifestJson));
+}
 
 async function installPluginFile(pluginId: string, fileName: string, fileContents: string) {
     const configDir = normalizePath(app.vault.configDir);

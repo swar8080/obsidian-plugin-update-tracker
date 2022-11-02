@@ -38,6 +38,10 @@ const DivSelectedPluginActionBarContainer = styled.div`
 
     border: 3px var(--background-modifier-border) solid;
     border-bottom: none;
+
+    button {
+        cursor: pointer;
+    }
 `;
 
 export default SelectedPluginActionBar;

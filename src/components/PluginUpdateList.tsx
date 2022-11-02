@@ -142,6 +142,7 @@ export const PluginUpdateList: React.FC<{
     }
 
     const isSelectAllChecked = selectedPluginCount === plugins.length;
+    const selectAllTitle = isSelectAllChecked ? 'Deselect All' : 'Select All';
 
     return (
         <>
@@ -151,7 +152,9 @@ export const PluginUpdateList: React.FC<{
                         type="checkbox"
                         onChange={handleClickSelectAll}
                         checked={isSelectAllChecked}
-                        title={isSelectAllChecked ? 'Deselect All' : 'Select All'}
+                        title={selectAllTitle}
+                        aria-label={selectAllTitle}
+                        aria-label-position="top"
                     />
                 </DivSelectAll>
             )}
@@ -299,6 +302,7 @@ const DivSelectAll = styled.div`
     padding-right: 0.25rem;
     input {
         margin: 0;
+        cursor: pointer;
     }
 `;
 
@@ -334,6 +338,7 @@ const DivSelectPluginContainer = styled.div`
     padding-right: 0.25rem;
     input {
         margin: 0;
+        cursor: pointer;
     }
 `;
 
