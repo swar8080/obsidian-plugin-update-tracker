@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import find from 'lodash/find';
-import { PluginManifest } from 'obsidian';
+import { PluginManifest, requireApiVersion } from 'obsidian';
 import { PluginSettings } from './pluginSettings';
 
 import { PluginReleases } from 'shared-types';
@@ -25,17 +25,38 @@ const filter = (
     pluginSettings: PluginSettings,
     installedPlugins: PluginManifest[],
     enabledPlugins: Record<string, boolean> | undefined,
-    releases: PluginReleases[]
+    releases: PluginReleases[],
+    now: dayjs.Dayjs = dayjs()
 ): InstalledPluginReleases[] => {
     const allPlugins = InstalledPluginReleases.create(installedPlugins, releases);
-    const filters = Object.assign({}, filterOverrides, DEFAULT_FILTERS);
+    const filters = Object.assign({}, DEFAULT_FILTERS, filterOverrides);
 
     return allPlugins.filter((plugin) => {
         let include = true;
 
-        const newReleases = plugin.getUninstalledNewReleases(filters.excludeIncompatibleVersions);
+        //Mutate/filter out versions
+        plugin.keepReleaseVersions((version) => {
+            if (
+                filters.excludeIncompatibleVersions &&
+                version.minObsidianAppVersion != null &&
+                !requireApiVersion(version.minObsidianAppVersion)
+            ) {
+                return false;
+            }
 
-        if (newReleases.length == 0) {
+            if (
+                filters.excludeTooRecentUpdates &&
+                pluginSettings.daysToSuppressNewUpdates > 0 &&
+                now.diff(version.updatedAt, 'days') < pluginSettings.daysToSuppressNewUpdates
+            ) {
+                return false;
+            }
+
+            return true;
+        });
+
+        const newVersions = plugin.getReleaseVersions();
+        if (newVersions.length == 0) {
             include = false;
         }
 
@@ -43,23 +64,12 @@ const filter = (
             include = include && enabledPlugins[plugin.getPluginId()] === true;
         }
 
-        if (
-            filters.excludeTooRecentUpdates &&
-            newReleases.length > 0 &&
-            pluginSettings.daysToSuppressNewUpdates > 0
-        ) {
-            const lastUpdated = plugin.getLatestUpdateTime() || dayjs();
-            const daysSinceUpdate = dayjs().diff(lastUpdated, 'days');
-
-            include = include && daysSinceUpdate > pluginSettings.daysToSuppressNewUpdates;
-        }
-
         if (filters.excludeDismissed) {
             const pluginId = plugin.getPluginId();
             const dimissedPublishedDate = pluginSettings.dismissedPublishedDateByPluginId[pluginId];
 
             const releaseAfterDismissedDate = find(
-                newReleases,
+                newVersions,
                 (release) =>
                     dimissedPublishedDate == undefined ||
                     release.publishedAt > dimissedPublishedDate

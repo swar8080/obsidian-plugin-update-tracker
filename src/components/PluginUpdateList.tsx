@@ -65,7 +65,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
                 githubRepositoryUrl: pluginReleases.getPluginRepositoryUrl(),
                 installedVersionNumber: pluginReleases.getInstalledVersionNumber(),
                 latestInstallableVersionNumber: pluginReleases.getLatestVersionNumber(),
-                releaseNotes: pluginReleases.getUninstalledNewReleases(true).map((release) => ({
+                releaseNotes: pluginReleases.getReleaseVersions().map((release) => ({
                     releaseId: release.releaseId,
                     versionName: release.versionName,
                     versionNumber: release.versionNumber,
