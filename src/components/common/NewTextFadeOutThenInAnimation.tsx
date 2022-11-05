@@ -37,13 +37,13 @@ export const NewTextFadeInThenOutAnimation: React.FC<NewTextFadeInThenOutAnimati
     }
 };
 
-const ANIMIATION_SECONDS = 1.5;
+const ANIMIATION_SECONDS = 1.25;
 
 const SpanFadeOut = styled.span`
     animation-name: fadeOut;
     animation-delay: 0s;
     animation-duration: ${ANIMIATION_SECONDS}s;
-    animation-timing-effect: linear;
+    animation-timing-function: ease-out;
     animation-fill-mode: forwards;
     position: absolute;
 
@@ -63,7 +63,7 @@ const SpanFadeIn = styled.span`
     animation-name: fadeIn;
     animation-delay: ${ANIMIATION_SECONDS}s;
     animation-duration: ${ANIMIATION_SECONDS}s;
-    animation-timing-effect: linear;
+    animation-timing-function: ease-out;
     animation-fill-mode: forwards;
 
     @keyframes fadeIn {
