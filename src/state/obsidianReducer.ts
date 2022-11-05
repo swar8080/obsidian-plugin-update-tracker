@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import find from 'lodash/find';
 import { App, PluginManifest } from 'obsidian';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from '../domain/pluginSettings';
+import { dismissSelectedPluginVersions } from './actionProducers/dismissPluginVersions';
 import { updatePlugins } from './actionProducers/updatePlugins';
 
 export type ObsidianApp = App & {
@@ -118,6 +119,12 @@ const obsidianStateSlice = createSlice({
             .addCase(updatePlugins.rejected, (state) => {
                 state.isUpdatingPlugins = false;
                 state.selectedPluginsById = {};
+            })
+            .addCase(dismissSelectedPluginVersions.fulfilled, (state, action) => {
+                for (const dismissedVersion of action.payload) {
+                    state.selectedPluginsById[dismissedVersion.pluginId] =
+                        !dismissedVersion.isLastAvailableVersion;
+                }
             });
     },
 });

@@ -13,11 +13,15 @@ import { ObsidianState } from '../obsidianReducer';
 import { ReleaseState } from '../releasesReducer';
 
 type Paramters = {
-    selectedPluginVersions: SelectedPluginVersions;
+    pluginVersionsToDismiss: PluginVersionsToDismiss;
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;
 };
 
-export type SelectedPluginVersions = { pluginId: string; pluginVersionNumber: string }[];
+export type PluginVersionsToDismiss = {
+    pluginId: string;
+    pluginVersionNumber: string;
+    isLastAvailableVersion: boolean;
+}[];
 
 export const dismissSelectedPluginVersions = createAsyncThunk(
     'releases/dismissPluginVersions',
@@ -28,7 +32,7 @@ export const dismissSelectedPluginVersions = createAsyncThunk(
 
         const currentSettings: PluginSettings = obsidianState.settings;
         const pluginReleasesById = groupById(releaseState.releases, 'obsidianPluginId');
-        const selectedPluginVersionsById = groupById(params.selectedPluginVersions, 'pluginId');
+        const selectedPluginVersionsById = groupById(params.pluginVersionsToDismiss, 'pluginId');
         const selectedPluginIds: string[] = Object.keys(selectedPluginVersionsById);
 
         const dismissedVersionsByPluginId: Record<string, PluginDismissedVersions> = {
@@ -71,5 +75,7 @@ export const dismissSelectedPluginVersions = createAsyncThunk(
             dismissedVersionsByPluginId,
         };
         await params.persistPluginSettings(updatedSettings);
+
+        return params.pluginVersionsToDismiss;
     }
 );

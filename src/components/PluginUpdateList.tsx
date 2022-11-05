@@ -14,7 +14,7 @@ import { PluginSettings } from 'src/domain/pluginSettings';
 import { groupById } from 'src/domain/util/groupById';
 import {
     dismissSelectedPluginVersions,
-    SelectedPluginVersions,
+    PluginVersionsToDismiss,
 } from 'src/state/actionProducers/dismissPluginVersions';
 import { getSelectedPluginIds } from 'src/state/selectors/getSelectedPluginIds';
 import styled from 'styled-components';
@@ -72,16 +72,17 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
 
     async function handleDismissPluginVersions(): Promise<void> {
         const installedById = groupById(allPluginReleases, (release) => release.getPluginId());
-        const selectedPluginVersions: SelectedPluginVersions = selectedPluginsById.map(
+        const selectedPluginVersions: PluginVersionsToDismiss = selectedPluginsById.map(
             (pluginId) => ({
                 pluginId,
                 pluginVersionNumber: installedById[pluginId].getLatestVersionNumber(),
+                isLastAvailableVersion: installedById[pluginId].getReleaseVersions().length <= 1,
             })
         );
 
         await dispatch(
             dismissSelectedPluginVersions({
-                selectedPluginVersions,
+                pluginVersionsToDismiss: selectedPluginVersions,
                 persistPluginSettings,
             })
         );

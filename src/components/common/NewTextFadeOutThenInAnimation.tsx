@@ -27,10 +27,10 @@ export const NewTextFadeInThenOutAnimation: React.FC<NewTextFadeInThenOutAnimati
 
     if (textChangeTracker.current.didChange) {
         return (
-            <>
-                <SpanFadeOut key={text}>{textChangeTracker.current.previousText}</SpanFadeOut>
-                <SpanFadeIn key={text}>{text}</SpanFadeIn>
-            </>
+            <span key={text}>
+                <SpanFadeOut>{textChangeTracker.current.previousText}</SpanFadeOut>
+                <SpanFadeIn>{text}</SpanFadeIn>
+            </span>
         );
     } else {
         return <span>{text}</span>;
