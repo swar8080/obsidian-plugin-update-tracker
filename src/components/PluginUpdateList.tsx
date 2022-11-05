@@ -206,7 +206,7 @@ export const PluginUpdateList: React.FC<{
 
     const isSelectAllChecked = selectedPluginCount === plugins.length;
     const selectAllTitle = isSelectAllChecked ? 'Deselect All' : 'Select All';
-    const isSelectionDisabled = isUpdatingDismissedVersions;
+    const isDisabled = isUpdatingDismissedVersions;
 
     return (
         <>
@@ -216,7 +216,7 @@ export const PluginUpdateList: React.FC<{
                         type="checkbox"
                         onChange={handleClickSelectAll}
                         checked={isSelectAllChecked}
-                        disabled={isSelectionDisabled}
+                        disabled={isDisabled}
                         title={selectAllTitle}
                         aria-label={selectAllTitle}
                         aria-label-position="top"
@@ -229,7 +229,7 @@ export const PluginUpdateList: React.FC<{
                         plugin={plugin}
                         key={plugin.id}
                         isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
-                        isSelectionDisabled={isSelectionDisabled}
+                        isSelectionDisabled={isDisabled}
                         selected={selectedPluginIdsSet.has(plugin.id)}
                         onToggleSelectedClicked={(e) => handleToggleSelectedClicked(plugin.id, e)}
                     />
@@ -240,6 +240,7 @@ export const PluginUpdateList: React.FC<{
                 <ActionBarContainer>
                     <SelectedPluginActionBar
                         numberOfPluginsSelected={selectedPluginCount}
+                        isDisabled={isDisabled}
                         onClickInstall={handleClickInstall}
                         onClickDismissVersions={handleClickDismissPluginVersions}
                     />
