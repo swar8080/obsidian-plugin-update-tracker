@@ -15,6 +15,7 @@ import PluginUpdateManager from './components/PluginUpdateManager';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
+import { cleanupDismissedPluginVersions } from './state/actionProducers/cleanupDismissedPluginVersions';
 import { fetchReleases } from './state/actionProducers/fetchReleases';
 import { syncApp } from './state/actionProducers/syncApp';
 import { syncSettings, syncThisPluginId } from './state/obsidianReducer';
@@ -47,6 +48,13 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         this.renderUpdateStatusIcon();
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
+
+        //Clean-up previously dismissed versions that are now behind the currently installed version
+        store.dispatch(
+            cleanupDismissedPluginVersions({
+                persistPluginSettings: (settings) => this.saveSettings(settings),
+            })
+        );
     }
 
     async loadSettings() {
