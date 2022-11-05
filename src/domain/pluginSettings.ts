@@ -5,6 +5,7 @@ export type PluginSettings = {
 };
 
 export type PluginDismissedVersions = {
+    pluginId: string;
     pluginRepoPath: string;
     dismissedVersions: DismissedPluginVersion[];
 };

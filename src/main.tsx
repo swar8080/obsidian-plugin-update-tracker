@@ -10,6 +10,7 @@ import {
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
+import DismissedPluginVersions from './components/DismissedPluginVersions';
 import PluginUpdateManager from './components/PluginUpdateManager';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
@@ -167,6 +168,7 @@ class PluginUpdateManagerView extends ItemView {
 
 class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
     private plugin: PluginUpdateCheckerPlugin;
+    private dismissedVersionsRootComponent: ReactDOM.Root | undefined;
 
     constructor(app: App, plugin: PluginUpdateCheckerPlugin) {
         super(app, plugin);
@@ -201,6 +203,15 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         }
                     })
             );
+
+        const dismissedPluginVersionsDiv = containerEl.createDiv()
+        this.dismissedVersionsRootComponent = renderRootComponent(dismissedPluginVersionsDiv, <DismissedPluginVersions/>)
+    }
+
+    hide() {
+        if (this.dismissedVersionsRootComponent) {
+            this.dismissedVersionsRootComponent.unmount()
+        }
     }
 }
 

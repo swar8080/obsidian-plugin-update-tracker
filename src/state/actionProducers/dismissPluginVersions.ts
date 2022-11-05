@@ -50,6 +50,7 @@ export const dismissSelectedPluginVersions = createAsyncThunk(
             let pluginDismissedVersions: PluginDismissedVersions = dismissedVersionsByPluginId[
                 pluginId
             ] || {
+                pluginId,
                 pluginRepoPath: releases.pluginRepoPath,
                 dismissedVersions: [],
             };
