@@ -20,7 +20,7 @@ import { getSelectedPluginIds } from 'src/state/selectors/getSelectedPluginIds';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
-import { State, useAppDispatch, useAppSelector } from '../state';
+import { useAppDispatch, useAppSelector } from '../state';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
 import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
 import { countSelectedPlugins } from '../state/selectors/countSelectedPlugins';
@@ -32,19 +32,28 @@ dayjs.extend(relativeTime);
 interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;
+    closeObsidianTab: () => void;
 }
 
 const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
     titleEl,
     persistPluginSettings,
+    closeObsidianTab,
 }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
-    const selectedPluginsById = useAppSelector((state: State) => getSelectedPluginIds(state));
+    const isLoadingReleases = useAppSelector((state) => state.releases.isLoadingReleases);
+    const selectedPluginsById = useAppSelector(getSelectedPluginIds);
     const selectedPluginCount = useAppSelector(countSelectedPlugins);
     const isUpdatingDismissedVersions = useAppSelector(
         (state) => state.releases.isUpdatingDismissedVersions
     );
     const dispatch = useAppDispatch();
+
+    React.useEffect(() => {
+        if (!isLoadingReleases && allPluginReleases.length === 0) {
+            closeObsidianTab();
+        }
+    }, [isLoadingReleases, allPluginReleases]);
 
     React.useEffect(() => {
         let titleText = 'Available Plugin Updates';

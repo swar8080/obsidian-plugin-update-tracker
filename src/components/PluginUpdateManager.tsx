@@ -7,11 +7,13 @@ import PluginUpdateProgressTracker from './PluginUpdateProgressTracker';
 interface PluginUpdateManagerProps {
     titleEl: HTMLElement | undefined;
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;
+    closeObsidianTab: () => void;
 }
 
 const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
     titleEl,
     persistPluginSettings,
+    closeObsidianTab,
 }) => {
     const showUpdateProgressTracker = useAppSelector(
         (state) => state.obsidian.isUpdatingPlugins || !state.obsidian.isUpdateResultAcknowledged
@@ -20,7 +22,13 @@ const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
     if (showUpdateProgressTracker) {
         return <PluginUpdateProgressTracker titleEl={titleEl} />;
     } else {
-        return <PluginUpdateList titleEl={titleEl} persistPluginSettings={persistPluginSettings} />;
+        return (
+            <PluginUpdateList
+                titleEl={titleEl}
+                persistPluginSettings={persistPluginSettings}
+                closeObsidianTab={closeObsidianTab}
+            />
+        );
     }
 };
 

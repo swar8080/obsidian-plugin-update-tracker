@@ -149,8 +149,13 @@ class PluginUpdateManagerView extends ItemView {
             <PluginUpdateManager
                 titleEl={titleEl}
                 persistPluginSettings={async (settings) => await this.plugin.saveSettings(settings)}
+                closeObsidianTab={() => this.closeThisTab()}
             />
         );
+    }
+
+    closeThisTab() {
+        this.plugin.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
     }
 
     async onClose() {
