@@ -23,12 +23,15 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
     return (
         <DivSelectedPluginActionBarContainer>
             <h4>{headerText}</h4>
-            <button onClick={onClickInstall} disabled={isDisabled}>
-                {updatePluginText}
-            </button>
-            <button onClick={onClickDismissVersions} disabled={isDisabled}>
-                Ignore Version
-            </button>
+            <DivActionButtonContainer>
+                <button onClick={onClickInstall} disabled={isDisabled}>
+                    {updatePluginText}
+                </button>
+
+                <button onClick={onClickDismissVersions} disabled={isDisabled}>
+                    Ignore Version
+                </button>
+            </DivActionButtonContainer>
         </DivSelectedPluginActionBarContainer>
     );
 };
@@ -52,6 +55,20 @@ const DivSelectedPluginActionBarContainer = styled.div`
 
     button {
         cursor: pointer;
+    }
+`;
+
+const DivActionButtonContainer = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    button {
+        margin-right: 0.25rem;
+    }
+
+    button:last-child {
+        margin-right: 0;
     }
 `;
 
