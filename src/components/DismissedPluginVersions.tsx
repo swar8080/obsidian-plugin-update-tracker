@@ -3,6 +3,7 @@ import { PluginManifest } from 'obsidian';
 import * as React from 'react';
 import { PluginDismissedVersions } from 'src/domain/pluginSettings';
 import { groupById } from 'src/domain/util/groupById';
+import { semverCompare } from 'src/domain/util/semverCompare';
 import { useAppSelector } from 'src/state';
 import styled from 'styled-components';
 
@@ -30,7 +31,7 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
     pluginManifests,
 }) => {
     const rows = React.useMemo(() => {
-        const denormalizedRows: DismissedVersionRow[] = [];
+        let denormalizedRows: DismissedVersionRow[] = [];
 
         const manifestById = groupById(pluginManifests, 'id');
 
@@ -50,24 +51,33 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
                 );
             });
 
-        denormalizedRows.sort((v1, v2) => {
-            if (v1.pluginId == v2.pluginId) {
-                return -v1.publishedAt.localeCompare(v2.publishedAt);
-            }
+        denormalizedRows = denormalizedRows
+            .filter((version) => {
+                //only keep newer versions than what's installed
+                const installedVersion = manifestById[version.pluginId].version;
+                return semverCompare(version.versionNumber, installedVersion) > 0;
+            })
+            .sort((v1, v2) => {
+                if (v1.pluginId !== v2.pluginId) {
+                    //list plugins alphabetically
+                    return v1.pluginName.localeCompare(v2.pluginName);
+                }
 
-            return v1.pluginName.localeCompare(v2.pluginName);
-        });
+                //list newer versions first for the same plugin
+                return -v1.publishedAt.localeCompare(v2.publishedAt);
+            });
 
         return denormalizedRows;
     }, [dismissedVersionsByPluginId, pluginManifests]);
 
-    if (isEmpty(dismissedVersionsByPluginId)) {
+    if (isEmpty(rows)) {
         return null;
     }
 
     return (
         <DivDismissedPluginVersionContainer>
-            <h2>Ignored Plugin Versions</h2>
+            <hr />
+            <h3>Ignored Plugin Versions</h3>
             {rows.map((row) => {
                 const releaseUrl = `https://github.com/${row.pluginRepo}/releases/tag/${row.versionNumber}`;
 
