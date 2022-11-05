@@ -24,6 +24,7 @@ import { State, useAppDispatch, useAppSelector } from '../state';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
 import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
 import { countSelectedPlugins } from '../state/selectors/countSelectedPlugins';
+import { NewTextFadeInThenOutAnimation } from './common/NewTextFadeOutThenInAnimation';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
@@ -255,6 +256,7 @@ const PluginUpdates: React.FC<{
     const hasReleaseNotes =
         find(plugin.releaseNotes, (releaseNote) => !isEmpty(releaseNote.notes)) != null;
 
+    const headerText = `${plugin.name} (${plugin.latestInstallableVersionNumber})`;
     const downloadsText = `${plugin.downloads.toLocaleString()} Downloads`;
     const isLastUpdatedTimeKnown = !!plugin.lastUpdatedTime;
     const lastUpdatedText = `Updated ${plugin.lastUpdatedTime?.fromNow()}`;
@@ -263,7 +265,9 @@ const PluginUpdates: React.FC<{
     return (
         <DivPluginUpdateContainer>
             <DivPluginUpdateHeaderContainer>
-                <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
+                <H2PluginName>
+                    <NewTextFadeInThenOutAnimation text={headerText} />
+                </H2PluginName>
                 <DivSelectPluginContainer>
                     <input
                         type="checkbox"

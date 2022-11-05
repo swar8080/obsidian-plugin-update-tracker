@@ -6,6 +6,9 @@ import { PluginSettings } from './pluginSettings';
 import { PluginReleases } from 'shared-types';
 import InstalledPluginReleases from './InstalledPluginReleases';
 
+const HIDE_THIS_PLUGINS_UPDATES = process.env['OBSIDIAN_APP_HIDE_THIS_PLUGINS_UPDATES'] === 'true';
+const THIS_PLUGIN_ID = process.env['OBSIDIAN_APP_THIS_PLUGIN_ID'];
+
 export type PluginFilters = {
     excludeDismissed: boolean;
     excludeTooRecentUpdates: boolean;
@@ -69,6 +72,10 @@ const filter = (
             include = false;
         }
 
+        if (plugin.getLatestVersionNumber() === plugin.getInstalledVersionNumber()) {
+            include = false;
+        }
+
         if (filters.excludeDisabledPlugins && enabledPlugins) {
             include = include && enabledPlugins[plugin.getPluginId()] === true;
         }
@@ -85,6 +92,10 @@ const filter = (
             );
 
             include = include && releaseAfterDismissedDate != undefined;
+        }
+
+        if (HIDE_THIS_PLUGINS_UPDATES && THIS_PLUGIN_ID) {
+            include = include && plugin.getPluginId() !== THIS_PLUGIN_ID;
         }
 
         return include;
