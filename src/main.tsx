@@ -207,7 +207,9 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
         const dismissedPluginVersionsDiv = containerEl.createDiv();
         this.dismissedVersionsRootComponent = renderRootComponent(
             dismissedPluginVersionsDiv,
-            <DismissedPluginVersions />
+            <DismissedPluginVersions
+                persistPluginSettings={(settings) => this.plugin.saveSettings(settings)}
+            />
         );
     }
 

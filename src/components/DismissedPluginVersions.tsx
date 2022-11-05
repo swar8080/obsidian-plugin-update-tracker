@@ -1,22 +1,41 @@
 import isEmpty from 'lodash/isEmpty';
 import { PluginManifest } from 'obsidian';
 import * as React from 'react';
-import { PluginDismissedVersions } from 'src/domain/pluginSettings';
+import { PluginDismissedVersions, PluginSettings } from 'src/domain/pluginSettings';
 import { groupById } from 'src/domain/util/groupById';
 import { semverCompare } from 'src/domain/util/semverCompare';
-import { useAppSelector } from 'src/state';
+import { useAppDispatch, useAppSelector } from 'src/state';
+import { unDismissPluginVersion } from 'src/state/actionProducers/undismissPluginVersion';
 import styled from 'styled-components';
 
-const DismissedPluginVersionsConnected: React.FC<{}> = ({}) => {
+interface DismissedPluginVersionsConnectedProps {
+    persistPluginSettings: (settings: PluginSettings) => Promise<void>;
+}
+
+const DismissedPluginVersionsConnected: React.FC<DismissedPluginVersionsConnectedProps> = ({
+    persistPluginSettings,
+}) => {
     const dismissedVersionsByPluginId = useAppSelector(
         (state) => state.obsidian.settings.dismissedVersionsByPluginId
     );
     const pluginManifests = useAppSelector((state) => state.obsidian.pluginManifests);
+    const dispatch = useAppDispatch();
+
+    async function handleUndismissVersion(pluginId: string, versionNumber: string) {
+        return dispatch(
+            unDismissPluginVersion({
+                pluginId,
+                versionNumber,
+                persistPluginSettings,
+            })
+        );
+    }
 
     return (
         <DismissedPluginVersions
             dismissedVersionsByPluginId={dismissedVersionsByPluginId}
             pluginManifests={pluginManifests}
+            onClickUndismissVersion={handleUndismissVersion}
         />
     );
 };
@@ -24,11 +43,13 @@ const DismissedPluginVersionsConnected: React.FC<{}> = ({}) => {
 interface DismissedPluginVersionsProps {
     dismissedVersionsByPluginId: Record<string, PluginDismissedVersions>;
     pluginManifests: PluginManifest[];
+    onClickUndismissVersion: (pluginId: string, versionNumber: string) => Promise<any>;
 }
 
 const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
     dismissedVersionsByPluginId,
     pluginManifests,
+    onClickUndismissVersion,
 }) => {
     const rows = React.useMemo(() => {
         let denormalizedRows: DismissedVersionRow[] = [];
@@ -86,7 +107,11 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
                         <span>{row.pluginName} (</span>
                         <a href={releaseUrl}>{row.versionName}</a>
                         <span>)</span>
-                        <button>X</button>
+                        <button
+                            onClick={() => onClickUndismissVersion(row.pluginId, row.versionNumber)}
+                        >
+                            X
+                        </button>
                     </DivDismissedVersionRow>
                 );
             })}
