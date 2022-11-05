@@ -22,7 +22,7 @@ export const cleanupDismissedPluginVersions = createAsyncThunk(
             const cleanedSettings: PluginSettings = {
                 ...settings,
                 dismissedVersionsByPluginId: Object.keys(
-                    settings.dismissedVersionsByPluginId,
+                    settings.dismissedVersionsByPluginId
                 ).reduce((combined, pluginId) => {
                     const cleanedDismissedVersions: PluginDismissedVersions = {
                         ...settings.dismissedVersionsByPluginId[pluginId],

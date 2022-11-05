@@ -18,6 +18,9 @@ const DismissedPluginVersionsConnected: React.FC<DismissedPluginVersionsConnecte
     const dismissedVersionsByPluginId = useAppSelector(
         (state) => state.obsidian.settings.dismissedVersionsByPluginId
     );
+    const isUpdatingDismissedVersions = useAppSelector(
+        (state) => state.releases.isUpdatingDismissedVersions
+    );
     const pluginManifests = useAppSelector((state) => state.obsidian.pluginManifests);
     const dispatch = useAppDispatch();
 
@@ -35,6 +38,7 @@ const DismissedPluginVersionsConnected: React.FC<DismissedPluginVersionsConnecte
         <DismissedPluginVersions
             dismissedVersionsByPluginId={dismissedVersionsByPluginId}
             pluginManifests={pluginManifests}
+            isUpdatingDismissedVersions={isUpdatingDismissedVersions}
             onClickUndismissVersion={handleUndismissVersion}
         />
     );
@@ -43,12 +47,14 @@ const DismissedPluginVersionsConnected: React.FC<DismissedPluginVersionsConnecte
 interface DismissedPluginVersionsProps {
     dismissedVersionsByPluginId: Record<string, PluginDismissedVersions>;
     pluginManifests: PluginManifest[];
+    isUpdatingDismissedVersions: boolean;
     onClickUndismissVersion: (pluginId: string, versionNumber: string) => Promise<any>;
 }
 
 const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
     dismissedVersionsByPluginId,
     pluginManifests,
+    isUpdatingDismissedVersions,
     onClickUndismissVersion,
 }) => {
     const rows = React.useMemo(() => {
@@ -109,6 +115,7 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
                         <span>)</span>
                         <button
                             onClick={() => onClickUndismissVersion(row.pluginId, row.versionNumber)}
+                            disabled={isUpdatingDismissedVersions}
                         >
                             X
                         </button>
