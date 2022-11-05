@@ -204,13 +204,16 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                     })
             );
 
-        const dismissedPluginVersionsDiv = containerEl.createDiv()
-        this.dismissedVersionsRootComponent = renderRootComponent(dismissedPluginVersionsDiv, <DismissedPluginVersions/>)
+        const dismissedPluginVersionsDiv = containerEl.createDiv();
+        this.dismissedVersionsRootComponent = renderRootComponent(
+            dismissedPluginVersionsDiv,
+            <DismissedPluginVersions />
+        );
     }
 
     hide() {
         if (this.dismissedVersionsRootComponent) {
-            this.dismissedVersionsRootComponent.unmount()
+            this.dismissedVersionsRootComponent.unmount();
         }
     }
 }
