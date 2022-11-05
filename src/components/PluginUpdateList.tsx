@@ -144,12 +144,32 @@ export const PluginUpdateList: React.FC<{
     isUpdatingDismissedVersions,
     handleClickDismissPluginVersions,
 }) => {
+    /**
+     * Keeps track of latest update time of each plugin, remembering the update time of versions that are dismissed.
+     * This avoids the plugin's location moving after dimissing one of its many versions.
+     */
+    const latestUpdateDatesByPlugin = React.useRef<Record<string, dayjs.Dayjs>>({});
+    React.useMemo(() => {
+        plugins.forEach((plugin) => {
+            const latestVisibleVersionUpdatedAt = dayjs(plugin.lastUpdatedTime || 0);
+            if (
+                !(plugin.id in latestUpdateDatesByPlugin.current) ||
+                latestVisibleVersionUpdatedAt.isAfter(latestUpdateDatesByPlugin.current[plugin.id])
+            ) {
+                latestUpdateDatesByPlugin.current[plugin.id] = latestVisibleVersionUpdatedAt;
+            }
+        });
+    }, [plugins]);
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
             plugins
                 .sort((p1, p2) =>
                     //More recently updated first
-                    dayjs(p1.lastUpdatedTime || 0) > dayjs(p2.lastUpdatedTime || 0) ? -1 : 1
+                    latestUpdateDatesByPlugin.current[p1.id].isAfter(
+                        latestUpdateDatesByPlugin.current[p2.id]
+                    )
+                        ? -1
+                        : 1
                 )
                 .map((plugin) => ({
                     ...plugin,
