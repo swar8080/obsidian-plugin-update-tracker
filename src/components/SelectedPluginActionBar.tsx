@@ -4,11 +4,13 @@ import styled from 'styled-components';
 interface SelectedPluginActionBarProps {
     numberOfPluginsSelected: number;
     onClickInstall: () => void;
+    onClickDismissVersions: () => void;
 }
 
 const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
     numberOfPluginsSelected,
     onClickInstall,
+    onClickDismissVersions,
 }) => {
     const headerText = `${numberOfPluginsSelected} Plugin${
         numberOfPluginsSelected != 1 ? 's' : ''
@@ -18,6 +20,7 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
         <DivSelectedPluginActionBarContainer>
             <h4>{headerText}</h4>
             <button onClick={onClickInstall}>Update Plugins</button>
+            <button onClick={onClickDismissVersions}>Ignore Versions</button>
         </DivSelectedPluginActionBarContainer>
     );
 };

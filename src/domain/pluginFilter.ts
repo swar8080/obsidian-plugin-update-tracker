@@ -30,6 +30,7 @@ const filter = (
 ): InstalledPluginReleases[] => {
     const allPlugins = InstalledPluginReleases.create(installedPlugins, releases);
     const filters = Object.assign({}, DEFAULT_FILTERS, filterOverrides);
+    const isPluginVersionDismissed = buildDismissedPluginVersionMemo(pluginSettings);
 
     return allPlugins.filter((plugin) => {
         let include = true;
@@ -49,6 +50,14 @@ const filter = (
                 pluginSettings.daysToSuppressNewUpdates > 0 &&
                 now.diff(version.updatedAt, 'days') < pluginSettings.daysToSuppressNewUpdates
             ) {
+                return false;
+            }
+
+            if (isPluginVersionDismissed(plugin.getPluginId(), version.versionNumber)) {
+                return false;
+            }
+
+            if (!version.fileAssetIds) {
                 return false;
             }
 
@@ -81,5 +90,20 @@ const filter = (
         return include;
     });
 };
+
+function buildDismissedPluginVersionMemo(
+    settings: PluginSettings
+): (pluginId: string, versionNumber: string) => boolean {
+    const idVersionSet: Set<string> = new Set();
+
+    const pluginIds = Object.keys(settings.dismissedVersionsByPluginId);
+    for (const pluginId of pluginIds) {
+        settings.dismissedVersionsByPluginId[pluginId].dismissedVersions.forEach(
+            (dismissedVersion) => idVersionSet.add(pluginId + dismissedVersion.versionNumber)
+        );
+    }
+
+    return (pluginId, versionNumber) => idVersionSet.has(pluginId + versionNumber);
+}
 
 export default filter;

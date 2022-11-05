@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import * as React from 'react';
 import styled from 'styled-components';
-import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
 import { pluralize } from '../domain/util/pluralize';
 import { useAppDispatch, useAppSelector } from '../state';
 import { acknowledgeUpdateResult } from '../state/actionProducers/acknowledgeUpdateResult';
 import { PluginUpdateResult, PluginUpdateStatus } from '../state/obsidianReducer';
+import { countSelectedPlugins } from '../state/selectors/countSelectedPlugins';
 
 interface PluginUpdateProgressTrackerProps {
     titleEl: HTMLElement | undefined;

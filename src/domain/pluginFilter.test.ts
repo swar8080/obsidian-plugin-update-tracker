@@ -18,9 +18,10 @@ describe('pluginFilter', () => {
     const NEW_PLUGIN_VERSION_UPDATED_AT = '2022-06-16T6:00:00Z';
 
     let pluginSettings: PluginSettings;
-    const PLUGIN_SETTINGS_BASE = {
+    const PLUGIN_SETTINGS_BASE: PluginSettings = {
         daysToSuppressNewUpdates: 0,
         dismissedPublishedDateByPluginId: {},
+        dismissedVersionsByPluginId: {},
     };
 
     let pluginManifests: PluginManifest[];
@@ -44,7 +45,10 @@ describe('pluginFilter', () => {
         areNotesTruncated: false,
         downloads: 123,
         publishedAt: NEW_PLUGIN_VERSION_PUBLISHED_DATE,
-        fileAssetIds: undefined,
+        fileAssetIds: {
+            mainJs: id++,
+            manifestJson: id++,
+        },
         updatedAt: NEW_PLUGIN_VERSION_UPDATED_AT,
     };
     const PLUGIN_NEW_RELEASES_BASE: Omit<PluginReleases, 'newVersions'> = {

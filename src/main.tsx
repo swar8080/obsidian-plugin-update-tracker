@@ -32,7 +32,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     async onload() {
         this.registerView(
             PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
-            (leaf) => new PluginUpdateManagerView(leaf)
+            (leaf) => new PluginUpdateManagerView(this, leaf)
         );
 
         //reset the store in-case this plugin was just updated and then reloaded
@@ -54,9 +54,10 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         store.dispatch(syncSettings(this.settings));
     }
 
-    async saveSettings() {
-        await this.saveData(this.settings);
-        store.dispatch(syncSettings(this.settings));
+    async saveSettings(settings: PluginSettings) {
+        this.settings = settings;
+        await this.saveData(settings);
+        store.dispatch(syncSettings(settings));
     }
 
     pollForInstalledPluginVersions() {
@@ -120,10 +121,12 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 }
 
 class PluginUpdateManagerView extends ItemView {
+    private plugin: PluginUpdateCheckerPlugin;
     private rootComponent: ReactDOM.Root | undefined;
 
-    constructor(leaf: WorkspaceLeaf) {
+    constructor(plugin: PluginUpdateCheckerPlugin, leaf: WorkspaceLeaf) {
         super(leaf);
+        this.plugin = plugin;
     }
 
     getViewType() {
@@ -143,7 +146,10 @@ class PluginUpdateManagerView extends ItemView {
 
         this.rootComponent = renderRootComponent(
             container,
-            <PluginUpdateManager titleEl={titleEl} />
+            <PluginUpdateManager
+                titleEl={titleEl}
+                persistPluginSettings={async (settings) => await this.plugin.saveSettings(settings)}
+            />
         );
     }
 
@@ -182,11 +188,11 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         }
 
                         if (!isNaN(days)) {
-                            this.plugin.settings = {
+                            const updatedSettings = {
                                 ...this.plugin.settings,
                                 daysToSuppressNewUpdates: days,
                             };
-                            await this.plugin.saveSettings();
+                            await this.plugin.saveSettings(updatedSettings);
                         }
                     })
             );
