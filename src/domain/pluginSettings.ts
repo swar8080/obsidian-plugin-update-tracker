@@ -1,6 +1,5 @@
 export type PluginSettings = {
     daysToSuppressNewUpdates: number;
-    dismissedPublishedDateByPluginId: Record<string, string>;
     dismissedVersionsByPluginId: Record<string, PluginDismissedVersions>;
 };
 
@@ -18,6 +17,5 @@ export type DismissedPluginVersion = {
 
 export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
     daysToSuppressNewUpdates: 0,
-    dismissedPublishedDateByPluginId: {},
     dismissedVersionsByPluginId: {},
 };

@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import find from 'lodash/find';
 import { PluginManifest, requireApiVersion } from 'obsidian';
 import { PluginSettings } from './pluginSettings';
 
@@ -56,7 +55,10 @@ const filter = (
                 return false;
             }
 
-            if (isPluginVersionDismissed(plugin.getPluginId(), version.versionNumber)) {
+            if (
+                filters.excludeDismissed &&
+                isPluginVersionDismissed(plugin.getPluginId(), version.versionNumber)
+            ) {
                 return false;
             }
 
@@ -78,20 +80,6 @@ const filter = (
 
         if (filters.excludeDisabledPlugins && enabledPlugins) {
             include = include && enabledPlugins[plugin.getPluginId()] === true;
-        }
-
-        if (filters.excludeDismissed) {
-            const pluginId = plugin.getPluginId();
-            const dimissedPublishedDate = pluginSettings.dismissedPublishedDateByPluginId[pluginId];
-
-            const releaseAfterDismissedDate = find(
-                newVersions,
-                (release) =>
-                    dimissedPublishedDate == undefined ||
-                    release.publishedAt > dimissedPublishedDate
-            );
-
-            include = include && releaseAfterDismissedDate != undefined;
         }
 
         if (HIDE_THIS_PLUGINS_UPDATES && THIS_PLUGIN_ID) {

@@ -20,7 +20,6 @@ describe('pluginFilter', () => {
     let pluginSettings: PluginSettings;
     const PLUGIN_SETTINGS_BASE: PluginSettings = {
         daysToSuppressNewUpdates: 0,
-        dismissedPublishedDateByPluginId: {},
         dismissedVersionsByPluginId: {},
     };
 
