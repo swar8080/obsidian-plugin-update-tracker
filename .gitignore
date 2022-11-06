@@ -1,6 +1,7 @@
 /.env.local.dev
 /.env.local.prod
 *.js
+!jest.config.js
 manifest.json.bak
 styles.css
 

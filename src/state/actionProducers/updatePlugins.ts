@@ -5,6 +5,7 @@ import { getReleaseAsset } from '../../domain/api';
 import InstalledPluginReleases from '../../domain/InstalledPluginReleases';
 import { sleep } from '../../domain/util/sleep';
 import { githubRateLimit, ObsidianApp, pluginUpdateStatusChange } from '../obsidianReducer';
+import { getSelectedPluginIds } from '../selectors/getSelectedPluginIds';
 import { syncApp } from './syncApp';
 
 const SIMULATE_UPDATE_PLUGINS = process.env['OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'] === 'true';
@@ -25,9 +26,7 @@ export const updatePlugins = createAsyncThunk(
             return combined;
         }, {} as Record<string, InstalledPluginReleases>);
 
-        const selectedPluginIds = Object.keys(state.obsidian.selectedPluginsById).filter(
-            (pluginId) => state.obsidian.selectedPluginsById[pluginId]
-        );
+        const selectedPluginIds = getSelectedPluginIds(state);
 
         let isRateLimited = false;
         for (const pluginId of selectedPluginIds) {

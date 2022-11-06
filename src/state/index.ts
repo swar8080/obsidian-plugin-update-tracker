@@ -1,8 +1,8 @@
 import { AnyAction, combineReducers, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import logger from 'redux-logger';
-import ObsidianReducer from './obsidianReducer';
-import ReleaseReducer from './releasesReducer';
+import ObsidianReducer, { ObsidianState } from './obsidianReducer';
+import ReleaseReducer, { ReleaseState } from './releasesReducer';
 
 const reducers = combineReducers({
     obsidian: ObsidianReducer,
@@ -26,7 +26,10 @@ export const store = configureStore({
     },
 });
 
-export type State = ReturnType<typeof store.getState>;
+export type State = {
+    obsidian: ObsidianState;
+    releases: ReleaseState;
+};
 type Dispatcher = typeof store.dispatch;
 
 export const useAppDispatch: () => Dispatcher = useDispatch;

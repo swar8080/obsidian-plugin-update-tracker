@@ -10,10 +10,12 @@ import {
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
+import DismissedPluginVersions from './components/DismissedPluginVersions';
 import PluginUpdateManager from './components/PluginUpdateManager';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
+import { cleanupDismissedPluginVersions } from './state/actionProducers/cleanupDismissedPluginVersions';
 import { fetchReleases } from './state/actionProducers/fetchReleases';
 import { syncApp } from './state/actionProducers/syncApp';
 import { syncSettings, syncThisPluginId } from './state/obsidianReducer';
@@ -32,7 +34,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     async onload() {
         this.registerView(
             PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
-            (leaf) => new PluginUpdateManagerView(leaf)
+            (leaf) => new PluginUpdateManagerView(this, leaf)
         );
 
         //reset the store in-case this plugin was just updated and then reloaded
@@ -46,6 +48,13 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         this.renderUpdateStatusIcon();
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
+
+        //Clean-up previously dismissed versions that are now behind the currently installed version
+        store.dispatch(
+            cleanupDismissedPluginVersions({
+                persistPluginSettings: (settings) => this.saveSettings(settings),
+            })
+        );
     }
 
     async loadSettings() {
@@ -54,9 +63,10 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         store.dispatch(syncSettings(this.settings));
     }
 
-    async saveSettings() {
-        await this.saveData(this.settings);
-        store.dispatch(syncSettings(this.settings));
+    async saveSettings(settings: PluginSettings) {
+        this.settings = settings;
+        await this.saveData(settings);
+        store.dispatch(syncSettings(settings));
     }
 
     pollForInstalledPluginVersions() {
@@ -120,10 +130,12 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 }
 
 class PluginUpdateManagerView extends ItemView {
+    private plugin: PluginUpdateCheckerPlugin;
     private rootComponent: ReactDOM.Root | undefined;
 
-    constructor(leaf: WorkspaceLeaf) {
+    constructor(plugin: PluginUpdateCheckerPlugin, leaf: WorkspaceLeaf) {
         super(leaf);
+        this.plugin = plugin;
     }
 
     getViewType() {
@@ -143,8 +155,16 @@ class PluginUpdateManagerView extends ItemView {
 
         this.rootComponent = renderRootComponent(
             container,
-            <PluginUpdateManager titleEl={titleEl} />
+            <PluginUpdateManager
+                titleEl={titleEl}
+                persistPluginSettings={async (settings) => await this.plugin.saveSettings(settings)}
+                closeObsidianTab={() => this.closeThisTab()}
+            />
         );
+    }
+
+    closeThisTab() {
+        this.plugin.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
     }
 
     async onClose() {
@@ -156,6 +176,7 @@ class PluginUpdateManagerView extends ItemView {
 
 class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
     private plugin: PluginUpdateCheckerPlugin;
+    private dismissedVersionsRootComponent: ReactDOM.Root | undefined;
 
     constructor(app: App, plugin: PluginUpdateCheckerPlugin) {
         super(app, plugin);
@@ -182,14 +203,28 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         }
 
                         if (!isNaN(days)) {
-                            this.plugin.settings = {
+                            const updatedSettings = {
                                 ...this.plugin.settings,
                                 daysToSuppressNewUpdates: days,
                             };
-                            await this.plugin.saveSettings();
+                            await this.plugin.saveSettings(updatedSettings);
                         }
                     })
             );
+
+        const dismissedPluginVersionsDiv = containerEl.createDiv();
+        this.dismissedVersionsRootComponent = renderRootComponent(
+            dismissedPluginVersionsDiv,
+            <DismissedPluginVersions
+                persistPluginSettings={(settings) => this.plugin.saveSettings(settings)}
+            />
+        );
+    }
+
+    hide() {
+        if (this.dismissedVersionsRootComponent) {
+            this.dismissedVersionsRootComponent.unmount();
+        }
     }
 }
 

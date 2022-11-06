@@ -1,4 +1,4 @@
-import { faPlug } from '@fortawesome/free-solid-svg-icons';
+import { faPlug } from '@fortawesome/free-solid-svg-icons/faPlug';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as React from 'react';
 import { useAppSelector } from 'src/state';

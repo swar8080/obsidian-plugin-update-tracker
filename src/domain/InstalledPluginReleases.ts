@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import filter from 'lodash/filter';
 import map from 'lodash/map';
 import orderBy from 'lodash/orderBy';
-import { PluginManifest, requireApiVersion } from 'obsidian';
+import { PluginManifest } from 'obsidian';
 import { PluginFileAssetIds, PluginReleases, ReleaseVersion } from 'shared-types';
 export default class InstalledPluginReleases {
     private plugin: PluginManifest;
@@ -40,18 +40,14 @@ export default class InstalledPluginReleases {
         this.releases = releases;
     }
 
-    public getUninstalledNewReleases(versionCompatabilityCheck: boolean): ReleaseVersion[] {
-        if (this.getInstalledVersionNumber() == this.getLatestVersionNumber()) {
-            return [];
+    public keepReleaseVersions(keepFilter: (version: ReleaseVersion) => boolean): void {
+        if (this.releases) {
+            this.releases.newVersions = filter(this.releases.newVersions, keepFilter);
         }
+    }
 
-        return filter(
-            this.releases?.newVersions,
-            (version) =>
-                !versionCompatabilityCheck ||
-                version.minObsidianAppVersion == null ||
-                requireApiVersion(version.minObsidianAppVersion)
-        );
+    public getReleaseVersions(): ReleaseVersion[] {
+        return this.releases?.newVersions || [];
     }
 
     public getPluginId(): string {

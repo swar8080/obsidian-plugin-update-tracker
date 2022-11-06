@@ -10,26 +10,50 @@ import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import * as React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { PluginSettings } from 'src/domain/pluginSettings';
+import { groupById } from 'src/domain/util/groupById';
+import {
+    dismissSelectedPluginVersions,
+    PluginVersionsToDismiss,
+} from 'src/state/actionProducers/dismissPluginVersions';
+import { getSelectedPluginIds } from 'src/state/selectors/getSelectedPluginIds';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
-import { countSelectedPlugins } from '../domain/util/countSelectedPlugins';
 import { useAppDispatch, useAppSelector } from '../state';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
 import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
+import { countSelectedPlugins } from '../state/selectors/countSelectedPlugins';
+import { NewTextFadeInThenOutAnimation } from './common/NewTextFadeOutThenInAnimation';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
 
 interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
+    persistPluginSettings: (settings: PluginSettings) => Promise<void>;
+    closeObsidianTab: () => void;
 }
 
-const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl }) => {
+const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
+    titleEl,
+    persistPluginSettings,
+    closeObsidianTab,
+}) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
-    const selectedPluginsById = useAppSelector((state) => state.obsidian.selectedPluginsById);
+    const isLoadingReleases = useAppSelector((state) => state.releases.isLoadingReleases);
+    const selectedPluginsById = useAppSelector(getSelectedPluginIds);
     const selectedPluginCount = useAppSelector(countSelectedPlugins);
+    const isUpdatingDismissedVersions = useAppSelector(
+        (state) => state.releases.isUpdatingDismissedVersions
+    );
     const dispatch = useAppDispatch();
+
+    React.useEffect(() => {
+        if (!isLoadingReleases && allPluginReleases.length === 0) {
+            closeObsidianTab();
+        }
+    }, [isLoadingReleases, allPluginReleases]);
 
     React.useEffect(() => {
         let titleText = 'Available Plugin Updates';
@@ -55,6 +79,24 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
         return dispatch(updatePlugins());
     }
 
+    async function handleDismissPluginVersions(): Promise<void> {
+        const installedById = groupById(allPluginReleases, (release) => release.getPluginId());
+        const selectedPluginVersions: PluginVersionsToDismiss = selectedPluginsById.map(
+            (pluginId) => ({
+                pluginId,
+                pluginVersionNumber: installedById[pluginId].getLatestVersionNumber(),
+                isLastAvailableVersion: installedById[pluginId].getReleaseVersions().length <= 1,
+            })
+        );
+
+        await dispatch(
+            dismissSelectedPluginVersions({
+                pluginVersionsToDismiss: selectedPluginVersions,
+                persistPluginSettings,
+            })
+        );
+    }
+
     const plugins: PluginViewModel[] = React.useMemo(
         () =>
             allPluginReleases.map((pluginReleases) => ({
@@ -65,7 +107,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
                 githubRepositoryUrl: pluginReleases.getPluginRepositoryUrl(),
                 installedVersionNumber: pluginReleases.getInstalledVersionNumber(),
                 latestInstallableVersionNumber: pluginReleases.getLatestVersionNumber(),
-                releaseNotes: pluginReleases.getUninstalledNewReleases(true).map((release) => ({
+                releaseNotes: pluginReleases.getReleaseVersions().map((release) => ({
                     releaseId: release.releaseId,
                     versionName: release.versionName,
                     versionNumber: release.versionNumber,
@@ -80,10 +122,12 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
         <PluginUpdateList
             plugins={plugins}
             selectedPluginCount={selectedPluginCount}
-            selectedPluginsById={selectedPluginsById}
+            selectedPluginIds={selectedPluginsById}
+            isUpdatingDismissedVersions={isUpdatingDismissedVersions}
             handleToggleSelection={handleToggleSelection}
             handleToggleSelectAll={handleToggleSelectAll}
             handleInstall={handleClickInstall}
+            handleClickDismissPluginVersions={handleDismissPluginVersions}
         />
     );
 };
@@ -91,26 +135,50 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({ titleEl })
 export const PluginUpdateList: React.FC<{
     plugins: PluginViewModel[];
     isInitiallyExpanded?: boolean;
-    selectedPluginsById: Record<string, boolean>;
+    selectedPluginIds: string[];
     selectedPluginCount: number;
     handleToggleSelection: (pluginId: string, selected: boolean) => any;
     handleToggleSelectAll: (selectAll: boolean) => void;
     handleInstall: () => Promise<any>;
+    isUpdatingDismissedVersions: boolean;
+    handleClickDismissPluginVersions: () => any;
 }> = ({
     plugins,
     isInitiallyExpanded,
-    selectedPluginsById,
+    selectedPluginIds,
     selectedPluginCount,
     handleToggleSelection,
     handleToggleSelectAll,
     handleInstall,
+    isUpdatingDismissedVersions,
+    handleClickDismissPluginVersions,
 }) => {
+    /**
+     * Keeps track of latest update time of each plugin, remembering the update time of versions that are dismissed.
+     * This avoids the plugin's location moving after dimissing one of its many versions.
+     */
+    const latestUpdateDatesByPlugin = React.useRef<Record<string, dayjs.Dayjs>>({});
+    React.useMemo(() => {
+        plugins.forEach((plugin) => {
+            const latestVisibleVersionUpdatedAt = dayjs(plugin.lastUpdatedTime || 0);
+            if (
+                !(plugin.id in latestUpdateDatesByPlugin.current) ||
+                latestVisibleVersionUpdatedAt.isAfter(latestUpdateDatesByPlugin.current[plugin.id])
+            ) {
+                latestUpdateDatesByPlugin.current[plugin.id] = latestVisibleVersionUpdatedAt;
+            }
+        });
+    }, [plugins]);
     const sortedAndFormattedPluginData = React.useMemo(
         () =>
             plugins
                 .sort((p1, p2) =>
                     //More recently updated first
-                    dayjs(p1.lastUpdatedTime || 0) > dayjs(p2.lastUpdatedTime || 0) ? -1 : 1
+                    latestUpdateDatesByPlugin.current[p1.id].isAfter(
+                        latestUpdateDatesByPlugin.current[p2.id]
+                    )
+                        ? -1
+                        : 1
                 )
                 .map((plugin) => ({
                     ...plugin,
@@ -126,14 +194,18 @@ export const PluginUpdateList: React.FC<{
                 })),
         [plugins]
     );
+    const selectedPluginIdsSet = React.useMemo(
+        () => new Set(selectedPluginIds),
+        [selectedPluginIds]
+    );
 
     function handleToggleSelectedClicked(pluginId: string, e: React.SyntheticEvent) {
         const checkbox = e.target as HTMLInputElement;
         handleToggleSelection(pluginId, checkbox.checked);
     }
 
-    function handleClickInstall() {
-        handleInstall();
+    async function handleClickInstall() {
+        return await handleInstall();
     }
 
     function handleClickSelectAll(e: React.SyntheticEvent) {
@@ -143,6 +215,7 @@ export const PluginUpdateList: React.FC<{
 
     const isSelectAllChecked = selectedPluginCount === plugins.length;
     const selectAllTitle = isSelectAllChecked ? 'Deselect All' : 'Select All';
+    const isDisabled = isUpdatingDismissedVersions;
 
     return (
         <>
@@ -152,6 +225,7 @@ export const PluginUpdateList: React.FC<{
                         type="checkbox"
                         onChange={handleClickSelectAll}
                         checked={isSelectAllChecked}
+                        disabled={isDisabled}
                         title={selectAllTitle}
                         aria-label={selectAllTitle}
                         aria-label-position="top"
@@ -164,8 +238,8 @@ export const PluginUpdateList: React.FC<{
                         plugin={plugin}
                         key={plugin.id}
                         isInitiallyExpanded={plugins.length === 1 || !!isInitiallyExpanded}
-                        selectable={plugin.hasInstallableReleaseAssets}
-                        selected={!!selectedPluginsById[plugin.id]}
+                        isSelectionDisabled={isDisabled}
+                        selected={selectedPluginIdsSet.has(plugin.id)}
                         onToggleSelectedClicked={(e) => handleToggleSelectedClicked(plugin.id, e)}
                     />
                 ))}
@@ -175,7 +249,9 @@ export const PluginUpdateList: React.FC<{
                 <ActionBarContainer>
                     <SelectedPluginActionBar
                         numberOfPluginsSelected={selectedPluginCount}
+                        isDisabled={isDisabled}
                         onClickInstall={handleClickInstall}
+                        onClickDismissVersions={handleClickDismissPluginVersions}
                     />
                 </ActionBarContainer>
             )}
@@ -203,14 +279,15 @@ export type PluginViewModel = {
 const PluginUpdates: React.FC<{
     plugin: PluginViewModel;
     isInitiallyExpanded: boolean;
-    selectable: boolean;
+    isSelectionDisabled: boolean;
     selected: boolean;
     onToggleSelectedClicked: (e: React.SyntheticEvent) => void;
-}> = ({ plugin, isInitiallyExpanded, selected, onToggleSelectedClicked }) => {
+}> = ({ plugin, isInitiallyExpanded, isSelectionDisabled, selected, onToggleSelectedClicked }) => {
     const [isReleaseNotesExpanded, setIsReleaseNotesExpanded] = React.useState(isInitiallyExpanded);
     const hasReleaseNotes =
         find(plugin.releaseNotes, (releaseNote) => !isEmpty(releaseNote.notes)) != null;
 
+    const headerText = `${plugin.name} (${plugin.latestInstallableVersionNumber})`;
     const downloadsText = `${plugin.downloads.toLocaleString()} Downloads`;
     const isLastUpdatedTimeKnown = !!plugin.lastUpdatedTime;
     const lastUpdatedText = `Updated ${plugin.lastUpdatedTime?.fromNow()}`;
@@ -219,9 +296,16 @@ const PluginUpdates: React.FC<{
     return (
         <DivPluginUpdateContainer>
             <DivPluginUpdateHeaderContainer>
-                <H2PluginName>{`${plugin.name} (${plugin.latestInstallableVersionNumber})`}</H2PluginName>
+                <H2PluginName>
+                    <NewTextFadeInThenOutAnimation text={headerText} />
+                </H2PluginName>
                 <DivSelectPluginContainer>
-                    <input type="checkbox" checked={selected} onChange={onToggleSelectedClicked} />
+                    <input
+                        type="checkbox"
+                        checked={selected}
+                        disabled={isSelectionDisabled}
+                        onChange={onToggleSelectedClicked}
+                    />
                 </DivSelectPluginContainer>
             </DivPluginUpdateHeaderContainer>
             <DivReleaseSummaryContainer>

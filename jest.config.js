@@ -1,7 +1,7 @@
 module.exports = {
     testEnvironment: 'node',
-    roots: ['get-releases-lambda/'],
-    testMatch: ['**/*.test.ts'],
+    roots: ['src/', 'backend/get-releases-lambda/'],
+    testMatch: ['**/*.test.ts', '**/*.test.js'],
     transform: {
       '^.+\\.tsx?$': 'ts-jest'
     }
