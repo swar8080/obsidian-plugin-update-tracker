@@ -10,7 +10,7 @@ import { RedisClient } from './redisClient';
 import { ReleaseRepository } from './ReleaseRepository';
 import { FallbackReleaseRepository } from './ReleaseRepository/FallbackReleaseRepository';
 
-const MAX_PLUGIN_REQUEST_LENGTH = 100;
+const MAX_PLUGIN_REQUEST_LENGTH = 150;
 
 let _getReleases: GetReleases | null = null;
 let _redisClient: RedisClient;
