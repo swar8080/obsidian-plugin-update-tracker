@@ -9,6 +9,7 @@
       - [Statistics on new versions](#statistics-on-new-versions)
       - [Wait a few days before showing updates](#wait-a-few-days-before-showing-updates)
       - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
+  * [Ignore Specific Plugin Updates](#ignore-specific-plugin-updates)      
 - [Feature Ideas](#feature-ideas)
   * [Keeping your plugin update list clean](#keeping-your-update-list-clean)
   * [Theme update tracking](#theme-update-tracking)
@@ -60,12 +61,16 @@ Clicking *Code Changes* will bring you to a page like https://github.com/blacksm
 
 <sub>⚠️ The code in the git diff may be different than what's installed. Obsidian downloads a separate `main.js` file from the github release, which the author could add any code to.</sub>
 
+## Ignore Specific Plugin Updates
+Hide new plugin versions that are risky or unstable from the plugin icon count and update list:
+
+https://user-images.githubusercontent.com/17691679/200182586-c0a237ff-3cf4-4693-b1c5-9051b599e1ae.mov
+
 # Feature Ideas
 
 Vote on or suggest other features here: https://strawpoll.com/polls/NMnQBOJwWg6
 
 ## Keeping your update list clean
-- Option to hide/dismiss a new version of a plugin
 - Option to "snooze"/hide a new version of a plugin until a time that you specify
 - Setting to exclude disabled plugins from update counts
 - Add a toggle to show/hide disabled plugins
