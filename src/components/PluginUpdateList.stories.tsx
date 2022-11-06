@@ -6,11 +6,13 @@ import { PluginUpdateList, PluginViewModel } from './PluginUpdateList';
 type Story = ComponentStory<typeof PluginUpdateList>;
 
 const PLUGIN_UPDATE_LIST_BASE = {
-    selectedPluginsById: {},
+    selectedPluginIds: [],
     selectedPluginCount: 0,
     handleToggleSelection: () => {},
     handleToggleSelectAll: () => {},
     handleInstall: () => Promise.resolve(),
+    isUpdatingDismissedVersions: false,
+    handleClickDismissPluginVersions: () => {},
 };
 
 const MOST_RECENTLY_UPDATED_PLUGIN_TIME = dayjs().subtract(32, 'hours');
