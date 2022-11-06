@@ -3,11 +3,12 @@ import { PluginManifest } from 'obsidian';
 import { PluginReleases, ReleaseVersion } from '../../shared-types';
 import InstalledPluginReleases from './InstalledPluginReleases';
 import pluginFilter, { PluginFilters } from './pluginFilter';
-import { PluginSettings } from './pluginSettings';
+import { DismissedPluginVersion, PluginSettings } from './pluginSettings';
 
 describe('pluginFilter', () => {
     let id = 1000;
 
+    const PREVIOUS_PLUGIN_VERSION = '0.99.99';
     const INSTALLED_PLUGIN_VERSION = '1.0.0';
     const INSTALLED_PLUGIN_ID = 'plugin 1 id';
     const COMPATIBLE_APP_VERSION = '15.0.0';
@@ -75,6 +76,113 @@ describe('pluginFilter', () => {
                 newVersions: [{ ...PLUGIN_NEW_RELEASE_VERSION_BASE }],
             },
         ];
+    });
+
+    describe('semver filtering', () => {
+        it('includes versions with greater semver versions as installed', () => {
+            const result = testWithSemverVersion(NEW_PLUGIN_VERSION);
+
+            expect(result).toHaveLength(1);
+        });
+
+        it('ignores versions from an earlier semver version than installed', () => {
+            const result = testWithSemverVersion(PREVIOUS_PLUGIN_VERSION);
+
+            expect(result).toHaveLength(0);
+        });
+
+        it('ignores versions with the same semver version as installed', () => {
+            const result = testWithSemverVersion(INSTALLED_PLUGIN_VERSION);
+
+            expect(result).toHaveLength(0);
+        });
+
+        it('ignores versions without a semver version', () => {
+            const result = testWithSemverVersion(null);
+
+            expect(result).toHaveLength(0);
+        });
+
+        function testWithSemverVersion(version: string | null): InstalledPluginReleases[] {
+            //@ts-ignore
+            pluginReleases[0].newVersions[0].versionNumber = version;
+
+            return pluginFilter(
+                { ...DISABLED_FILTERS },
+                pluginSettings,
+                pluginManifests,
+                enabledPlugins,
+                pluginReleases
+            );
+        }
+    });
+
+    describe('dismissed version filtering', () => {
+        const DISMISSED_VERSION_BASE: Omit<DismissedPluginVersion, 'versionNumber'> = {
+            versionName: '',
+            publishedAt: '',
+        };
+        const SOME_OTHER_PLUGIN_ID = 'some other plugin id';
+
+        beforeEach(() => {
+            pluginSettings.dismissedVersionsByPluginId = {
+                [INSTALLED_PLUGIN_ID]: {
+                    pluginRepoPath: '',
+                    pluginId: INSTALLED_PLUGIN_ID,
+                    dismissedVersions: [],
+                },
+                [SOME_OTHER_PLUGIN_ID]: {
+                    pluginRepoPath: '',
+                    pluginId: SOME_OTHER_PLUGIN_ID,
+                    dismissedVersions: [],
+                },
+            };
+        });
+
+        it('ignores versions that are dismissed', () => {
+            pluginSettings.dismissedVersionsByPluginId[INSTALLED_PLUGIN_ID].dismissedVersions.push({
+                versionNumber: NEW_PLUGIN_VERSION,
+                ...DISMISSED_VERSION_BASE,
+            });
+
+            const result = testCase();
+
+            expect(result).toHaveLength(0);
+        });
+
+        it('includes versions when a different version was dismissed', () => {
+            pluginSettings.dismissedVersionsByPluginId[INSTALLED_PLUGIN_ID].dismissedVersions.push({
+                versionNumber: PREVIOUS_PLUGIN_VERSION,
+                ...DISMISSED_VERSION_BASE,
+            });
+
+            const result = testCase();
+
+            expect(result).toHaveLength(1);
+        });
+
+        it('includes versions when a different plugin dismissed the same version', () => {
+            pluginSettings.dismissedVersionsByPluginId[SOME_OTHER_PLUGIN_ID].dismissedVersions.push(
+                {
+                    versionNumber: NEW_PLUGIN_VERSION,
+                    ...DISMISSED_VERSION_BASE,
+                }
+            );
+
+            const result = testCase();
+
+            expect(result).toHaveLength(1);
+        });
+
+        function testCase(): InstalledPluginReleases[] {
+            return pluginFilter(
+                { ...DISABLED_FILTERS, excludeDismissed: true },
+                pluginSettings,
+                pluginManifests,
+                enabledPlugins,
+                pluginReleases
+            );
+        }
     });
 
     describe('version compatability filter', () => {
@@ -254,6 +362,20 @@ describe('pluginFilter', () => {
                 now
             );
         }
+    });
+
+    it('ignores versions without known asset ids', () => {
+        pluginReleases[0].newVersions[0].fileAssetIds = undefined;
+
+        const result = pluginFilter(
+            { ...DISABLED_FILTERS },
+            pluginSettings,
+            pluginManifests,
+            enabledPlugins,
+            pluginReleases
+        );
+
+        expect(result).toHaveLength(0);
     });
 
     function buildNextVersion(): ReleaseVersion {

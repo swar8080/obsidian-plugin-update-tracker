@@ -4,6 +4,7 @@ import { PluginSettings } from './pluginSettings';
 
 import { PluginReleases } from 'shared-types';
 import InstalledPluginReleases from './InstalledPluginReleases';
+import { semverCompare } from './util/semverCompare';
 
 const HIDE_THIS_PLUGINS_UPDATES = process.env['OBSIDIAN_APP_HIDE_THIS_PLUGINS_UPDATES'] === 'true';
 const THIS_PLUGIN_ID = process.env['OBSIDIAN_APP_THIS_PLUGIN_ID'];
@@ -66,15 +67,15 @@ const filter = (
                 return false;
             }
 
+            if (semverCompare(version.versionNumber, plugin.getInstalledVersionNumber()) <= 0) {
+                return false;
+            }
+
             return true;
         });
 
         const newVersions = plugin.getReleaseVersions();
         if (newVersions.length == 0) {
-            include = false;
-        }
-
-        if (plugin.getLatestVersionNumber() === plugin.getInstalledVersionNumber()) {
             include = false;
         }
 
