@@ -64,7 +64,7 @@ const DivActionButtonContainer = styled.div`
     align-items: center;
 
     button {
-        margin-right: 0.25rem;
+        margin-right: 0.5rem;
     }
 
     button:last-child {

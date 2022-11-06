@@ -1,4 +1,5 @@
-import isEmpty from 'lodash/isEmpty';
+import { faRotateLeft } from '@fortawesome/free-solid-svg-icons/faRotateLeft';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PluginManifest } from 'obsidian';
 import * as React from 'react';
 import { PluginDismissedVersions, PluginSettings } from 'src/domain/pluginSettings';
@@ -25,20 +26,21 @@ const DismissedPluginVersionsConnected: React.FC<DismissedPluginVersionsConnecte
     const dispatch = useAppDispatch();
 
     async function handleUndismissVersion(pluginId: string, versionNumber: string) {
-        return dispatch(
-            unDismissPluginVersion({
-                pluginId,
-                versionNumber,
-                persistPluginSettings,
-            })
-        );
+        if (!isUpdatingDismissedVersions) {
+            return dispatch(
+                unDismissPluginVersion({
+                    pluginId,
+                    versionNumber,
+                    persistPluginSettings,
+                })
+            );
+        }
     }
 
     return (
         <DismissedPluginVersions
             dismissedVersionsByPluginId={dismissedVersionsByPluginId}
             pluginManifests={pluginManifests}
-            isUpdatingDismissedVersions={isUpdatingDismissedVersions}
             onClickUndismissVersion={handleUndismissVersion}
         />
     );
@@ -47,14 +49,12 @@ const DismissedPluginVersionsConnected: React.FC<DismissedPluginVersionsConnecte
 interface DismissedPluginVersionsProps {
     dismissedVersionsByPluginId: Record<string, PluginDismissedVersions>;
     pluginManifests: PluginManifest[];
-    isUpdatingDismissedVersions: boolean;
     onClickUndismissVersion: (pluginId: string, versionNumber: string) => Promise<any>;
 }
 
 const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
     dismissedVersionsByPluginId,
     pluginManifests,
-    isUpdatingDismissedVersions,
     onClickUndismissVersion,
 }) => {
     const rows = React.useMemo(() => {
@@ -97,32 +97,43 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
         return denormalizedRows;
     }, [dismissedVersionsByPluginId, pluginManifests]);
 
-    if (isEmpty(rows)) {
-        return null;
-    }
-
+    const instructions = `You can hide specific plugin versions from appearing in the plugin icon count and plugin update list, and then unhide them below${
+        rows.length > 0 ? ':' : ''
+    }`;
     return (
-        <DivDismissedPluginVersionContainer>
+        <div>
             <hr />
-            <h3>Ignored Plugin Versions</h3>
-            {rows.map((row) => {
-                const releaseUrl = `https://github.com/${row.pluginRepo}/releases/tag/${row.versionNumber}`;
+            <H3RestoreIgnoredVersions>Restore Ignored Plugin Versions</H3RestoreIgnoredVersions>
+            <PDismissedVersionInfo>{instructions}</PDismissedVersionInfo>
+            <DivDismissedVersionRows>
+                {rows.length > 0 &&
+                    rows.map((row) => {
+                        const releaseUrl = `https://github.com/${row.pluginRepo}/releases/tag/${row.versionNumber}`;
 
-                return (
-                    <DivDismissedVersionRow key={row.pluginId + row.versionNumber}>
-                        <span>{row.pluginName} (</span>
-                        <a href={releaseUrl}>{row.versionName}</a>
-                        <span>)</span>
-                        <button
-                            onClick={() => onClickUndismissVersion(row.pluginId, row.versionNumber)}
-                            disabled={isUpdatingDismissedVersions}
-                        >
-                            X
-                        </button>
-                    </DivDismissedVersionRow>
-                );
-            })}
-        </DivDismissedPluginVersionContainer>
+                        return (
+                            <div key={row.pluginId + row.versionNumber}>
+                                <SpanUndismissIcon
+                                    onClick={() =>
+                                        onClickUndismissVersion(row.pluginId, row.versionNumber)
+                                    }
+                                    aria-label="Restore"
+                                    aria-label-position-="top"
+                                    className="clickable-icon"
+                                >
+                                    <FontAwesomeIcon icon={faRotateLeft} size="sm" />
+                                </SpanUndismissIcon>
+                                <span>{row.pluginName} (</span>
+                                <a href={releaseUrl}>{row.versionName}</a>
+                                <span>)</span>
+                            </div>
+                        );
+                    })}
+
+                {rows.length === 0 && (
+                    <PNoVersionsDismissed>No versions are ignored</PNoVersionsDismissed>
+                )}
+            </DivDismissedVersionRows>
+        </div>
     );
 };
 
@@ -135,8 +146,30 @@ type DismissedVersionRow = {
     publishedAt: string;
 };
 
-const DivDismissedPluginVersionContainer = styled.div``;
+const DivDismissedVersionRows = styled.div`
+    margin-top: 0.5rem;
+`;
 
-const DivDismissedVersionRow = styled.div``;
+const H3RestoreIgnoredVersions = styled.h3`
+    margin-bottom: 0.5rem;
+`;
+
+const PDismissedVersionInfo = styled.p`
+    margin: 0;
+`;
+
+const PNoVersionsDismissed = styled.p`
+    font-style: italic;
+    font-size: var(--font-ui-small);
+    margin: 0;
+`;
+
+const SpanUndismissIcon = styled.span`
+    color: var(--icon-color);
+    opacity: var(--icon-opacity);
+    cursor: var(--cursor);
+    display: inline;
+    padding-left: 0.375rem;
+`;
 
 export default DismissedPluginVersionsConnected;
