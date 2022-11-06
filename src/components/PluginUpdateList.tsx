@@ -204,8 +204,8 @@ export const PluginUpdateList: React.FC<{
         handleToggleSelection(pluginId, checkbox.checked);
     }
 
-    function handleClickInstall() {
-        handleInstall();
+    async function handleClickInstall() {
+        return await handleInstall();
     }
 
     function handleClickSelectAll(e: React.SyntheticEvent) {
