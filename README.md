@@ -1,6 +1,5 @@
 # Obsidian Plugin Update Tracker
 
-- [Installation](#installation)
 - [Features](#features)
   * [Know when installed plugins have updates](#know-when-installed-plugins-have-updates)
   * [View a list of updates](#view-a-list-of-updates)
@@ -10,15 +9,13 @@
       - [Statistics on new versions](#statistics-on-new-versions)
       - [Wait a few days before showing updates](#wait-a-few-days-before-showing-updates)
       - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
-  * [Ignore Specific Plugin Updates](#ignore-specific-plugin-updates)      
+  * [Ignore Specific Plugin Updates](#ignore-specific-plugin-updates) 
+- [Installation Link](#installation)     
 - [Feature Ideas](#feature-ideas)
   * [Keeping your plugin update list clean](#keeping-your-update-list-clean)
   * [Theme update tracking](#theme-update-tracking)
   * [More security heuristics](#more-security-heuristics)
 - [Checking for updates in other plugins using the API](#checking-for-updates-in-other-plugins-using-the-api)
-
-# Installation
-Visit this URL: obsidian://show-plugin?id=obsidian-plugin-update-tracker
 
 # Features
 
@@ -69,6 +66,9 @@ Clicking *Code Changes* will bring you to a page like https://github.com/blacksm
 Hide new plugin versions that you don't want to install from the plugin icon count and update list:
 
 https://user-images.githubusercontent.com/17691679/200182586-c0a237ff-3cf4-4693-b1c5-9051b599e1ae.mov
+
+# Installation
+Visit this URL: obsidian://show-plugin?id=obsidian-plugin-update-tracker
 
 # Feature Ideas
 
