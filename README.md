@@ -1,5 +1,6 @@
 # Obsidian Plugin Update Tracker
 
+- [Installation](#installation)
 - [Features](#features)
   * [Know when installed plugins have updates](#know-when-installed-plugins-have-updates)
   * [View a list of updates](#view-a-list-of-updates)
@@ -15,6 +16,9 @@
   * [Theme update tracking](#theme-update-tracking)
   * [More security heuristics](#more-security-heuristics)
 - [Checking for updates in other plugins using the API](#checking-for-updates-in-other-plugins-using-the-api)
+
+# Installation
+Visit this URL: obsidian://show-plugin?id=obsidian-plugin-update-tracker
 
 # Features
 
