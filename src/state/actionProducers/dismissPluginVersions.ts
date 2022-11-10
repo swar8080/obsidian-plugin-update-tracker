@@ -2,13 +2,13 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import dayjs from 'dayjs';
 import filter from 'lodash/filter';
 import find from 'lodash/find';
+import { State } from '..';
 import {
     DismissedPluginVersion,
     PluginDismissedVersions,
     PluginSettings,
-} from 'src/domain/pluginSettings';
-import { groupById } from 'src/domain/util/groupById';
-import { State } from '..';
+} from '../../domain/pluginSettings';
+import { groupById } from '../../domain/util/groupById';
 import { ObsidianState } from '../obsidianReducer';
 import { ReleaseState } from '../releasesReducer';
 

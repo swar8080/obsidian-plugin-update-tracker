@@ -1,9 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-import { PluginDismissedVersions, PluginSettings } from 'src/domain/pluginSettings';
-import { groupById } from 'src/domain/util/groupById';
-import { semverCompare } from 'src/domain/util/semverCompare';
 import { State } from '..';
+import { PluginDismissedVersions, PluginSettings } from '../../domain/pluginSettings';
+import { groupById } from '../../domain/util/groupById';
+import { semverCompare } from '../../domain/util/semverCompare';
 
 type Paramters = {
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;

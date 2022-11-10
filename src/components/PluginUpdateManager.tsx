@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PluginSettings } from 'src/domain/pluginSettings';
+import { PluginSettings } from '../domain/pluginSettings';
 import { useAppSelector } from '../state';
 import PluginUpdateList from './PluginUpdateList';
 import PluginUpdateProgressTracker from './PluginUpdateProgressTracker';

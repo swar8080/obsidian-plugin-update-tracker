@@ -10,20 +10,20 @@ import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import * as React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { PluginSettings } from 'src/domain/pluginSettings';
-import { groupById } from 'src/domain/util/groupById';
+import styled from 'styled-components';
+import InstalledPluginReleases from '../domain/InstalledPluginReleases';
+import { PluginSettings } from '../domain/pluginSettings';
+import enrichReleaseNotes from '../domain/releaseNoteEnricher';
+import { groupById } from '../domain/util/groupById';
+import { useAppDispatch, useAppSelector } from '../state';
 import {
     dismissSelectedPluginVersions,
     PluginVersionsToDismiss,
-} from 'src/state/actionProducers/dismissPluginVersions';
-import { getSelectedPluginIds } from 'src/state/selectors/getSelectedPluginIds';
-import styled from 'styled-components';
-import InstalledPluginReleases from '../domain/InstalledPluginReleases';
-import enrichReleaseNotes from '../domain/releaseNoteEnricher';
-import { useAppDispatch, useAppSelector } from '../state';
+} from '../state/actionProducers/dismissPluginVersions';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
 import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
 import { countSelectedPlugins } from '../state/selectors/countSelectedPlugins';
+import { getSelectedPluginIds } from '../state/selectors/getSelectedPluginIds';
 import { NewTextFadeInThenOutAnimation } from './common/NewTextFadeOutThenInAnimation';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';

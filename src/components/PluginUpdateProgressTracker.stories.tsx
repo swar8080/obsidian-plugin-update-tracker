@@ -1,6 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import React from 'react';
-import { PluginUpdateResult } from 'src/state/obsidianReducer';
+import { PluginUpdateResult } from '../state/obsidianReducer';
 import { PluginUpdateProgressTracker } from './PluginUpdateProgressTracker';
 
 type Story = ComponentStory<typeof PluginUpdateProgressTracker>;
