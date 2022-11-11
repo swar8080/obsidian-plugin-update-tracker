@@ -3,8 +3,8 @@ import { faCircleXmark } from '@fortawesome/free-solid-svg-icons/faCircleXmark';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as React from 'react';
-import { pluralize } from 'src/domain/util/pluralize';
 import styled from 'styled-components';
+import { pluralize } from '../domain/util/pluralize';
 
 interface SelectedPluginActionBarProps {
     numberOfPluginsSelected: number;

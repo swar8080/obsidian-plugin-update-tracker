@@ -1,6 +1,6 @@
 {
   "name": "obsidian-plugin-update-tracker",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Know when installed plugins have updates and evaluate the risk of upgrading",
   "main": "main.js",
   "scripts": {
@@ -52,7 +52,6 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@reduxjs/toolkit": "^1.8.5",
     "dayjs": "^1.11.5",
-    "escape-string-regexp": "^5.0.0",
     "lodash": "^4.17.21",
     "obsidian": "^0.16.0",
     "react": "^18.2.0",

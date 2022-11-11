@@ -1,6 +1,4 @@
-import escapeStringRegexp from 'escape-string-regexp';
-
-const REFERENCED_GITHUB_ISSUE_PATTERN = /(?<!\[])#(\d+([^\]0-9]|$))/g;
+const REFERENCED_GITHUB_ISSUE_PATTERN = /#(\d+)([\s:,.!]|$)/g;
 
 export default function enrichReleaseNotes(
     notes: string,
@@ -9,16 +7,20 @@ export default function enrichReleaseNotes(
     pluginRepoUrl: string
 ): string {
     const repeatedVersionNameRemovalRegex = new RegExp(
-        `#*\s?${escapeStringRegexp(versionName)}\n?`
+        `^#*\\s?${escapeStringRegexp(versionName)}\n*`
     );
     notes = notes.replace(repeatedVersionNameRemovalRegex, '');
 
     const repeatedVersionNumberRemovalRegex = new RegExp(
-        `#*\s?${escapeStringRegexp(versionNumber)}\n?`
+        `^#*\\s?${escapeStringRegexp(versionNumber)}\n*`
     );
     notes = notes.replace(repeatedVersionNumberRemovalRegex, '');
 
-    notes = notes.replaceAll(REFERENCED_GITHUB_ISSUE_PATTERN, `[#$1](${pluginRepoUrl}/issues/$1)`);
+    notes = notes.replace(REFERENCED_GITHUB_ISSUE_PATTERN, `[#$1](${pluginRepoUrl}/issues/$1)$2`);
 
     return notes;
+}
+
+function escapeStringRegexp(string: string) {
+    return string.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&').replace(/-/g, '\\x2d');
 }

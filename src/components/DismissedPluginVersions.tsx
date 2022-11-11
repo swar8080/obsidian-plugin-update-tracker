@@ -2,12 +2,12 @@ import { faRotateLeft } from '@fortawesome/free-solid-svg-icons/faRotateLeft';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PluginManifest } from 'obsidian';
 import * as React from 'react';
-import { PluginDismissedVersions, PluginSettings } from 'src/domain/pluginSettings';
-import { groupById } from 'src/domain/util/groupById';
-import { semverCompare } from 'src/domain/util/semverCompare';
-import { useAppDispatch, useAppSelector } from 'src/state';
-import { unDismissPluginVersion } from 'src/state/actionProducers/undismissPluginVersion';
 import styled from 'styled-components';
+import { PluginDismissedVersions, PluginSettings } from '../domain/pluginSettings';
+import { groupById } from '../domain/util/groupById';
+import { semverCompare } from '../domain/util/semverCompare';
+import { useAppDispatch, useAppSelector } from '../state';
+import { unDismissPluginVersion } from '../state/actionProducers/undismissPluginVersion';
 
 interface DismissedPluginVersionsConnectedProps {
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;
