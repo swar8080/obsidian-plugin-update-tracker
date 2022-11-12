@@ -185,6 +185,8 @@ const DivPluginStatusChip = styled.div<{
     font-size: ${(props) => props.fontSize};
     width: ${(props) => props.width};
     height: 0.6rem;
+    max-height: var(--icon-size);
+    max-width: var(--icon-size);
     padding: ${(props) => props.padding};
     border-radius: 50%;
 

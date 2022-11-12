@@ -35,6 +35,8 @@ const define = [
 	'OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS',
 	'OBSIDIAN_APP_HIDE_THIS_PLUGINS_UPDATES',
 	'OBSIDIAN_APP_THIS_PLUGIN_ID',
+	'OBSIDIAN_APP_SHOW_STATUS_BAR_ICON_ALL_PLATFORMS',
+	'OBSIDIAN_APP_SHOW_RIBBON_ICON_ALL_PLATFORMS',
 ].reduce((prev, current) => {
 	prev[`process.env.${current}`] = JSON.stringify(process.env[current])
 	return prev
