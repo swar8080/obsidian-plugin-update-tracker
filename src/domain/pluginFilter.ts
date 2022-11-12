@@ -16,11 +16,10 @@ export type PluginFilters = {
     excludeDisabledPlugins: boolean;
 };
 
-export const DEFAULT_FILTERS: PluginFilters = {
+export const DEFAULT_FILTERS: Omit<PluginFilters, 'excludeDisabledPlugins'> = {
     excludeDismissed: true,
     excludeTooRecentUpdates: true,
     excludeIncompatibleVersions: true,
-    excludeDisabledPlugins: false,
 };
 
 const filter = (
@@ -31,8 +30,12 @@ const filter = (
     releases: PluginReleases[],
     now: dayjs.Dayjs = dayjs()
 ): InstalledPluginReleases[] => {
+    const filters = Object.assign(
+        { excludeDisabledPlugins: pluginSettings.excludeDisabledPlugins },
+        DEFAULT_FILTERS,
+        filterOverrides
+    );
     const allPlugins = InstalledPluginReleases.create(installedPlugins, releases);
-    const filters = Object.assign({}, DEFAULT_FILTERS, filterOverrides);
     const isPluginVersionDismissed = buildDismissedPluginVersionMemo(pluginSettings);
 
     return allPlugins.filter((plugin) => {

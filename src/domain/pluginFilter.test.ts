@@ -22,6 +22,8 @@ describe('pluginFilter', () => {
     const PLUGIN_SETTINGS_BASE: PluginSettings = {
         daysToSuppressNewUpdates: 0,
         dismissedVersionsByPluginId: {},
+        showIconOnMobile: true,
+        excludeDisabledPlugins: false,
     };
 
     let pluginManifests: PluginManifest[];
@@ -260,7 +262,7 @@ describe('pluginFilter', () => {
     });
 
     describe('plugin enablement filter', () => {
-        test('plugin enablement filter', () => {
+        test('plugin enablement filter override takes precedent over settings', () => {
             testCase({ pluginEnabled: true, excludeDisabled: true, isIncluded: true });
             testCase({ pluginEnabled: true, excludeDisabled: false, isIncluded: true });
             testCase({ pluginEnabled: false, excludeDisabled: true, isIncluded: false });
@@ -284,6 +286,36 @@ describe('pluginFilter', () => {
 
             expect(result).toHaveLength(params.isIncluded ? 1 : 0);
         }
+
+        test("enablement plugin setting is used when filter override isn't provided", () => {
+            enabledPlugins[INSTALLED_PLUGIN_ID] = false;
+            let filterOverride = { ...DISABLED_FILTERS };
+            //@ts-ignore
+            delete filterOverride['excludeDisabledPlugins'];
+            pluginSettings.excludeDisabledPlugins = true;
+
+            let result = pluginFilter(
+                filterOverride,
+                pluginSettings,
+                pluginManifests,
+                enabledPlugins,
+                pluginReleases
+            );
+
+            expect(result).toHaveLength(0);
+
+            pluginSettings.excludeDisabledPlugins = false;
+
+            result = pluginFilter(
+                filterOverride,
+                pluginSettings,
+                pluginManifests,
+                enabledPlugins,
+                pluginReleases
+            );
+
+            expect(result).toHaveLength(1);
+        });
     });
 
     describe('days since update filter', () => {

@@ -238,6 +238,17 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         }
                     })
             );
+        new Setting(containerEl).setName('Ignore Updates to Disabled Plugins').addToggle((toggle) =>
+            toggle
+                .setValue(this.plugin.settings.excludeDisabledPlugins)
+                .onChange(async (excludeDisabledPlugins) => {
+                    const settings = {
+                        ...this.plugin.settings,
+                        excludeDisabledPlugins,
+                    };
+                    await this.plugin.saveSettings(settings);
+                })
+        );
 
         containerEl.createEl('h2', { text: 'Display' });
         new Setting(containerEl)
