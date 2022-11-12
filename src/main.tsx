@@ -13,6 +13,7 @@ import * as ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import DismissedPluginVersions from './components/DismissedPluginVersions';
 import PluginUpdateManager from './components/PluginUpdateManager';
+import RibbonIcon from './components/RibbonIcon';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
@@ -116,12 +117,8 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
     renderRibbonIcon() {
         const root = this.addRibbonIcon('download', 'Plugin Update Tracker', () => {});
-
-        //replace the built-in ribbon icon with the plugin update icon
-        this.ribbonIconRootComponent = renderRootComponent(
-            root,
-            <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
-        );
+        const child = root.createEl('div');
+        this.ribbonIconRootComponent = renderRootComponent(child, <RibbonIcon rootEl={root} />);
     }
 
     async showPluginUpdateManagerView() {
