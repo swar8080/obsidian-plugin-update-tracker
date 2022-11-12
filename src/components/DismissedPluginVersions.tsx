@@ -102,6 +102,7 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
     }`;
     return (
         <div>
+            <hr />
             <PDismissedVersionInfo>{instructions}</PDismissedVersionInfo>
             <DivDismissedVersionRows>
                 {rows.length > 0 &&

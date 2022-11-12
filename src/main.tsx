@@ -36,6 +36,7 @@ const SHOW_RIBBON_ICON_ALL_PLATFORMS =
 
 export default class PluginUpdateCheckerPlugin extends Plugin {
     settings: PluginSettings;
+    private statusBarIconEl: HTMLElement | undefined;
     private statusBarIconRootComponent: ReactDOM.Root | undefined;
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
 
@@ -99,16 +100,16 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     }
 
     renderStatusBarIcon() {
-        const statusIconEl = this.addStatusBarItem();
+        this.statusBarIconEl = this.addStatusBarItem();
 
         if (!requireApiVersion('1.0.0')) {
-            statusIconEl.style.padding = '0';
-            statusIconEl.style.marginLeft = '-0.25rem';
-            statusIconEl.style.marginRight = '-0.25rem';
+            this.statusBarIconEl.style.padding = '0';
+            this.statusBarIconEl.style.marginLeft = '-0.25rem';
+            this.statusBarIconEl.style.marginRight = '-0.25rem';
         }
 
         this.statusBarIconRootComponent = renderRootComponent(
-            statusIconEl,
+            this.statusBarIconEl,
             <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
         );
     }
@@ -250,21 +251,20 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                 })
         );
 
-        containerEl.createEl('h2', { text: 'Display' });
+        containerEl.createEl('h2', { text: 'Appearance' });
         new Setting(containerEl)
             .setName('Show on Mobile')
             .setDesc(
-                'Adds a "Download" icon to mobile whenever updates are available. Note that the update count is not currently shown.'
+                'Adds a ribbon action icon to mobile whenever updates are available. Note that the update count is not currently shown.'
             )
             .addToggle((toggle) =>
                 toggle
                     .setValue(this.plugin.settings.showIconOnMobile)
                     .onChange(async (showIconOnMobile) => {
-                        const settings = {
+                        await this.plugin.saveSettings({
                             ...this.plugin.settings,
                             showIconOnMobile,
-                        };
-                        await this.plugin.saveSettings(settings);
+                        });
                         this.plugin.updateRibonIconVisibilty();
                     })
             );
