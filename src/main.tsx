@@ -1,6 +1,7 @@
 import {
     App,
     ItemView,
+    Platform,
     Plugin,
     PluginSettingTab,
     requireApiVersion,
@@ -27,9 +28,15 @@ const PLUGIN_UPDATE_POLLING_MS =
 const INSTALLED_VERSION_POLLING_MS =
     parseInt(process.env['OBSIDIAN_APP_INSTALLED_VERSION_POLLING_SECONDS'] || '99999999') * 1000;
 
+const SHOW_STATUS_BAR_ICON_ALL_PLATFORMS =
+    process.env['OBSIDIAN_APP_SHOW_STATUS_BAR_ICON_ALL_PLATFORMS'] === 'true';
+const SHOW_RIBBON_ICON_ALL_PLATFORMS =
+    process.env['OBSIDIAN_APP_SHOW_RIBBON_ICON_ALL_PLATFORMS'] === 'true';
+
 export default class PluginUpdateCheckerPlugin extends Plugin {
     settings: PluginSettings;
-    private statusIconRootComponent: ReactDOM.Root | undefined;
+    private statusBarIconRootComponent: ReactDOM.Root | undefined;
+    private ribbonIconRootComponent: ReactDOM.Root | undefined;
 
     async onload() {
         this.registerView(
@@ -45,7 +52,12 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         this.pollForInstalledPluginVersions();
         this.pollForPluginReleases();
 
-        this.renderUpdateStatusIcon();
+        if (Platform.isDesktop || SHOW_STATUS_BAR_ICON_ALL_PLATFORMS) {
+            this.renderStatusBarIcon();
+        }
+        if (Platform.isMobile || SHOW_RIBBON_ICON_ALL_PLATFORMS) {
+            this.renderRibbonIcon();
+        }
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
 
@@ -87,7 +99,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         );
     }
 
-    renderUpdateStatusIcon() {
+    renderStatusBarIcon() {
         const statusIconEl = this.addStatusBarItem();
 
         if (!requireApiVersion('1.0.0')) {
@@ -96,8 +108,18 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
             statusIconEl.style.marginRight = '-0.25rem';
         }
 
-        this.statusIconRootComponent = renderRootComponent(
+        this.statusBarIconRootComponent = renderRootComponent(
             statusIconEl,
+            <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
+        );
+    }
+
+    renderRibbonIcon() {
+        const root = this.addRibbonIcon('download', 'Plugin Update Tracker', () => {});
+
+        //replace the built-in ribbon icon with the plugin update icon
+        this.ribbonIconRootComponent = renderRootComponent(
+            root,
             <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
         );
     }
@@ -123,8 +145,11 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     onunload() {
         this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
 
-        if (this.statusIconRootComponent) {
-            this.statusIconRootComponent.unmount();
+        if (this.statusBarIconRootComponent) {
+            this.statusBarIconRootComponent.unmount();
+        }
+        if (this.ribbonIconRootComponent) {
+            this.ribbonIconRootComponent.unmount();
         }
     }
 }
