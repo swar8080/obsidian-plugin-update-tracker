@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useAppSelector } from 'src/state';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 
 interface RibbonIconProps {
@@ -6,16 +7,17 @@ interface RibbonIconProps {
 }
 
 const RibbonIcon: React.FC<RibbonIconProps> = ({ rootEl }) => {
+    const isShownOnMobile = useAppSelector((state) => state.obsidian.settings.showIconOnMobile);
     const pluginsWithUpdatesCount = usePluginReleaseFilter().length;
     const defaultIconDisplay = React.useRef(rootEl.style.display);
 
     React.useLayoutEffect(() => {
-        if (pluginsWithUpdatesCount > 0) {
+        if (isShownOnMobile && pluginsWithUpdatesCount > 0) {
             rootEl.style.display = defaultIconDisplay.current;
         } else {
             rootEl.style.display = 'none';
         }
-    }, [pluginsWithUpdatesCount, rootEl]);
+    }, [isShownOnMobile, pluginsWithUpdatesCount, rootEl]);
 
     return null;
 };

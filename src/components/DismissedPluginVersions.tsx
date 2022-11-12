@@ -102,8 +102,6 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
     }`;
     return (
         <div>
-            <hr />
-            <H3RestoreIgnoredVersions>Restore Ignored Plugin Versions</H3RestoreIgnoredVersions>
             <PDismissedVersionInfo>{instructions}</PDismissedVersionInfo>
             <DivDismissedVersionRows>
                 {rows.length > 0 &&
@@ -148,10 +146,6 @@ type DismissedVersionRow = {
 
 const DivDismissedVersionRows = styled.div`
     margin-top: 0.5rem;
-`;
-
-const H3RestoreIgnoredVersions = styled.h3`
-    margin-bottom: 0.5rem;
 `;
 
 const PDismissedVersionInfo = styled.p`

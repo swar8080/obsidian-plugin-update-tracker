@@ -56,9 +56,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         if (Platform.isDesktop || SHOW_STATUS_BAR_ICON_ALL_PLATFORMS) {
             this.renderStatusBarIcon();
         }
-        if (Platform.isMobile || SHOW_RIBBON_ICON_ALL_PLATFORMS) {
-            this.renderRibbonIcon();
-        }
+        this.updateRibonIconVisibilty();
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
 
@@ -115,10 +113,16 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         );
     }
 
-    renderRibbonIcon() {
-        const root = this.addRibbonIcon('download', 'Plugin Update Tracker', () => {});
-        const child = root.createEl('div');
-        this.ribbonIconRootComponent = renderRootComponent(child, <RibbonIcon rootEl={root} />);
+    updateRibonIconVisibilty() {
+        const isShownOnPlatform = Platform.isMobile || SHOW_RIBBON_ICON_ALL_PLATFORMS;
+
+        if (isShownOnPlatform && this.settings.showIconOnMobile && !this.ribbonIconRootComponent) {
+            const root = this.addRibbonIcon('download', 'Plugin Update Tracker', () =>
+                this.showPluginUpdateManagerView()
+            );
+            const child = root.createEl('div');
+            this.ribbonIconRootComponent = renderRootComponent(child, <RibbonIcon rootEl={root} />);
+        }
     }
 
     async showPluginUpdateManagerView() {
@@ -210,6 +214,7 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
 
         containerEl.empty();
 
+        containerEl.createEl('h2', { text: 'Plugin Update Filters' });
         new Setting(containerEl)
             .setName('Days until new plugin versions are shown')
             .setDesc('Waiting a few days can help avoid bugs and security issues')
@@ -234,6 +239,26 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                     })
             );
 
+        containerEl.createEl('h2', { text: 'Display' });
+        new Setting(containerEl)
+            .setName('Show on Mobile')
+            .setDesc(
+                'Adds a "Download" icon to mobile whenever updates are available. Note that the update count is not currently shown.'
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.showIconOnMobile)
+                    .onChange(async (showIconOnMobile) => {
+                        const settings = {
+                            ...this.plugin.settings,
+                            showIconOnMobile,
+                        };
+                        await this.plugin.saveSettings(settings);
+                        this.plugin.updateRibonIconVisibilty();
+                    })
+            );
+
+        containerEl.createEl('h2', { text: 'Restore Ignored Plugin Versions' });
         const dismissedPluginVersionsDiv = containerEl.createDiv();
         this.dismissedVersionsRootComponent = renderRootComponent(
             dismissedPluginVersionsDiv,
