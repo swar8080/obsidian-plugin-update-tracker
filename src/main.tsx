@@ -39,6 +39,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private statusBarIconEl: HTMLElement | undefined;
     private statusBarIconRootComponent: ReactDOM.Root | undefined;
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
+    private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
 
     async onload() {
         this.registerView(
@@ -60,6 +61,13 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         this.updateRibonIconVisibilty();
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
+
+        this.activeLeafChangeCallback = (leaf) => {
+            if (!(leaf?.view instanceof PluginUpdateManagerView)) {
+                this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
+            }
+        };
+        app.workspace.on('active-leaf-change', this.activeLeafChangeCallback);
 
         //Clean-up previously dismissed versions that are now behind the currently installed version
         store.dispatch(
@@ -153,6 +161,8 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         if (this.ribbonIconRootComponent) {
             this.ribbonIconRootComponent.unmount();
         }
+
+        this.app.workspace.off('active-leaf-change', this.activeLeafChangeCallback);
     }
 }
 
