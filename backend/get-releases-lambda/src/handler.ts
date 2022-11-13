@@ -14,6 +14,7 @@ const MAX_PLUGIN_REQUEST_LENGTH = 150;
 
 let _getReleases: GetReleases | null = null;
 let _redisClient: RedisClient;
+let _metricsLogger: CloudfrontMetricLogger;
 
 export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     if (event.requestContext.http.method.toLowerCase() !== 'post') {
@@ -55,6 +56,9 @@ export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         if (_redisClient) {
             await _redisClient.close();
         }
+        if (_metricsLogger) {
+            _metricsLogger.flush();
+        }
     }
 }
 
@@ -76,9 +80,9 @@ function buildGetReleases(): GetReleases {
 
     const pluginRepository = new S3PluginRepository(getEnv('OPUC_PLUGINS_LIST_BUCKET_NAME'));
 
-    const metricLogger = new CloudfrontMetricLogger(getEnv('OPUC_METRIC_NAMESPACE'));
+    _metricsLogger = new CloudfrontMetricLogger(getEnv('OPUC_METRIC_NAMESPACE'));
 
-    const releaseApi = new GithubReleaseApi(getEnv('OPUC_GITHUB_ACCESS_TOKEN'), metricLogger);
+    const releaseApi = new GithubReleaseApi(getEnv('OPUC_GITHUB_ACCESS_TOKEN'), _metricsLogger);
 
     const releaseRepositoryUsageOrder: ReleaseRepository[] = [];
     if (getBooleanEnv('OPUC_USE_REDIS_RELEASE_REPOSITORY')) {
