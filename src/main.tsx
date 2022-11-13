@@ -13,6 +13,7 @@ import * as ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import DismissedPluginVersions from './components/DismissedPluginVersions';
 import PluginUpdateManager from './components/PluginUpdateManager';
+import RibbonIcon from './components/RibbonIcon';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
@@ -35,6 +36,7 @@ const SHOW_RIBBON_ICON_ALL_PLATFORMS =
 
 export default class PluginUpdateCheckerPlugin extends Plugin {
     settings: PluginSettings;
+    private statusBarIconEl: HTMLElement | undefined;
     private statusBarIconRootComponent: ReactDOM.Root | undefined;
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
 
@@ -55,9 +57,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         if (Platform.isDesktop || SHOW_STATUS_BAR_ICON_ALL_PLATFORMS) {
             this.renderStatusBarIcon();
         }
-        if (Platform.isMobile || SHOW_RIBBON_ICON_ALL_PLATFORMS) {
-            this.renderRibbonIcon();
-        }
+        this.updateRibonIconVisibilty();
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
 
@@ -100,28 +100,30 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     }
 
     renderStatusBarIcon() {
-        const statusIconEl = this.addStatusBarItem();
+        this.statusBarIconEl = this.addStatusBarItem();
 
         if (!requireApiVersion('1.0.0')) {
-            statusIconEl.style.padding = '0';
-            statusIconEl.style.marginLeft = '-0.25rem';
-            statusIconEl.style.marginRight = '-0.25rem';
+            this.statusBarIconEl.style.padding = '0';
+            this.statusBarIconEl.style.marginLeft = '-0.25rem';
+            this.statusBarIconEl.style.marginRight = '-0.25rem';
         }
 
         this.statusBarIconRootComponent = renderRootComponent(
-            statusIconEl,
+            this.statusBarIconEl,
             <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
         );
     }
 
-    renderRibbonIcon() {
-        const root = this.addRibbonIcon('download', 'Plugin Update Tracker', () => {});
+    updateRibonIconVisibilty() {
+        const isShownOnPlatform = Platform.isMobile || SHOW_RIBBON_ICON_ALL_PLATFORMS;
 
-        //replace the built-in ribbon icon with the plugin update icon
-        this.ribbonIconRootComponent = renderRootComponent(
-            root,
-            <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
-        );
+        if (isShownOnPlatform && this.settings.showIconOnMobile && !this.ribbonIconRootComponent) {
+            const root = this.addRibbonIcon('download', 'Plugin Update Tracker', () =>
+                this.showPluginUpdateManagerView()
+            );
+            const child = root.createEl('div');
+            this.ribbonIconRootComponent = renderRootComponent(child, <RibbonIcon rootEl={root} />);
+        }
     }
 
     async showPluginUpdateManagerView() {
@@ -213,6 +215,7 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
 
         containerEl.empty();
 
+        containerEl.createEl('h2', { text: 'Plugin Update Filters' });
         new Setting(containerEl)
             .setName('Days until new plugin versions are shown')
             .setDesc('Waiting a few days can help avoid bugs and security issues')
@@ -236,7 +239,37 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         }
                     })
             );
+        new Setting(containerEl).setName('Ignore Updates to Disabled Plugins').addToggle((toggle) =>
+            toggle
+                .setValue(this.plugin.settings.excludeDisabledPlugins)
+                .onChange(async (excludeDisabledPlugins) => {
+                    const settings = {
+                        ...this.plugin.settings,
+                        excludeDisabledPlugins,
+                    };
+                    await this.plugin.saveSettings(settings);
+                })
+        );
 
+        containerEl.createEl('h2', { text: 'Appearance' });
+        new Setting(containerEl)
+            .setName('Show on Mobile')
+            .setDesc(
+                'Adds a ribbon action icon to mobile whenever updates are available. Note that the update count is not currently shown.'
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.showIconOnMobile)
+                    .onChange(async (showIconOnMobile) => {
+                        await this.plugin.saveSettings({
+                            ...this.plugin.settings,
+                            showIconOnMobile,
+                        });
+                        this.plugin.updateRibonIconVisibilty();
+                    })
+            );
+
+        containerEl.createEl('h2', { text: 'Restore Ignored Plugin Versions' });
         const dismissedPluginVersionsDiv = containerEl.createDiv();
         this.dismissedVersionsRootComponent = renderRootComponent(
             dismissedPluginVersionsDiv,

@@ -21,11 +21,21 @@
 
 ## Know when installed plugins have updates
 
+**Desktop:**
+
 This small icon is added to the status bar:
 
 ![image](https://user-images.githubusercontent.com/17691679/193410461-5882744b-670a-4cf9-9606-2864dba148d1.png): When 5 plugins have updates
 
 ![image](https://user-images.githubusercontent.com/17691679/193410447-395cb124-289d-4e92-b236-4d313bdc6bc8.png): When all plugins are up-to-date
+
+**Mobile/Tablet:**
+
+This ribbon action is shown when there's at least one update available:
+
+![image](https://user-images.githubusercontent.com/17691679/201494579-ec481261-728d-4ac1-81dd-2d754420bf69.png)
+
+Note that the update count is currently not shown on mobile/tablet. This icon can also be hidden from settings.
 
 ## View a list of updates
 
