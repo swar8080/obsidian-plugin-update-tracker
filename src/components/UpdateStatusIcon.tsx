@@ -10,6 +10,8 @@ interface UpdateStatusIconContainerProps {
     parentEl: HTMLElement;
 }
 
+const CSS_CLASS_BASE = 'plugin-update-tracker-icon';
+
 const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
     onClickViewUpdates,
     parentEl,
@@ -77,6 +79,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
     let cursor: string = 'pointer';
     let title;
     let isClickable = false;
+    let cssSelector;
     if (isLoading) {
         chipText = '⌛';
         chipColour = 'transparent';
@@ -84,11 +87,13 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
         leftOffset = '-0.1rem';
         cursor = 'wait';
         title = 'Checking for plugin updates...';
+        cssSelector = `${CSS_CLASS_BASE}--loading`;
     } else if (isErrorLoading) {
         chipText = 'x';
         chipColour = '#FF3333';
         title = 'Error checking for plugin updates';
         cursor = 'default';
+        cssSelector = `${CSS_CLASS_BASE}--error`;
     } else if (pluginsWithUpdatesCount > 0) {
         chipText = (pluginsWithUpdatesCount || 0).toString();
         chipColour = '#FF4F00';
@@ -102,11 +107,13 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
             pluginsWithUpdatesCount > 1 ? 's' : ''
         } available`;
         isClickable = true;
+        cssSelector = `${CSS_CLASS_BASE}--updates-available`;
     } else {
         chipText = '✓';
         chipColour = '#197300';
         title = 'All plugins up-to-date';
         cursor = 'none';
+        cssSelector = `${CSS_CLASS_BASE}--no-updates-available`;
     }
 
     const isHighlighted = isMouseOver && isClickable;
@@ -127,6 +134,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
             onMouseOver={() => setIsMouseOver(true)}
             onMouseLeave={() => setIsMouseOver(false)}
             isHighlighted={isHighlighted}
+            className={`${CSS_CLASS_BASE} ${cssSelector}`}
         >
             <FontAwesomeIcon icon={faPlug} />
             <DivPluginStatusChip
