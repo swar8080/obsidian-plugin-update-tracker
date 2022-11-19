@@ -7,14 +7,39 @@ import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 
 interface UpdateStatusIconContainerProps {
     onClickViewUpdates: () => any;
+    parentEl: HTMLElement;
 }
 
 const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
     onClickViewUpdates,
+    parentEl,
 }) => {
     const isLoading = useAppSelector((state) => state.releases.isLoadingReleases);
     const isErrorLoading = useAppSelector((state) => state.releases.isErrorLoadingReleases);
     const pluginsWithUpdatesCount = usePluginReleaseFilter().length;
+    const hideIconIfNoUpdatesAvailable = useAppSelector(
+        (state) => state.obsidian.settings.hideIconIfNoUpdatesAvailable
+    );
+    const defaultParentElDisplay = React.useRef(parentEl.style.display);
+
+    React.useLayoutEffect(() => {
+        if (
+            !hideIconIfNoUpdatesAvailable ||
+            isLoading ||
+            pluginsWithUpdatesCount > 0 ||
+            isErrorLoading
+        ) {
+            parentEl.style.display = defaultParentElDisplay.current;
+        } else {
+            parentEl.style.display = 'none';
+        }
+    }, [
+        hideIconIfNoUpdatesAvailable,
+        pluginsWithUpdatesCount,
+        isLoading,
+        isErrorLoading,
+        parentEl,
+    ]);
 
     return (
         <>
@@ -25,45 +50,14 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
                 onClickViewUpdates={onClickViewUpdates}
             />
         </>
-        // <div style={{display: 'flex', height: '100%'}}>
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={3}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={12}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={true}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={0}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={0}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={true}
-        //         pluginsWithUpdatesCount={0}
-        //     />
-        // </div>
     );
 };
 
-type UpdateStatusIconViewProps = UpdateStatusIconContainerProps & {
+type UpdateStatusIconViewProps = {
     isLoading: boolean;
     isErrorLoading: boolean;
     pluginsWithUpdatesCount: number;
+    onClickViewUpdates: () => any;
 };
 
 export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
