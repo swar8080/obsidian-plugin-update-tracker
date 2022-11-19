@@ -7,14 +7,41 @@ import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 
 interface UpdateStatusIconContainerProps {
     onClickViewUpdates: () => any;
+    parentEl: HTMLElement;
 }
+
+const CSS_CLASS_BASE = 'plugin-update-tracker-icon';
 
 const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
     onClickViewUpdates,
+    parentEl,
 }) => {
     const isLoading = useAppSelector((state) => state.releases.isLoadingReleases);
     const isErrorLoading = useAppSelector((state) => state.releases.isErrorLoadingReleases);
     const pluginsWithUpdatesCount = usePluginReleaseFilter().length;
+    const hideIconIfNoUpdatesAvailable = useAppSelector(
+        (state) => state.obsidian.settings.hideIconIfNoUpdatesAvailable
+    );
+    const defaultParentElDisplay = React.useRef(parentEl.style.display);
+
+    React.useLayoutEffect(() => {
+        if (
+            !hideIconIfNoUpdatesAvailable ||
+            isLoading ||
+            pluginsWithUpdatesCount > 0 ||
+            isErrorLoading
+        ) {
+            parentEl.style.display = defaultParentElDisplay.current;
+        } else {
+            parentEl.style.display = 'none';
+        }
+    }, [
+        hideIconIfNoUpdatesAvailable,
+        pluginsWithUpdatesCount,
+        isLoading,
+        isErrorLoading,
+        parentEl,
+    ]);
 
     return (
         <>
@@ -25,45 +52,14 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
                 onClickViewUpdates={onClickViewUpdates}
             />
         </>
-        // <div style={{display: 'flex', height: '100%'}}>
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={3}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={12}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={true}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={0}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={false}
-        //         pluginsWithUpdatesCount={0}
-        //     />
-        //     <UpdateStatusIconView
-        //         onClickViewUpdates={onClickViewUpdates}
-        //         isLoading={false}
-        //         isErrorLoading={true}
-        //         pluginsWithUpdatesCount={0}
-        //     />
-        // </div>
     );
 };
 
-type UpdateStatusIconViewProps = UpdateStatusIconContainerProps & {
+type UpdateStatusIconViewProps = {
     isLoading: boolean;
     isErrorLoading: boolean;
     pluginsWithUpdatesCount: number;
+    onClickViewUpdates: () => any;
 };
 
 export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
@@ -83,6 +79,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
     let cursor: string = 'pointer';
     let title;
     let isClickable = false;
+    let cssSelector;
     if (isLoading) {
         chipText = '⌛';
         chipColour = 'transparent';
@@ -90,11 +87,13 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
         leftOffset = '-0.1rem';
         cursor = 'wait';
         title = 'Checking for plugin updates...';
+        cssSelector = `${CSS_CLASS_BASE}--loading`;
     } else if (isErrorLoading) {
         chipText = 'x';
         chipColour = '#FF3333';
         title = 'Error checking for plugin updates';
         cursor = 'default';
+        cssSelector = `${CSS_CLASS_BASE}--error`;
     } else if (pluginsWithUpdatesCount > 0) {
         chipText = (pluginsWithUpdatesCount || 0).toString();
         chipColour = '#FF4F00';
@@ -108,11 +107,13 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
             pluginsWithUpdatesCount > 1 ? 's' : ''
         } available`;
         isClickable = true;
+        cssSelector = `${CSS_CLASS_BASE}--updates-available`;
     } else {
         chipText = '✓';
         chipColour = '#197300';
         title = 'All plugins up-to-date';
         cursor = 'none';
+        cssSelector = `${CSS_CLASS_BASE}--no-updates-available`;
     }
 
     const isHighlighted = isMouseOver && isClickable;
@@ -133,6 +134,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
             onMouseOver={() => setIsMouseOver(true)}
             onMouseLeave={() => setIsMouseOver(false)}
             isHighlighted={isHighlighted}
+            className={`${CSS_CLASS_BASE} ${cssSelector}`}
         >
             <FontAwesomeIcon icon={faPlug} />
             <DivPluginStatusChip

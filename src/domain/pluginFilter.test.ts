@@ -24,6 +24,7 @@ describe('pluginFilter', () => {
         dismissedVersionsByPluginId: {},
         showIconOnMobile: true,
         excludeDisabledPlugins: false,
+        hideIconIfNoUpdatesAvailable: false,
     };
 
     let pluginManifests: PluginManifest[];

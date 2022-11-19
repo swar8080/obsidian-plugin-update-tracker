@@ -118,7 +118,10 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
         this.statusBarIconRootComponent = renderRootComponent(
             this.statusBarIconEl,
-            <UpdateStatusIcon onClickViewUpdates={() => this.showPluginUpdateManagerView()} />
+            <UpdateStatusIcon
+                onClickViewUpdates={() => this.showPluginUpdateManagerView()}
+                parentEl={this.statusBarIconEl}
+            />
         );
     }
 
@@ -263,6 +266,18 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
 
         containerEl.createEl('h2', { text: 'Appearance' });
         new Setting(containerEl)
+            .setName('Hide plugin icon if no updates are available')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.hideIconIfNoUpdatesAvailable)
+                    .onChange(async (hideIconIfNoUpdatesAvailable) => {
+                        await this.plugin.saveSettings({
+                            ...this.plugin.settings,
+                            hideIconIfNoUpdatesAvailable,
+                        });
+                    })
+            );
+        new Setting(containerEl)
             .setName('Show on Mobile')
             .setDesc(
                 'Adds a ribbon action icon to mobile whenever updates are available. Note that the update count is not currently shown.'
@@ -278,6 +293,11 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         this.plugin.updateRibonIconVisibilty();
                     })
             );
+        containerEl.createEl('a', { text: 'View CSS Snippet selector list' }, (a) => {
+            a.href =
+                'https://github.com/swar8080/obsidian-plugin-update-tracker#custom-css-snippets';
+            a.style.fontSize = 'var(--font-smallest)';
+        });
 
         containerEl.createEl('h2', { text: 'Restore Ignored Plugin Versions' });
         const dismissedPluginVersionsDiv = containerEl.createDiv();
