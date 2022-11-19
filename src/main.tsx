@@ -293,6 +293,11 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         this.plugin.updateRibonIconVisibilty();
                     })
             );
+        containerEl.createEl('a', { text: 'View CSS Snippet selector List' }, (a) => {
+            a.href =
+                'https://github.com/swar8080/obsidian-plugin-update-tracker#custom-css-snippets';
+            a.style.fontSize = 'var(--font-smallest)';
+        });
 
         containerEl.createEl('h2', { text: 'Restore Ignored Plugin Versions' });
         const dismissedPluginVersionsDiv = containerEl.createDiv();
