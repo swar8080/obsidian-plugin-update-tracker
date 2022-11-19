@@ -63,7 +63,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
 
         this.activeLeafChangeCallback = (leaf) => {
-            if (!(leaf?.view instanceof PluginUpdateManagerView)) {
+            if (!(leaf?.view instanceof PluginUpdateManagerView) && Platform.isMobile) {
                 this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
             }
         };
