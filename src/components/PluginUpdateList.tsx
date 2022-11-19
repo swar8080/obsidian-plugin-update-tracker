@@ -10,6 +10,8 @@ import find from 'lodash/find';
 import isEmpty from 'lodash/isEmpty';
 import * as React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import { PluginSettings } from '../domain/pluginSettings';
@@ -349,7 +351,9 @@ const PluginUpdates: React.FC<{
                             <DivReleaseNote key={release.releaseId}>
                                 <DivReleaeseName>{release.versionName}</DivReleaeseName>
                                 <DivReleaseNoteText>
-                                    <ReactMarkdown>{release.notes}</ReactMarkdown>
+                                    <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+                                        {release.notes}
+                                    </ReactMarkdown>
                                 </DivReleaseNoteText>
                             </DivReleaseNote>
                         ))}

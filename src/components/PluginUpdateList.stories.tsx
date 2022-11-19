@@ -100,7 +100,10 @@ export const MarkdownParsingAndEnrichment: Story = () => {
                     'With links to issues',
                     '- Fixed #123\r\n- Fixed #456 test\r\n- Blocked by [#5703](https://github.com/excalidraw/excalidraw/issues/5703)\r\n- Fixes #789'
                 ),
-                pluginWithNotes('Contains HTML', '<h2>h2 header</h2><script>alert(1)</script>'),
+                pluginWithNotes(
+                    'Contains HTML',
+                    '<html> <head> <style> body { background-color: linen; } h1 { color: maroon; margin-left: 40px; } </style> </head><h2 id="foo" onclick="alert(1)">h2 header</h2><script>alert(1)</script><img width="782" alt="image" src="https://user-images.githubusercontent.com/17691679/202867410-8db3b025-3b16-48ff-958d-17605a84bc1b.png">'
+                ),
                 pluginWithNotes('Contains emoji', 'fix: 🐛'),
             ]}
             {...PLUGIN_UPDATE_LIST_BASE}

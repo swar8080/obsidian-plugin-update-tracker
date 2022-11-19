@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useAppSelector } from 'src/state';
+import { useAppSelector } from '../state';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 
 interface RibbonIconProps {
