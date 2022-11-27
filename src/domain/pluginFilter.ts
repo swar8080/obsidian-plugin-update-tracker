@@ -13,10 +13,14 @@ export type PluginFilters = {
     excludeDismissed: boolean;
     excludeTooRecentUpdates: boolean;
     excludeIncompatibleVersions: boolean;
+    excludeBetaVersions: boolean;
     excludeDisabledPlugins: boolean;
 };
 
-export const DEFAULT_FILTERS: Omit<PluginFilters, 'excludeDisabledPlugins'> = {
+export const DEFAULT_FILTERS: Omit<
+    PluginFilters,
+    'excludeDisabledPlugins' | 'excludeBetaVersions'
+> = {
     excludeDismissed: true,
     excludeTooRecentUpdates: true,
     excludeIncompatibleVersions: true,
@@ -31,7 +35,10 @@ const filter = (
     now: dayjs.Dayjs = dayjs()
 ): InstalledPluginReleases[] => {
     const filters = Object.assign(
-        { excludeDisabledPlugins: pluginSettings.excludeDisabledPlugins },
+        {
+            excludeDisabledPlugins: pluginSettings.excludeDisabledPlugins,
+            excludeBetaVersions: pluginSettings.excludeBetaVersions,
+        },
         DEFAULT_FILTERS,
         filterOverrides
     );
@@ -63,6 +70,10 @@ const filter = (
                 filters.excludeDismissed &&
                 isPluginVersionDismissed(plugin.getPluginId(), version.versionNumber)
             ) {
+                return false;
+            }
+
+            if (filters.excludeBetaVersions && version.isBetaVersion) {
                 return false;
             }
 

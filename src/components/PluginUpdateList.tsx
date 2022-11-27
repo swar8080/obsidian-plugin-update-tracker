@@ -109,11 +109,13 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
                 githubRepositoryUrl: pluginReleases.getPluginRepositoryUrl(),
                 installedVersionNumber: pluginReleases.getInstalledVersionNumber(),
                 latestInstallableVersionNumber: pluginReleases.getLatestVersionNumber(),
+                latestInstallableVersionIsBeta: pluginReleases.isLatestVersionABetaVersion(),
                 releaseNotes: pluginReleases.getReleaseVersions().map((release) => ({
                     releaseId: release.releaseId,
                     versionName: release.versionName,
                     versionNumber: release.versionNumber,
                     notes: release.notes,
+                    isBetaVersion: release.isBetaVersion,
                 })),
                 hasInstallableReleaseAssets: !!pluginReleases.getLatestReleaseAssetIds(),
             })),
@@ -269,11 +271,13 @@ export type PluginViewModel = {
     githubRepositoryUrl: string;
     installedVersionNumber: string;
     latestInstallableVersionNumber: string;
+    latestInstallableVersionIsBeta: boolean;
     releaseNotes: {
         releaseId: number;
         versionName: string;
         versionNumber: string;
         notes: string;
+        isBetaVersion: boolean;
     }[];
     hasInstallableReleaseAssets: boolean;
 };
@@ -300,6 +304,15 @@ const PluginUpdates: React.FC<{
             <DivPluginUpdateHeaderContainer>
                 <H2PluginName>
                     <NewTextFadeInThenOutAnimation text={headerText} />
+                    {plugin.latestInstallableVersionIsBeta && (
+                        <SpanBetaVersionBadge
+                            aria-label="This version may be unstable"
+                            aria-label-position="top"
+                            className="obsidian-plugin-update-tracker-beta-version"
+                        >
+                            ⚠️ Beta Version
+                        </SpanBetaVersionBadge>
+                    )}
                 </H2PluginName>
                 <DivSelectPluginContainer>
                     <input
@@ -349,7 +362,11 @@ const PluginUpdates: React.FC<{
                     {isReleaseNotesExpanded &&
                         plugin.releaseNotes.map((release) => (
                             <DivReleaseNote key={release.releaseId}>
-                                <DivReleaeseName>{release.versionName}</DivReleaeseName>
+                                <DivReleaeseName>
+                                    {`${release.versionName}${
+                                        release.isBetaVersion ? ' (Beta)' : ''
+                                    }`}
+                                </DivReleaeseName>
                                 <DivReleaseNoteText>
                                     <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>
                                         {release.notes}
@@ -419,6 +436,22 @@ const H2PluginName = styled.h2`
     margin-top: 0.25rem;
     margin-bottom: 0.25rem;
     padding-bottom: 0.5rem;
+`;
+
+const SpanBetaVersionBadge = styled.span`
+    font-size: 0.45em;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+
+    color: #212529;
+    background-color: #ffc107;
+    font-weight: 700;
+
+    border-radius: 10em;
+
+    padding: 0.25em 0.5em;
+    margin-left: 0.4rem;
 `;
 
 const DivSelectPluginContainer = styled.div`

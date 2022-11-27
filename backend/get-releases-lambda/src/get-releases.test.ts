@@ -72,7 +72,7 @@ describe('get-releases', () => {
         };
         releaseApi = {
             fetchReleases: jest.fn(),
-            fetchManifest: jest.fn(),
+            fetchReleaseManifest: jest.fn(),
         };
 
         getReleases = new GetReleases(config, pluginRepository, releaseRepository, releaseApi);
@@ -240,7 +240,7 @@ describe('get-releases', () => {
                     releases: [plugin2Release1],
                     etag: 'some etag2',
                 });
-            releaseApi.fetchManifest = jest
+            releaseApi.fetchReleaseManifest = jest
                 .fn()
                 .mockResolvedValueOnce({
                     version: PLUGIN_1_NEW_VERSION_NUM,
@@ -278,18 +278,18 @@ describe('get-releases', () => {
                 undefined
             );
 
-            expect(releaseApi.fetchManifest).toHaveBeenCalledTimes(3);
-            expect(releaseApi.fetchManifest).toHaveBeenNthCalledWith(
+            expect(releaseApi.fetchReleaseManifest).toHaveBeenCalledTimes(3);
+            expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 1,
                 PLUGIN_1_REPO,
                 PLUGIN1_RELEASE2_MANIFEST_ID
             );
-            expect(releaseApi.fetchManifest).toHaveBeenNthCalledWith(
+            expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 2,
                 PLUGIN_1_REPO,
                 PLUGIN1_RELEASE1_MANIFEST_ID
             );
-            expect(releaseApi.fetchManifest).toHaveBeenNthCalledWith(
+            expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 3,
                 PLUGIN_2_REPO,
                 PLUGIN2_MANIFEST_ID

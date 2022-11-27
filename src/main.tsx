@@ -252,6 +252,22 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         }
                     })
             );
+        new Setting(containerEl)
+            .setName('Ignore Beta Versions')
+            .setDesc(
+                'Plugin beta versions are less stable but allow trying out new features sooner'
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.excludeBetaVersions)
+                    .onChange(async (excludeBetaVersions) => {
+                        const settings = {
+                            ...this.plugin.settings,
+                            excludeBetaVersions,
+                        };
+                        await this.plugin.saveSettings(settings);
+                    })
+            );
         new Setting(containerEl).setName('Ignore Updates to Disabled Plugins').addToggle((toggle) =>
             toggle
                 .setValue(this.plugin.settings.excludeDisabledPlugins)

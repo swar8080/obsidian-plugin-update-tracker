@@ -26,7 +26,7 @@ export class CloudfrontMetricLogger implements MetricLogger {
 
         const bufferedRequests = ++this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME]
             .bufferedRequests;
-        if (bufferedRequests >= 10) {
+        if (bufferedRequests >= 20) {
             await this.flush();
         }
     }

@@ -91,6 +91,11 @@ export default class InstalledPluginReleases {
         return newReleaseVersion?.fileAssetIds;
     }
 
+    public isLatestVersionABetaVersion(): boolean {
+        const newReleaseVersion = this.getNewReleaseVersion();
+        return newReleaseVersion?.isBetaVersion === true;
+    }
+
     public getRepoPath(): string | undefined {
         return this.releases?.pluginRepoPath;
     }

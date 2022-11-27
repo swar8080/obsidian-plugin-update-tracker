@@ -6,10 +6,15 @@ import {
     ReleaseVersion,
     PluginFileAssetIds,
 } from '../../../shared-types';
-import { ReleaseApi, ApiReleaseResponse, ApiPluginManifest } from './ReleaseApi';
+import {
+    ReleaseApi,
+    ApiReleaseResponse,
+    ApiPluginManifest,
+    ApiMasterPluginManifestResponse,
+} from './ReleaseApi';
 import { PluginRepository, PluginRecord } from './PluginRepository';
-import { ReleaseRepository, PluginReleasesRecord } from './ReleaseRepository';
-import { isEmpty, groupById } from './util';
+import { ReleaseRepository, PluginReleasesRecord, MasterManifestInfo } from './ReleaseRepository';
+import { isEmpty, groupById, semverCompare } from './util';
 
 const THIS_PLUGIN_ID = 'obsidian-plugin-update-tracker';
 
@@ -139,15 +144,31 @@ export class GetReleases {
             throw err;
         }
 
-        if (!releasesApiResponse.hasChanges) {
-            //no changes means we have an etag, so cachedReleases is defined
-            return cachedReleases as PluginReleasesRecord;
+        let masterManifestResponse: ApiMasterPluginManifestResponse | null = null;
+        try {
+            masterManifestResponse = await this.releaseApi.fetchMasterManifest(
+                plugin.repo,
+                cachedReleases?.masterManifest?.etag
+            );
+        } catch (err) {
+            console.error(`Error fetching master manifest for ${plugin.id}`, err);
+        }
+
+        if (!releasesApiResponse.hasChanges || masterManifestResponse?.hasChanges === false) {
+            console.log(
+                `Etag match on ${
+                    plugin.id
+                }: releases=${!releasesApiResponse.hasChanges}, masterManifest=${
+                    masterManifestResponse?.hasChanges === false
+                }`
+            );
         }
 
         const releasesRecord = this.convertApiReleasesToRecord(
             plugin,
             releasesApiResponse,
-            cachedReleases
+            cachedReleases,
+            masterManifestResponse
         );
 
         const didUpdateManifests = await this.fetchAndApplyManifestUpdates(
@@ -156,7 +177,11 @@ export class GetReleases {
             cachedReleases
         );
 
-        if (releasesApiResponse.hasChanges || didUpdateManifests) {
+        if (
+            releasesApiResponse.hasChanges ||
+            masterManifestResponse?.hasChanges ||
+            didUpdateManifests
+        ) {
             releaseRecordUpdates.push(releasesRecord);
         }
 
@@ -172,10 +197,23 @@ export class GetReleases {
     private convertApiReleasesToRecord(
         plugin: PluginRecord,
         apiReleasesResponse: ApiReleaseResponse,
-        cachedReleases?: PluginReleasesRecord | undefined
+        cachedReleases: PluginReleasesRecord | undefined,
+        masterManifestResponse: ApiMasterPluginManifestResponse | null
     ): PluginReleasesRecord {
+        let masterManifestInfo: MasterManifestInfo | undefined = undefined;
+        if (masterManifestResponse?.hasChanges) {
+            masterManifestInfo = {
+                versionNumber: masterManifestResponse.manifest.version,
+                etag: masterManifestResponse.etag,
+            };
+        } else if (cachedReleases != null) {
+            masterManifestInfo = cachedReleases.masterManifest;
+        }
+
         if (!apiReleasesResponse.hasChanges) {
-            return cachedReleases as PluginReleasesRecord;
+            const releasesRecord = cachedReleases as PluginReleasesRecord;
+            releasesRecord.masterManifest = masterManifestInfo;
+            return releasesRecord;
         }
 
         return {
@@ -231,6 +269,7 @@ export class GetReleases {
                     };
                 }),
 
+            masterManifest: masterManifestInfo,
             lastFetchedFromGithub: this.now.format(),
             lastFetchedETag: apiReleasesResponse.etag,
         };
@@ -294,7 +333,7 @@ export class GetReleases {
         );
 
         const manifestRequests = manifestAssetIdsToFetch.map((releaseId) =>
-            this.releaseApi.fetchManifest(releasesToUpdate.pluginRepo, releaseId)
+            this.releaseApi.fetchReleaseManifest(releasesToUpdate.pluginRepo, releaseId)
         );
 
         let manifests: ApiPluginManifest[] = [];
@@ -361,6 +400,10 @@ export class GetReleases {
                 notes: release.notes,
                 areNotesTruncated: release.areNotesTruncated,
                 downloads: release.downloads,
+                isBetaVersion: this.isBetaVersion(
+                    releasesRecord.masterManifest,
+                    release.versionNumber
+                ),
                 fileAssetIds: release.fileAssetIds,
                 publishedAt: release.publishedAt,
                 updatedAt: release.sourceCodeUpdatedAt,
@@ -383,6 +426,24 @@ export class GetReleases {
             (release) => release.versionNumber === installed.version
         );
         return dayjs(installedRelease?.publishedAt || 0);
+    }
+
+    private isBetaVersion(
+        masterManifest: MasterManifestInfo | undefined,
+        releaseVersionNumber: string
+    ): boolean {
+        if (masterManifest?.versionNumber == undefined) {
+            //not enough info, assume it's not beta
+            return false;
+        }
+
+        /**
+         * Developers can create betas by creating a github release with a version number that is higher than the version in the master/main branch's manifest.json.
+         * Obsidian will not download these newer versions because of the mismatch in the version numbers.
+         *
+         * Greater-than check instead of a not-equal check is needed in-case there are multiple new non-beta versions
+         */
+        return semverCompare(releaseVersionNumber, masterManifest.versionNumber) > 0;
     }
 }
 

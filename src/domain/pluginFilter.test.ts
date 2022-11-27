@@ -24,6 +24,7 @@ describe('pluginFilter', () => {
         dismissedVersionsByPluginId: {},
         showIconOnMobile: true,
         excludeDisabledPlugins: false,
+        excludeBetaVersions: false,
         hideIconIfNoUpdatesAvailable: false,
     };
 
@@ -48,6 +49,7 @@ describe('pluginFilter', () => {
         areNotesTruncated: false,
         downloads: 123,
         publishedAt: NEW_PLUGIN_VERSION_PUBLISHED_DATE,
+        isBetaVersion: false,
         fileAssetIds: {
             mainJs: id++,
             manifestJson: id++,
@@ -64,6 +66,7 @@ describe('pluginFilter', () => {
 
     const DISABLED_FILTERS: PluginFilters = {
         excludeDisabledPlugins: false,
+        excludeBetaVersions: false,
         excludeDismissed: false,
         excludeIncompatibleVersions: false,
         excludeTooRecentUpdates: false,
