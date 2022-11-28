@@ -26,6 +26,13 @@ export type PluginReleasesRecord = {
         manifestLastUpdatedAt?: string;
     }[];
 
+    masterManifest?: MasterManifestInfo;
+
     lastFetchedFromGithub: string;
     lastFetchedETag: string;
+};
+
+export type MasterManifestInfo = {
+    versionNumber?: string;
+    etag: string;
 };

@@ -1,6 +1,7 @@
 export type PluginSettings = {
     daysToSuppressNewUpdates: number;
     dismissedVersionsByPluginId: Record<string, PluginDismissedVersions>;
+    excludeBetaVersions: boolean;
     excludeDisabledPlugins: boolean;
     showIconOnMobile: boolean;
     hideIconIfNoUpdatesAvailable: boolean;
@@ -22,6 +23,7 @@ export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
     daysToSuppressNewUpdates: 0,
     dismissedVersionsByPluginId: {},
     showIconOnMobile: true,
+    excludeBetaVersions: true,
     excludeDisabledPlugins: false,
     hideIconIfNoUpdatesAvailable: false,
 };

@@ -8,16 +8,13 @@ export interface ReleaseApi {
         etag?: string
     ): Promise<ApiReleaseResponse>;
 
-    fetchManifest(repositoryPath: string, assetId: number): Promise<ApiPluginManifest>;
-}
+    fetchReleaseManifest(repositoryPath: string, assetId: number): Promise<ApiPluginManifest>;
 
-export type ApiReleaseResponse =
-    | {
-          hasChanges: true;
-          releases: ApiReleases[];
-          etag: string;
-      }
-    | { hasChanges: false };
+    fetchMasterManifest(
+        repositoryPath: string,
+        etag: string | undefined
+    ): Promise<ApiMasterPluginManifestResponse>;
+}
 
 export class GithubReleaseApi implements ReleaseApi {
     private githubAccessToken: string;
@@ -59,7 +56,6 @@ export class GithubReleaseApi implements ReleaseApi {
             };
         } catch (err) {
             if (err instanceof AxiosError && err.response?.status === 304) {
-                console.info(`Etag match on ${repositoryPath}`);
                 return {
                     hasChanges: false,
                 };
@@ -69,7 +65,10 @@ export class GithubReleaseApi implements ReleaseApi {
         }
     }
 
-    async fetchManifest(repositoryPath: string, assetId: number): Promise<ApiPluginManifest> {
+    async fetchReleaseManifest(
+        repositoryPath: string,
+        assetId: number
+    ): Promise<ApiPluginManifest> {
         const response = await axios({
             method: 'get',
             url: `https://api.github.com/repos/${repositoryPath}/releases/assets/${assetId}`,
@@ -84,6 +83,41 @@ export class GithubReleaseApi implements ReleaseApi {
         return response.data;
     }
 
+    async fetchMasterManifest(
+        repositoryPath: string,
+        etag: string | undefined
+    ): Promise<ApiMasterPluginManifestResponse> {
+        try {
+            const response = await axios({
+                method: 'get',
+                url: `https://api.github.com/repos/${repositoryPath}/contents/manifest.json`,
+                headers: {
+                    Authorization: `Bearer ${this.githubAccessToken}`,
+                    'If-None-Match': etag || '',
+                },
+            });
+            this.emitRateLimitMetric(response);
+
+            const base64Content: string = response.data.content;
+            const base64Buffer = Buffer.from(base64Content, 'base64');
+            const manifest = JSON.parse(base64Buffer.toString('utf-8'));
+
+            return {
+                hasChanges: true,
+                manifest,
+                etag: response.headers['etag'],
+            };
+        } catch (err) {
+            if (err instanceof AxiosError && err.response?.status === 304) {
+                return {
+                    hasChanges: false,
+                };
+            }
+            console.error(`Unexpected error fetching master manifest for ${repositoryPath}`, err);
+            throw err;
+        }
+    }
+
     private emitRateLimitMetric(response: AxiosResponse) {
         const rateLimitRemaining = response.headers['x-ratelimit-remaining'];
         try {
@@ -95,6 +129,22 @@ export class GithubReleaseApi implements ReleaseApi {
         }
     }
 }
+
+export type ApiReleaseResponse =
+    | {
+          hasChanges: true;
+          releases: ApiReleases[];
+          etag: string;
+      }
+    | { hasChanges: false };
+
+export type ApiMasterPluginManifestResponse =
+    | {
+          hasChanges: true;
+          manifest: ApiPluginManifest;
+          etag: string;
+      }
+    | { hasChanges: false };
 
 export type ApiReleases = {
     id: number;

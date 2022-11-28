@@ -23,6 +23,7 @@ type ReleaseVersion = {
     notes: string;
     areNotesTruncated: boolean;
     downloads: number;
+    isBetaVersion: boolean;
     publishedAt: string;
     fileAssetIds?: PluginFileAssetIds;
     updatedAt: string;
