@@ -73,6 +73,7 @@ describe('get-releases', () => {
         releaseApi = {
             fetchReleases: jest.fn(),
             fetchReleaseManifest: jest.fn(),
+            fetchMasterManifest: jest.fn(),
         };
 
         getReleases = new GetReleases(config, pluginRepository, releaseRepository, releaseApi);
@@ -240,6 +241,24 @@ describe('get-releases', () => {
                     releases: [plugin2Release1],
                     etag: 'some etag2',
                 });
+            releaseApi.fetchMasterManifest = jest
+                .fn()
+                .mockResolvedValueOnce({
+                    hasChanges: true,
+                    manifest: {
+                        version: PLUGIN_1_NEW_VERSION_NUM,
+                        minAppVersion: '16.0.0',
+                    },
+                    etag: 'master-manifest-etag-plugin1',
+                })
+                .mockResolvedValueOnce({
+                    hasChanges: true,
+                    manifest: {
+                        version: PLUGIN_2_INSTALLED_VERSION,
+                        minAppVersion: '15.15.0',
+                    },
+                    etag: 'master-manifest-etag-plugin2',
+                });
             releaseApi.fetchReleaseManifest = jest
                 .fn()
                 .mockResolvedValueOnce({
@@ -278,6 +297,17 @@ describe('get-releases', () => {
                 undefined
             );
 
+            expect(releaseApi.fetchMasterManifest).toHaveBeenNthCalledWith(
+                1,
+                PLUGIN_1_REPO,
+                undefined
+            );
+            expect(releaseApi.fetchMasterManifest).toHaveBeenNthCalledWith(
+                2,
+                PLUGIN_2_REPO,
+                undefined
+            );
+
             expect(releaseApi.fetchReleaseManifest).toHaveBeenCalledTimes(3);
             expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 1,
@@ -303,6 +333,10 @@ describe('get-releases', () => {
 
             expect(saved[0].pluginId).toBe(PLUGIN_1_ID);
             expect(saved[0].pluginRepo).toBe(PLUGIN_1_REPO);
+            expect(saved[0].masterManifest).toEqual({
+                versionNumber: PLUGIN_1_NEW_VERSION_NUM,
+                etag: 'master-manifest-etag-plugin1',
+            });
             expect(saved[0].lastFetchedETag).toBe('some etag');
             expect(saved[0].lastFetchedFromGithub).toBe('2022-09-30T18:44:09-04:00');
             expect(saved[0].releases.length).toBe(2);
@@ -347,6 +381,10 @@ describe('get-releases', () => {
 
             expect(saved[1].pluginId).toBe(PLUGIN_2_ID);
             expect(saved[1].pluginRepo).toBe(PLUGIN_2_REPO);
+            expect(saved[1].masterManifest).toEqual({
+                versionNumber: PLUGIN_2_INSTALLED_VERSION,
+                etag: 'master-manifest-etag-plugin2',
+            });
             expect(saved[1].lastFetchedETag).toBe('some etag2');
             expect(saved[1].lastFetchedFromGithub).toBe('2022-09-30T18:44:09-04:00');
             expect(saved[1].releases.length).toBe(1);
@@ -394,6 +432,7 @@ describe('get-releases', () => {
             result = await getReleases.execute(request, now);
 
             expect(releaseApi.fetchReleases).toHaveBeenCalledTimes(1);
+            expect(releaseApi.fetchMasterManifest).toHaveBeenCalledTimes(1);
         });
 
         it("uses cached releases that haven't expired", () => {});
