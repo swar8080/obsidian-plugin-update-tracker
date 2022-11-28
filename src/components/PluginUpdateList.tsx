@@ -364,7 +364,10 @@ const PluginUpdates: React.FC<{
                             <DivReleaseNote key={release.releaseId}>
                                 <DivReleaeseName>
                                     {`${release.versionName}${
-                                        release.isBetaVersion ? ' (Beta)' : ''
+                                        release.isBetaVersion &&
+                                        !release.versionName.toLowerCase().includes('beta')
+                                            ? ' (Beta)'
+                                            : ''
                                     }`}
                                 </DivReleaeseName>
                                 <DivReleaseNoteText>

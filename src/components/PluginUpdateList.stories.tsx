@@ -27,18 +27,21 @@ const PLUGIN_VIEW_MODEL_BASE: PluginViewModel = {
     githubRepositoryUrl: 'https://github.com/blacksmithgu/obsidian-dataview',
     installedVersionNumber: '0.5.44',
     latestInstallableVersionNumber: '0.5.46',
+    latestInstallableVersionIsBeta: false,
     releaseNotes: [
         {
             releaseId: 101,
             versionName: 'Release 0.5.46 (beta)',
             versionNumber: '0.5.46',
             notes: 'Some release notes',
+            isBetaVersion: true,
         },
         {
             releaseId: 100,
             versionName: 'Relase 0.5.45',
             versionNumber: '0.5.45',
             notes: 'Some release notes',
+            isBetaVersion: true,
         },
     ],
     hasInstallableReleaseAssets: true,
@@ -85,6 +88,7 @@ export const MarkdownParsingAndEnrichment: Story = () => {
                     versionName: '1.2.3 Beta',
                     versionNumber: '1.2.3',
                     notes,
+                    isBetaVersion: true,
                 },
             ],
         };
