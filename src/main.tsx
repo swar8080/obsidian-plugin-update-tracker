@@ -64,6 +64,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
         this.activeLeafChangeCallback = (leaf) => {
             if (!(leaf?.view instanceof PluginUpdateManagerView) && Platform.isMobile) {
+                //On mobile, remove the leaf when opening a new note
                 this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
             }
         };
@@ -141,7 +142,9 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         if (!this.app.workspace.getActiveViewOfType(PluginUpdateManagerView)) {
             this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
 
-            await this.app.workspace.getLeaf(false).setViewState({
+            //Desktop opens in new tab, mobile replaces the current note/tab
+            const newLeafPaneType = Platform.isMobile ? false : 'tab';
+            await this.app.workspace.getLeaf(newLeafPaneType).setViewState({
                 type: PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
                 active: true,
             });
