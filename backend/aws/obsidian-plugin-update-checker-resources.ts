@@ -26,8 +26,10 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
             architecture: lambda.Architecture.ARM_64,
             environment: {
                 ...getFromEnvironmentVariables([
+                    'OPUC_MAX_PLUGIN_COUNT_PROCESSED',
                     'OPUC_GITHUB_ACCESS_TOKEN',
-                    'OPUC_RELEASES_CACHE_LENGTH_SECONDS',
+                    'OPUC_RELEASES_CACHE_LENGTH_SECONDS_MULTIPLIER',
+                    'OPUC_PLUGIN_CACHE_LENGTH_DIVISOR',
                     'OPUC_RELEASES_FETCHED_PER_PLUGIN',
                     'OPUC_MAX_RELEASE_NOTE_LENGTH',
                     'OPUC_MAX_MANIFESTS_TO_FETCH_PER_PLUGIN',

@@ -58,7 +58,8 @@ describe('get-releases', () => {
         config = {
             releasesFetchedPerPlugin: 2,
             maxReleaseNoteLength: 100,
-            releasesCacheLengthSeconds: 10,
+            releaseCacheLengthMultiplierSeconds: 10,
+            pluginCacheLengthDivisor: 1,
             maxManifestsToFetchPerPlugin: 2,
             ignoreReleasesForThisPlugin: false,
         };
@@ -419,7 +420,7 @@ describe('get-releases', () => {
             });
 
             plugin2CachedReleaseRecord.lastFetchedFromGithub = now
-                .subtract(config.releasesCacheLengthSeconds + 1, 'seconds')
+                .subtract(config.releaseCacheLengthMultiplierSeconds + 1, 'seconds')
                 .format();
 
             releaseRepository.getReleases = jest.fn().mockResolvedValue([]);
