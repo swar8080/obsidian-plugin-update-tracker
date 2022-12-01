@@ -4,7 +4,7 @@
   "description": "Know when installed plugins have updates and evaluate the risk of upgrading",
   "main": "main.js",
   "scripts": {
-    "setup": "npm i && git config core.hooksPath .githooks/",
+    "setup": "sh scripts/repo-setup.sh",
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "version": "node version-bump.mjs && git add manifest.json versions.json",

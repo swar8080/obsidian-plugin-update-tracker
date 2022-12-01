@@ -6,6 +6,7 @@ import {
     PluginSettingTab,
     requireApiVersion,
     Setting,
+    TFile,
     WorkspaceLeaf,
 } from 'obsidian';
 import * as React from 'react';
@@ -39,7 +40,8 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private statusBarIconEl: HTMLElement | undefined;
     private statusBarIconRootComponent: ReactDOM.Root | undefined;
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
-    private fileOpenCallback: () => any;
+    private fileOpenCallback: (file: TFile | null) => any;
+    private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
 
     async onload() {
         this.registerView(
@@ -62,10 +64,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
 
-        this.fileOpenCallback = () => {
-            this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE)
-        }
-        app.workspace.on('file-open', this.fileOpenCallback)
+        this.closeTabWhenOpeningNewNote();
 
         //Clean-up previously dismissed versions that are now behind the currently installed version
         store.dispatch(
@@ -135,6 +134,25 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         }
     }
 
+    closeTabWhenOpeningNewNote() {
+        //solution for desktop
+        this.fileOpenCallback = () => {
+            if (Platform.isDesktop) {
+                this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
+            }
+        };
+        app.workspace.on('file-open', this.fileOpenCallback);
+
+        //solution for mobile
+        this.activeLeafChangeCallback = (leaf) => {
+            if (!(leaf?.view instanceof PluginUpdateManagerView) && Platform.isMobile) {
+                //On mobile, remove the leaf when opening a new note
+                this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
+            }
+        };
+        app.workspace.on('active-leaf-change', this.activeLeafChangeCallback);
+    }
+
     async showPluginUpdateManagerView() {
         if (!this.app.workspace.getActiveViewOfType(PluginUpdateManagerView)) {
             this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
@@ -165,7 +183,8 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
             this.ribbonIconRootComponent.unmount();
         }
 
-        this.app.workspace.off('file-open', this.fileOpenCallback)
+        this.app.workspace.off('file-open', this.fileOpenCallback);
+        this.app.workspace.off('active-leaf-change', this.activeLeafChangeCallback);
     }
 }
 
