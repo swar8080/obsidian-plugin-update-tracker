@@ -2,7 +2,3 @@
 
 npx organize-imports-cli tsconfig.json;
 git diff --name-only --diff-filter=AMUX HEAD | grep "\.ts" | xargs -I {} npx prettier --write "{}";
-#!/bin/sh
-
-npx organize-imports-cli tsconfig.json;
-git diff --name-only --diff-filter=AMUX HEAD | grep "\.ts" | xargs -I {} npx prettier --write "{}";
