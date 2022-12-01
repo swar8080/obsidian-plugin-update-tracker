@@ -39,7 +39,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private statusBarIconEl: HTMLElement | undefined;
     private statusBarIconRootComponent: ReactDOM.Root | undefined;
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
-    private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
+    private fileOpenCallback: () => any;
 
     async onload() {
         this.registerView(
@@ -62,13 +62,10 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
         this.addSettingTab(new PluginUpdateCheckerSettingsTab(this.app, this));
 
-        this.activeLeafChangeCallback = (leaf) => {
-            if (!(leaf?.view instanceof PluginUpdateManagerView) && Platform.isMobile) {
-                //On mobile, remove the leaf when opening a new note
-                this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
-            }
-        };
-        app.workspace.on('active-leaf-change', this.activeLeafChangeCallback);
+        this.fileOpenCallback = () => {
+            this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE)
+        }
+        app.workspace.on('file-open', this.fileOpenCallback)
 
         //Clean-up previously dismissed versions that are now behind the currently installed version
         store.dispatch(
@@ -168,7 +165,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
             this.ribbonIconRootComponent.unmount();
         }
 
-        this.app.workspace.off('active-leaf-change', this.activeLeafChangeCallback);
+        this.app.workspace.off('file-open', this.fileOpenCallback)
     }
 }
 
