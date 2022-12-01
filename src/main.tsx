@@ -141,7 +141,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         if (!this.app.workspace.getActiveViewOfType(PluginUpdateManagerView)) {
             this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
 
-            await this.app.workspace.getLeaf(false).setViewState({
+            await this.app.workspace.getLeaf('tab').setViewState({
                 type: PLUGIN_UPDATES_MANAGER_VIEW_TYPE,
                 active: true,
             });
