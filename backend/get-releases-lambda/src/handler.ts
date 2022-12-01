@@ -10,8 +10,6 @@ import { RedisClient } from './redisClient';
 import { ReleaseRepository } from './ReleaseRepository';
 import { FallbackReleaseRepository } from './ReleaseRepository/FallbackReleaseRepository';
 
-const MAX_PLUGIN_REQUEST_LENGTH = 150;
-
 let _getReleases: GetReleases | null = null;
 let _redisClient: RedisClient;
 let _metricsLogger: CloudfrontMetricLogger;
@@ -35,7 +33,7 @@ export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
     console.log(`Request for ${request?.currentPluginVersions.length} plugins`);
     request.currentPluginVersions = (request.currentPluginVersions || []).slice(
         0,
-        MAX_PLUGIN_REQUEST_LENGTH
+        getIntEnv('OPUC_MAX_PLUGIN_COUNT_PROCESSED')
     );
 
     try {
@@ -102,7 +100,10 @@ function buildGetReleases(): GetReleases {
     const fallbackReleaseRepository = new FallbackReleaseRepository(releaseRepositoryUsageOrder);
 
     const config: GetReleasesConfiguration = {
-        releasesCacheLengthSeconds: getIntEnv('OPUC_RELEASES_CACHE_LENGTH_SECONDS'),
+        releaseCacheLengthMultiplierSeconds: getIntEnv(
+            'OPUC_RELEASES_CACHE_LENGTH_SECONDS_MULTIPLIER'
+        ),
+        pluginCacheLengthDivisor: getIntEnv('OPUC_PLUGIN_CACHE_LENGTH_DIVISOR'),
         releasesFetchedPerPlugin: getIntEnv('OPUC_RELEASES_FETCHED_PER_PLUGIN'),
         maxReleaseNoteLength: getIntEnv('OPUC_MAX_RELEASE_NOTE_LENGTH'),
         maxManifestsToFetchPerPlugin: getIntEnv('OPUC_MAX_MANIFESTS_TO_FETCH_PER_PLUGIN'),

@@ -71,7 +71,12 @@ export class GetReleases {
         const cachedReleasesByPluginId: Record<string, PluginReleasesRecord> =
             await this.getCachedReleases(pluginIds);
 
-        const releaseRecordUpdates: PluginReleasesRecord[] = [];
+        //For larger requests, cache for longer to reduce response time
+        const releaseCacheLength =
+            Math.ceil(pluginIds.length / this.config.pluginCacheLengthDivisor) *
+            this.config.releaseCacheLengthMultiplierSeconds;
+
+        let releaseRecordUpdates: PluginReleasesRecord[] = [];
         for (const pluginId of pluginIds) {
             console.log(`Processing ${pluginId}`);
 
@@ -88,7 +93,8 @@ export class GetReleases {
                 let releasesRecord = await this.fetchReleaseRecords(
                     plugin,
                     cachedReleases,
-                    releaseRecordUpdates
+                    releaseRecordUpdates,
+                    releaseCacheLength
                 );
 
                 if (this.hasUninstalledVersion(releasesRecord, installed)) {
@@ -99,18 +105,17 @@ export class GetReleases {
                     );
                     clientResponses.push(clientResponse);
                 }
+
+                if (releaseRecordUpdates.length > 50) {
+                    await this.trySavingReleases(releaseRecordUpdates);
+                    releaseRecordUpdates = [];
+                }
             } catch (err) {
-                console.error('Error updating releases for', plugin, err);
+                console.error('Error processing releases for', plugin, err);
             }
         }
 
-        try {
-            if (releaseRecordUpdates.length > 0) {
-                await this.pluginReleaseRepository.save(releaseRecordUpdates);
-            }
-        } catch (err) {
-            console.error('Error saving release record updates', releaseRecordUpdates, err);
-        }
+        await this.trySavingReleases(releaseRecordUpdates);
 
         return clientResponses;
     }
@@ -118,9 +123,10 @@ export class GetReleases {
     private async fetchReleaseRecords(
         plugin: PluginRecord,
         cachedReleases: PluginReleasesRecord | undefined,
-        releaseRecordUpdates: PluginReleasesRecord[]
+        releaseRecordUpdates: PluginReleasesRecord[],
+        releaseCacheLength: number
     ): Promise<PluginReleasesRecord> {
-        if (cachedReleases != null && !this.hasCacheExpired(cachedReleases)) {
+        if (cachedReleases != null && !this.hasCacheExpired(cachedReleases, releaseCacheLength)) {
             return cachedReleases;
         }
 
@@ -188,10 +194,13 @@ export class GetReleases {
         return releasesRecord;
     }
 
-    private hasCacheExpired(cachedReleases: PluginReleasesRecord): boolean {
+    private hasCacheExpired(
+        cachedReleases: PluginReleasesRecord,
+        releaseCacheLength: number
+    ): boolean {
         const lastUpdated = dayjs(cachedReleases.lastFetchedFromGithub);
         const secondsSinceUpdate = this.now.diff(lastUpdated, 'seconds');
-        return secondsSinceUpdate > this.config.releasesCacheLengthSeconds;
+        return secondsSinceUpdate > releaseCacheLength;
     }
 
     private convertApiReleasesToRecord(
@@ -364,6 +373,16 @@ export class GetReleases {
         return groupById(pluginReleaseRecords, 'pluginId');
     }
 
+    private async trySavingReleases(releases: PluginReleasesRecord[]) {
+        try {
+            if (releases.length > 0) {
+                await this.pluginReleaseRepository.save(releases);
+            }
+        } catch (err) {
+            console.error('Error saving release record updates', releases, err);
+        }
+    }
+
     private hasUninstalledVersion(
         releasesRecord: PluginReleasesRecord,
         installed: InstalledPluginVersion
@@ -448,7 +467,8 @@ export class GetReleases {
 }
 
 export type GetReleasesConfiguration = {
-    releasesCacheLengthSeconds: number;
+    releaseCacheLengthMultiplierSeconds: number;
+    pluginCacheLengthDivisor: number;
     releasesFetchedPerPlugin: number;
     maxReleaseNoteLength: number;
     maxManifestsToFetchPerPlugin: number;
