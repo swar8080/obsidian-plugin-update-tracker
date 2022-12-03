@@ -7,7 +7,6 @@ const BACKEND_API_URL =
     (process.env['OBSIDIAN_APP_UPDATE_CHECKER_URL'] || '') + '/obsidian-plugin-update-tracker';
 
 export const getReleases: ReleaseApi = async (newPluginVersionRequest: NewPluginVersionRequest) => {
-    console.log('Requesting releases...');
     try {
         const res: string = await request({
             url: BACKEND_API_URL,
