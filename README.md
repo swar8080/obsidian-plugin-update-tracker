@@ -138,7 +138,7 @@ Vote on or suggest other features here: https://strawpoll.com/polls/NMnQBOJwWg6
 
 The API used to get plugin version info is free for anyone to use. This could be helpful for alerting your plugin's users about updates in a custom way.
 
-Cacheing/servless is used to keep costs low, avoid hitting github rate limits, and scale automatically. Currently, results are cached for `Math.ceil(number of requested plugins / 100) * 30` minutes and up to 300 plugins are processed. However, a large number of cache misses can still cause high latency.
+Cacheing/servless is used to keep costs low, avoid hitting github rate limits, and scale automatically. Currently, results are cached for `Math.ceil(number of requested plugins / 50) * 30` minutes and up to 300 plugins are processed. However, a large number of cache misses can still cause high latency.
 
 
 Request:
