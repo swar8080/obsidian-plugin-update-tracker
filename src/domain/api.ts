@@ -12,7 +12,6 @@ export const getReleases: ReleaseApi = async (newPluginVersionRequest: NewPlugin
             url: BACKEND_API_URL,
             method: 'POST',
             body: JSON.stringify(newPluginVersionRequest),
-            headers: { opuc_request_body_format: 'base64Json' }, //request base64 encodes the body for some reason
         });
         return JSON.parse(res);
     } catch (err) {
