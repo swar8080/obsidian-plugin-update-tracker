@@ -25,8 +25,7 @@ export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
     let request: NewPluginVersionRequest;
     try {
         let body = event.body;
-        if (event.headers['opuc_request_body_format'] === 'base64Json') {
-            //the front-end switched to using obsidian's built-in requestUrl function which base64 encodes the body
+        if (event.isBase64Encoded) {
             body = Buffer.from(body, 'base64').toString('utf-8');
         }
         request = JSON.parse(body);
