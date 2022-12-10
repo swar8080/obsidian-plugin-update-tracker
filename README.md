@@ -1,5 +1,6 @@
 # Obsidian Plugin Update Tracker
 
+- [Installation Link](#installation)
 - [Features](#features)
   * [Know when installed plugins have updates](#know-when-installed-plugins-have-updates)
   * [View a list of updates](#view-a-list-of-updates)
@@ -9,14 +10,13 @@
       - [Statistics on new versions](#statistics-on-new-versions)
       - [Wait a few days before showing updates](#wait-a-few-days-before-showing-updates)
       - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
-  * [Ignore Specific Plugin Updates](#ignore-specific-plugin-updates) 
+  * [View and install new beta plugin versions](#view-and-install-new-beta-plugin-versions)
+  * [Ignore specific plugin updates](#ignore-specific-plugin-updates) 
   * [Customizing plugin appearance](#customizing-plugin-appearance)
-- [Installation Link](#installation)     
-- [Feature Ideas](#feature-ideas)
-  * [Keeping your plugin update list clean](#keeping-your-update-list-clean)
-  * [Theme update tracking](#theme-update-tracking)
-  * [More security heuristics](#more-security-heuristics)
-- [Checking for updates in other plugins using the API](#checking-for-updates-in-other-plugins-using-the-api)
+- [Using the public API to check for plugin updates](#using-the-public-api-to-check-for-plugin-updates)
+
+# Installation
+Visit this URL: obsidian://show-plugin?id=obsidian-plugin-update-tracker
 
 # Features
 
@@ -35,8 +35,6 @@ This small icon is added to the status bar:
 This ribbon action is shown when there's at least one update available:
 
 ![image](https://user-images.githubusercontent.com/17691679/201494579-ec481261-728d-4ac1-81dd-2d754420bf69.png)
-
-Note that the update count is currently not shown on mobile/tablet. This icon can also be hidden from settings.
 
 ## View a list of updates
 
@@ -73,10 +71,20 @@ Clicking *Code Changes* will bring you to a page like https://github.com/blacksm
 
 <sub>⚠️ The code in the git diff may be different than what's installed. Obsidian downloads a separate `main.js` file from the github release, which the author could add any code to.</sub>
 
-## Ignore Specific Plugin Updates
+## Ignore specific plugin updates
 Hide new plugin versions that you don't want to install from the plugin icon count and update list:
 
 https://user-images.githubusercontent.com/17691679/200182586-c0a237ff-3cf4-4693-b1c5-9051b599e1ae.mov
+
+## View and install new beta plugin versions
+
+By default, new beta versions of plugins are hidden, but can be shown by changing this setting:
+
+![image](https://user-images.githubusercontent.com/17691679/206864440-099b5dbe-4bad-4040-8312-01c8fa195c9b.png)
+
+A warning will be shown for beta version updates:
+
+![image](https://user-images.githubusercontent.com/17691679/206864663-1392fdcd-d325-4ddb-8831-c6436988c8e3.png)
 
 ## Customizing plugin appearance
 
@@ -115,33 +123,15 @@ Position the icon at the beginning of the status bar:
  order: -1;
 }
 ```
-# Installation
-Visit this URL: obsidian://show-plugin?id=obsidian-plugin-update-tracker
 
-# Feature Ideas
-
-Vote on or suggest other features here: https://strawpoll.com/polls/NMnQBOJwWg6
-
-## Keeping your update list clean
-- Option to "snooze"/hide a new version of a plugin until a time that you specify
-- Setting to exclude disabled plugins from update counts
-- Add a toggle to show/hide disabled plugins
-
-## Theme Update Tracking
-
-## More security heuristics
-- On a sandboxed machine, does building the `main.js` from source produce the same code as the github release asset?
-- Were new dependencies added to `package.json`?
-- Has the `main.js` github release asset been updated since the version was published?
-
-# Checking for updates in other plugins using the API
+# Using the public API to check for plugin updates
 
 The API used to get plugin version info is free for anyone to use. This could be helpful for alerting your plugin's users about updates in a custom way.
 
-Cacheing/servless is used to keep costs low, avoid hitting github rate limits, and scale automatically. Currently, results are cached for `Math.ceil(number of requested plugins / 50) * 30` minutes and up to 300 plugins are processed. However, a large number of cache misses can still cause high latency.
+Cacheing + AWS Lambda is used to keep costs low, avoid hitting github rate limits, and scale automatically. Currently, cached values are used for up to `Math.ceil(number of requested plugins / 50) * 30` minutes and up to 300 plugins are processed. However, a large number of cache misses can still cause high latency.
 
 
-Request:
+Example Request:
 
 ```
 POST https://jc5gpa3gs7o2uge6iq5mgjd53q0daomi.lambda-url.us-east-1.on.aws
@@ -160,7 +150,7 @@ POST https://jc5gpa3gs7o2uge6iq5mgjd53q0daomi.lambda-url.us-east-1.on.aws
 }
 ```
 
-Response, which contains info on the 10 latest versions of the plugin that are greater than the version requested:
+Example Response, which contains info on the 10 latest versions of the plugin that are greater than the version requested:
 ```
 [
     {
