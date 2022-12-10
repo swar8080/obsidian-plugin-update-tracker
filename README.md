@@ -10,7 +10,7 @@
       - [Statistics on new versions](#statistics-on-new-versions)
       - [Wait a few days before showing updates](#wait-a-few-days-before-showing-updates)
       - [View code changes between versions of a plugin](#view-code-changes-between-versions-of-a-plugin)
-  * [View and install new beta plugin versions](view-and-install-new-beta-plugin-versions)
+  * [View and install new beta plugin versions](#view-and-install-new-beta-plugin-versions)
   * [Ignore specific plugin updates](#ignore-specific-plugin-updates) 
   * [Customizing plugin appearance](#customizing-plugin-appearance)
 - [Using the public API to check for plugin updates](#using-the-public-api-to-check-for-plugin-updates)
