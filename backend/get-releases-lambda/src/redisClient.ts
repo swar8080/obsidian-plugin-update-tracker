@@ -1,17 +1,20 @@
 import { createClient } from 'redis';
 import { RedisClientType } from '@redis/client';
+import { MetricLogger } from './MetricLogger';
 
 export class RedisClient {
     private url: string;
     private password: string;
     private isProd: boolean;
+    private metricLogger: MetricLogger;
 
     private redisClient: RedisClientType | null = null;
 
-    constructor(url: string, password: string, isProd: boolean) {
+    constructor(url: string, password: string, isProd: boolean, metricLogger: MetricLogger) {
         this.url = url;
         this.password = password;
         this.isProd = isProd;
+        this.metricLogger = metricLogger;
     }
 
     public async getJson<T>(namespace: string, keys: string[]): Promise<T[]> {
@@ -59,11 +62,17 @@ export class RedisClient {
 
     private async getClient(): Promise<RedisClientType> {
         if (this.redisClient == null) {
-            this.redisClient = createClient({
-                url: this.url,
-                password: this.password,
-            });
-            await this.redisClient.connect();
+            try {
+                this.redisClient = createClient({
+                    url: this.url,
+                    password: this.password,
+                });
+                await this.redisClient.connect();
+            } catch (err) {
+                console.error('Error connecting to redis', err);
+                this.metricLogger.trackErrorCodeOccurrence('REDIS_CONNECTION_ERROR');
+                throw err;
+            }
         }
         return this.redisClient;
     }

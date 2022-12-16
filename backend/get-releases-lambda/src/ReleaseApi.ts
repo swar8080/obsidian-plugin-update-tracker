@@ -64,6 +64,7 @@ export class GithubReleaseApi implements ReleaseApi {
                 };
             }
             console.error(`Unexpected error fetching github releases for ${repositoryPath}`, err);
+            await this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_RELEASES');
             throw err;
         }
     }
@@ -72,19 +73,23 @@ export class GithubReleaseApi implements ReleaseApi {
         repositoryPath: string,
         assetId: number
     ): Promise<ApiPluginManifest> {
-        const response = await axios({
-            method: 'get',
-            url: `https://api.github.com/repos/${repositoryPath}/releases/assets/${assetId}`,
-            headers: {
-                Authorization: `Bearer ${this.githubAccessToken}`,
-                Accept: 'application/octet-stream',
-            },
-            timeout: this.timeoutMs,
-        });
+        try {
+            const response = await axios({
+                method: 'get',
+                url: `https://api.github.com/repos/${repositoryPath}/releases/assets/${assetId}`,
+                headers: {
+                    Authorization: `Bearer ${this.githubAccessToken}`,
+                    Accept: 'application/octet-stream',
+                },
+                timeout: this.timeoutMs,
+            });
+            this.emitRateLimitMetric(response);
 
-        this.emitRateLimitMetric(response);
-
-        return response.data;
+            return response.data;
+        } catch (err) {
+            this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_MANIFEST');
+            throw err;
+        }
     }
 
     async fetchMasterManifest(
@@ -119,6 +124,7 @@ export class GithubReleaseApi implements ReleaseApi {
                 };
             }
             console.error(`Unexpected error fetching master manifest for ${repositoryPath}`, err);
+            await this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_MASTER_MANIFEST');
             throw err;
         }
     }
@@ -127,7 +133,7 @@ export class GithubReleaseApi implements ReleaseApi {
         const rateLimitRemaining = response.headers['x-ratelimit-remaining'];
         try {
             if (rateLimitRemaining != null) {
-                this.metricLogger.logGithubRateLimit(parseInt(rateLimitRemaining));
+                this.metricLogger.trackGithubRateLimit(parseInt(rateLimitRemaining));
             }
         } catch (err) {
             console.warn(`Error logging rate limit metric ${rateLimitRemaining}`, err);

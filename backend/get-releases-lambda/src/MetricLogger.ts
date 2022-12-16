@@ -1,12 +1,24 @@
 import { CloudWatchClient, PutMetricDataCommand } from '@aws-sdk/client-cloudwatch';
 
 export interface MetricLogger {
-    logGithubRateLimit(rateLimt: number): Promise<void>;
+    trackGithubRateLimit(rateLimt: number): Promise<void>;
+    trackErrorCodeOccurrence(errorCode: ErrorCode): Promise<void>;
 }
+
+type ErrorCode =
+    | 'GITHUB_FETCH_RELEASES'
+    | 'GITHUB_FETCH_MANIFEST'
+    | 'GITHUB_FETCH_MASTER_MANIFEST'
+    | 'GITHUB_FETCH_PLUGIN_LIST'
+    | 'REDIS_CONNECTION_ERROR'
+    | 'REDIS_FETCH_RELEASE_RECORDS'
+    | 'REDIS_PERSIST_RELEASE_RECORDS'
+    | 'S3_FETCH_PLUGIN_LIST'
+    | 'S3_PUT_PLUGIN_LIST';
 
 const GITHUB_RATE_LIMIT_METRIC_NAME = 'Github Rate Limit';
 
-export class CloudfrontMetricLogger implements MetricLogger {
+export class CloudWatchMetricLogger implements MetricLogger {
     private metricNamespace: string;
     private cloudwatch: CloudWatchClient;
     private metricBuffer = {
@@ -21,13 +33,21 @@ export class CloudfrontMetricLogger implements MetricLogger {
         this.cloudwatch = new CloudWatchClient({});
     }
 
-    async logGithubRateLimit(rateLimt: number): Promise<void> {
+    public async trackGithubRateLimit(rateLimt: number): Promise<void> {
         this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME].bufferedValue = rateLimt;
 
         const bufferedRequests = ++this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME]
             .bufferedRequests;
         if (bufferedRequests >= 20) {
             await this.flush();
+        }
+    }
+
+    public async trackErrorCodeOccurrence(errorCode: ErrorCode): Promise<void> {
+        try {
+            await this.putMetric(errorCode, 1);
+        } catch (err) {
+            console.error(`Error tracking errorCode ${errorCode}`, err);
         }
     }
 
@@ -46,23 +66,17 @@ export class CloudfrontMetricLogger implements MetricLogger {
     }
 
     private async putMetric(name: string, value: number) {
-        const putMetricCommand = new PutMetricDataCommand({
-            Namespace: this.metricNamespace,
-            MetricData: [
-                {
-                    MetricName: name,
-                    Value: value,
-                    Timestamp: new Date(),
-                },
-            ],
-        });
-
-        try {
-            await this.cloudwatch.send(putMetricCommand);
-            this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME].bufferedRequests = 0;
-        } catch (err) {
-            console.error(`Error putting metric ${GITHUB_RATE_LIMIT_METRIC_NAME}`, err);
-            throw err;
-        }
+        await this.cloudwatch.send(
+            new PutMetricDataCommand({
+                Namespace: this.metricNamespace,
+                MetricData: [
+                    {
+                        MetricName: name,
+                        Value: value,
+                        Timestamp: new Date(),
+                    },
+                ],
+            })
+        );
     }
 }

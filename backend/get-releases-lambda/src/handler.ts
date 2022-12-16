@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { NewPluginVersionRequest } from '../../../shared-types';
-import { CloudfrontMetricLogger } from './MetricLogger';
+import { CloudWatchMetricLogger } from './MetricLogger';
 import { DynamoDBReleaseRepository } from './ReleaseRepository/DynamoDBReleaseRepository';
 import { GetReleases, GetReleasesConfiguration } from './get-releases';
 import { GithubReleaseApi } from './ReleaseApi';
@@ -12,7 +12,7 @@ import { FallbackReleaseRepository } from './ReleaseRepository/FallbackReleaseRe
 
 let _getReleases: GetReleases | null = null;
 let _redisClient: RedisClient;
-let _metricsLogger: CloudfrontMetricLogger;
+let _metricsLogger: CloudWatchMetricLogger;
 
 export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     if (event.requestContext.http.method.toLowerCase() !== 'post') {
@@ -80,9 +80,12 @@ function buildGetReleases(): GetReleases {
         return _getReleases;
     }
 
-    const pluginRepository = new S3PluginRepository(getEnv('OPUC_PLUGINS_LIST_BUCKET_NAME'));
+    _metricsLogger = new CloudWatchMetricLogger(getEnv('OPUC_METRIC_NAMESPACE'));
 
-    _metricsLogger = new CloudfrontMetricLogger(getEnv('OPUC_METRIC_NAMESPACE'));
+    const pluginRepository = new S3PluginRepository(
+        getEnv('OPUC_PLUGINS_LIST_BUCKET_NAME'),
+        _metricsLogger
+    );
 
     const releaseApi = new GithubReleaseApi(
         getEnv('OPUC_GITHUB_ACCESS_TOKEN'),
@@ -95,9 +98,10 @@ function buildGetReleases(): GetReleases {
         _redisClient = new RedisClient(
             getEnv('OPUC_REDIS_URL'),
             getEnv('OPUC_REDIS_PASSWORD'),
-            getBooleanEnv('OPUC_IS_PROD')
+            getBooleanEnv('OPUC_IS_PROD'),
+            _metricsLogger
         );
-        releaseRepositoryUsageOrder.push(new RedisReleaseRepository(_redisClient));
+        releaseRepositoryUsageOrder.push(new RedisReleaseRepository(_redisClient, _metricsLogger));
     }
     if (getBooleanEnv('OPUC_USE_DYNAMODB_RELEASE_REPOSITORY')) {
         releaseRepositoryUsageOrder.push(
