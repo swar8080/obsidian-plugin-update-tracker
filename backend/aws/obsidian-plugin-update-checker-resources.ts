@@ -97,7 +97,7 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
         pluginReleaseTable.grantWriteData(getReleasesLambda);
 
         //Allow the lambda to write to metrics in its namespace
-        const metricNamespace = `obsidian-plugin-update-checker-${deployment.env}`;
+        const metricNamespace = `obsidian-plugin-update-checker-prod`;
         const putMetricsPolicy = new iam.PolicyStatement({
             actions: ['cloudwatch:PutMetricData'],
             effect: iam.Effect.ALLOW,

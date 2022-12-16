@@ -32,25 +32,37 @@ export class CloudfrontMetricLogger implements MetricLogger {
     }
 
     public async flush() {
-        if (this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME].bufferedRequests > 0) {
-            const putMetricCommand = new PutMetricDataCommand({
-                Namespace: this.metricNamespace,
-                MetricData: [
-                    {
-                        MetricName: GITHUB_RATE_LIMIT_METRIC_NAME,
-                        Value: this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME].bufferedValue,
-                        Timestamp: new Date(),
-                    },
-                ],
-            });
-
+        const { bufferedRequests, bufferedValue } =
+            this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME];
+        if (bufferedRequests > 0) {
             try {
-                await this.cloudwatch.send(putMetricCommand);
+                await this.putMetric(GITHUB_RATE_LIMIT_METRIC_NAME, bufferedValue);
                 this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME].bufferedRequests = 0;
             } catch (err) {
                 console.error(`Error putting metric ${GITHUB_RATE_LIMIT_METRIC_NAME}`, err);
                 throw err;
             }
+        }
+    }
+
+    private async putMetric(name: string, value: number) {
+        const putMetricCommand = new PutMetricDataCommand({
+            Namespace: this.metricNamespace,
+            MetricData: [
+                {
+                    MetricName: name,
+                    Value: value,
+                    Timestamp: new Date(),
+                },
+            ],
+        });
+
+        try {
+            await this.cloudwatch.send(putMetricCommand);
+            this.metricBuffer[GITHUB_RATE_LIMIT_METRIC_NAME].bufferedRequests = 0;
+        } catch (err) {
+            console.error(`Error putting metric ${GITHUB_RATE_LIMIT_METRIC_NAME}`, err);
+            throw err;
         }
     }
 }
