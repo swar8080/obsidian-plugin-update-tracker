@@ -84,7 +84,11 @@ function buildGetReleases(): GetReleases {
 
     _metricsLogger = new CloudfrontMetricLogger(getEnv('OPUC_METRIC_NAMESPACE'));
 
-    const releaseApi = new GithubReleaseApi(getEnv('OPUC_GITHUB_ACCESS_TOKEN'), _metricsLogger);
+    const releaseApi = new GithubReleaseApi(
+        getEnv('OPUC_GITHUB_ACCESS_TOKEN'),
+        _metricsLogger,
+        getIntEnv('OPUC_GITHUB_API_TIMEOUT_MS')
+    );
 
     const releaseRepositoryUsageOrder: ReleaseRepository[] = [];
     if (getBooleanEnv('OPUC_USE_REDIS_RELEASE_REPOSITORY')) {

@@ -19,10 +19,12 @@ export interface ReleaseApi {
 export class GithubReleaseApi implements ReleaseApi {
     private githubAccessToken: string;
     private metricLogger: MetricLogger;
+    private timeoutMs: number;
 
-    constructor(githubAccessToken: string, metricLogger: MetricLogger) {
+    constructor(githubAccessToken: string, metricLogger: MetricLogger, timeoutMs: number) {
         this.githubAccessToken = githubAccessToken;
         this.metricLogger = metricLogger;
+        this.timeoutMs = timeoutMs;
     }
 
     async fetchReleases(
@@ -42,6 +44,7 @@ export class GithubReleaseApi implements ReleaseApi {
                     Accept: 'application/vnd.github+json',
                     'If-None-Match': etag || '',
                 },
+                timeout: this.timeoutMs,
             });
 
             this.emitRateLimitMetric(response);
@@ -76,6 +79,7 @@ export class GithubReleaseApi implements ReleaseApi {
                 Authorization: `Bearer ${this.githubAccessToken}`,
                 Accept: 'application/octet-stream',
             },
+            timeout: this.timeoutMs,
         });
 
         this.emitRateLimitMetric(response);
@@ -95,6 +99,7 @@ export class GithubReleaseApi implements ReleaseApi {
                     Authorization: `Bearer ${this.githubAccessToken}`,
                     'If-None-Match': etag || '',
                 },
+                timeout: this.timeoutMs,
             });
             this.emitRateLimitMetric(response);
 
