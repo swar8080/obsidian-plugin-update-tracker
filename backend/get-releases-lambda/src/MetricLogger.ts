@@ -1,4 +1,4 @@
-import { CloudWatchClient, PutMetricDataCommand } from '@aws-sdk/client-cloudwatch';
+import { CloudWatchClient, Dimension, PutMetricDataCommand } from '@aws-sdk/client-cloudwatch';
 
 export interface MetricLogger {
     trackGithubRateLimit(rateLimt: number): Promise<void>;
@@ -17,6 +17,7 @@ type ErrorCode =
     | 'S3_PUT_PLUGIN_LIST';
 
 const GITHUB_RATE_LIMIT_METRIC_NAME = 'Github Rate Limit';
+const ERROR_CODE_METRIC_NAME = 'Error Codes';
 
 export class CloudWatchMetricLogger implements MetricLogger {
     private metricNamespace: string;
@@ -45,7 +46,11 @@ export class CloudWatchMetricLogger implements MetricLogger {
 
     public async trackErrorCodeOccurrence(errorCode: ErrorCode): Promise<void> {
         try {
-            await this.putMetric(errorCode, 1);
+            const errorCodeDimension: Dimension = {
+                Name: 'ErrorCode',
+                Value: errorCode,
+            };
+            await this.putMetric(ERROR_CODE_METRIC_NAME, 1, [errorCodeDimension]);
         } catch (err) {
             console.error(`Error tracking errorCode ${errorCode}`, err);
         }
@@ -65,7 +70,11 @@ export class CloudWatchMetricLogger implements MetricLogger {
         }
     }
 
-    private async putMetric(name: string, value: number) {
+    private async putMetric(
+        name: string,
+        value: number,
+        dimensions: Dimension[] | undefined = undefined
+    ) {
         await this.cloudwatch.send(
             new PutMetricDataCommand({
                 Namespace: this.metricNamespace,
@@ -74,6 +83,7 @@ export class CloudWatchMetricLogger implements MetricLogger {
                         MetricName: name,
                         Value: value,
                         Timestamp: new Date(),
+                        Dimensions: dimensions,
                     },
                 ],
             })
