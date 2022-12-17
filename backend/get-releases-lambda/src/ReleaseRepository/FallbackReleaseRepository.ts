@@ -36,8 +36,9 @@ export class FallbackReleaseRepository implements ReleaseRepository {
             try {
                 return await operation(releaseRepository);
             } catch (err) {
-                console.log(
-                    `Error handling operation ${operationName} with release repository ${releaseRepository}`
+                console.error(
+                    `Error handling operation ${operationName} with release repository ${releaseRepository}`,
+                    err
                 );
 
                 if (i + 1 >= this.releaseRepositories.length) {
