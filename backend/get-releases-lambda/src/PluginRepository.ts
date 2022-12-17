@@ -1,13 +1,8 @@
 import axios from 'axios';
-import {
-    GetObjectCommand,
-    GetObjectCommandOutput,
-    S3Client,
-    NoSuchKey,
-    PutObjectCommand,
-} from '@aws-sdk/client-s3';
+import { GetObjectCommand, S3Client, NoSuchKey, PutObjectCommand } from '@aws-sdk/client-s3';
 import { groupById } from './util';
 import * as streamConsumers from 'stream/consumers';
+import { MetricLogger } from './MetricLogger';
 
 export interface PluginRepository {
     getPluginsById(pluginIds: string[]): Promise<Record<string, PluginRecord>>;
@@ -28,10 +23,12 @@ let _cachedPluginRecords: Record<string, PluginRecord> | null = null;
 export class S3PluginRepository implements PluginRepository {
     private bucketName: string;
     private s3: S3Client;
+    private metricLogger: MetricLogger;
 
-    constructor(bucketName: string) {
+    constructor(bucketName: string, metricLogger: MetricLogger) {
         this.bucketName = bucketName;
         this.s3 = new S3Client({});
+        this.metricLogger = metricLogger;
     }
 
     async getPluginsById(pluginIds: string[]): Promise<Record<string, PluginRecord>> {
@@ -65,6 +62,7 @@ export class S3PluginRepository implements PluginRepository {
                     `Unexpected Error fetching ${PLUGIN_LIST_S3_KEY_NAME} from ${this.bucketName}`,
                     e
                 );
+                this.metricLogger.trackErrorCodeOccurrence('S3_FETCH_PLUGIN_LIST');
                 throw e;
             }
         }
@@ -79,7 +77,7 @@ export class S3PluginRepository implements PluginRepository {
             Key: PLUGIN_LIST_S3_KEY_NAME,
         });
 
-        const getObjectResponse: GetObjectCommandOutput = await this.s3.send(getObjectCommand);
+        const getObjectResponse = await this.s3.send(getObjectCommand);
 
         if (getObjectResponse.Body) {
             const stream: NodeJS.ReadableStream = getObjectResponse.Body as NodeJS.ReadableStream;
@@ -92,10 +90,16 @@ export class S3PluginRepository implements PluginRepository {
     }
 
     private async fetchFromGithub(): Promise<PluginRecord[]> {
-        return await axios({
-            method: 'get',
-            url: PLUGINS_LIST_GITHUB_URL,
-        }).then((res) => res.data);
+        try {
+            return await axios({
+                method: 'get',
+                url: PLUGINS_LIST_GITHUB_URL,
+            }).then((res) => res.data);
+        } catch (err) {
+            console.log('Error fetching plugin list from github', err);
+            this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_PLUGIN_LIST');
+            throw err;
+        }
     }
 
     private async tryStoringInS3(pluginsFile: PluginRecord[]): Promise<void> {
@@ -108,6 +112,7 @@ export class S3PluginRepository implements PluginRepository {
             await this.s3.send(putObjectCommand);
         } catch (e) {
             console.warn(`Unable to persist ${PLUGIN_LIST_S3_KEY_NAME} in ${this.bucketName}`, e);
+            this.metricLogger.trackErrorCodeOccurrence('S3_PUT_PLUGIN_LIST');
         }
     }
 }
