@@ -31,27 +31,29 @@ export class FallbackReleaseRepository implements ReleaseRepository {
         operationName: string
     ): Promise<T> {
         let prioritizedOrder = this.releaseRepositories;
-        for (let i = 0; i < this.releaseRepositories.length; i++) {
-            const releaseRepository = this.releaseRepositories[i];
-            try {
-                return await operation(releaseRepository);
-            } catch (err) {
-                console.error(
-                    `Error handling operation ${operationName} with release repository ${releaseRepository}`,
-                    err
-                );
+        try {
+            for (let i = 0; i < this.releaseRepositories.length; i++) {
+                const releaseRepository = this.releaseRepositories[i];
+                try {
+                    return await operation(releaseRepository);
+                } catch (err) {
+                    console.error(
+                        `Error handling operation ${operationName} with release repository ${releaseRepository}`,
+                        err
+                    );
 
-                if (i + 1 >= this.releaseRepositories.length) {
-                    throw err;
+                    if (i + 1 >= this.releaseRepositories.length) {
+                        throw err;
+                    }
+
+                    //move to back of list of repositories to try for the next operations
+                    prioritizedOrder = [...prioritizedOrder];
+                    prioritizedOrder.splice(i, 1);
+                    prioritizedOrder.push(releaseRepository);
                 }
-
-                //move to back of list of repositories to try for the next operations
-                prioritizedOrder = [...prioritizedOrder];
-                delete prioritizedOrder[i];
-                prioritizedOrder.push(releaseRepository);
-            } finally {
-                this.releaseRepositories = prioritizedOrder;
             }
+        } finally {
+            this.releaseRepositories = prioritizedOrder;
         }
 
         throw new Error('No release repositories configured');
