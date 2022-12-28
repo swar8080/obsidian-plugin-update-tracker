@@ -51,10 +51,11 @@ export class RedisClient {
 
     public async close(): Promise<void> {
         try {
-            if (this.redisClient != null) {
-                await this.redisClient.disconnect();
+            const redisClient = this.redisClient;
+            if (redisClient != null) {
+                this.redisClient = null;
+                await redisClient.disconnect();
             }
-            this.redisClient = null;
         } catch (err) {
             console.error('Error cleaning up redis connection', err);
         }
