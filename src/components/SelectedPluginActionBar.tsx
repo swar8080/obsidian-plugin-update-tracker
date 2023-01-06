@@ -83,6 +83,20 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
         }, LOADING_ANIMATION_SEQUENCE_MS);
     }
 
+    const statusBarHeight: number = React.useMemo(() => {
+        const statusBar = document.querySelector('.status-bar') as HTMLElement;
+        if (statusBar) {
+            const computedStyle = window.getComputedStyle(statusBar);
+            return (
+                statusBar.offsetHeight +
+                parseInt(computedStyle.getPropertyValue('margin-top')) +
+                parseInt(computedStyle.getPropertyValue('margin-bottom'))
+            );
+        }
+        return 0;
+    }, []);
+    const actionButtonPaddingBottomPx = statusBarHeight + 3;
+
     return (
         <DivSelectedPluginActionBarContainer>
             <DivHeaderContainer>
@@ -99,7 +113,7 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
                 )}
             </DivHeaderContainer>
 
-            <DivActionButtonContainer>
+            <DivActionButtonContainer paddingBottom={actionButtonPaddingBottomPx}>
                 <ButtonAction
                     onClick={() => handleActionClick(onClickInstall)}
                     disabled={disabled}
@@ -155,7 +169,7 @@ const H4HeaderText = styled.h4`
     margin: 0;
 `;
 
-const DivActionButtonContainer = styled.div`
+const DivActionButtonContainer = styled.div<{ paddingBottom: number }>`
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -167,6 +181,8 @@ const DivActionButtonContainer = styled.div`
     button:last-child {
         margin-right: 0;
     }
+
+    padding-bottom: ${(props) => `${props.paddingBottom}px`};
 `;
 
 const ButtonAction = styled.button<{ isDisabled: boolean }>`

@@ -100,14 +100,18 @@ Appearance can also be customized using obsidian CSS snippets (Go to *Settings >
 
 The following CSS selectors exist:
 
-- *.status-bar-item.plugin-obsidian-plugin-update-tracker*: The status bar plugin icon
+- *.status-bar-item.plugin-obsidian-plugin-update-tracker*: The container of the +status bar plugin icon
 
-- *.plugin-update-tracker-icon--loading*: Plugic icon in the loading state (⌛)
+- *.plugin-update-tracker-icon--loading*: Plugic icon container in the loading state (⌛)
 
-- *.plugin-update-tracker-icon--no-updates-available*: Plugin icon when no updates are available (✓)
+- *.plugin-update-tracker-icon--no-updates-available*: Plugic icon container when no updates are available (✓)
 
-- *.plugin-update-tracker-icon--updates-available*: Plugic icon when updates are available
+- *.plugin-update-tracker-icon--updates-available*: Plugic icon container when updates are available
 
+- *.plugin-update-tracker-icon-plug-icon*: The plug icon (<img width="14" alt="image" src="https://user-images.githubusercontent.com/17691679/211116452-04d72518-4229-4013-88e5-ef4edc0b135c.png">
+)
+
+- *.plugin-update-tracker-icon-chip*: The status icon to the right of the plug icon
 
 **Examples**
 

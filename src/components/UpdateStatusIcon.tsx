@@ -136,7 +136,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
             isHighlighted={isHighlighted}
             className={`${CSS_CLASS_BASE} ${cssSelector}`}
         >
-            <FontAwesomeIcon icon={faPlug} />
+            <FontAwesomeIcon icon={faPlug} className={`${CSS_CLASS_BASE}-plug-icon`} />
             <DivPluginStatusChip
                 color={chipColour}
                 fontSize={fontSize}
@@ -144,6 +144,7 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
                 padding={padding}
                 leftOffset={leftOffset}
                 isHighlighted={isHighlighted}
+                className={`${CSS_CLASS_BASE}-chip`}
             >
                 {chipText}
             </DivPluginStatusChip>
