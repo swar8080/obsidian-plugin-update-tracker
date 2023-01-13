@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import filter from 'lodash/filter';
+import find from 'lodash/find';
 import map from 'lodash/map';
 import orderBy from 'lodash/orderBy';
 import { PluginManifest } from 'obsidian';
@@ -89,6 +90,14 @@ export default class InstalledPluginReleases {
     public getLatestReleaseAssetIds(): PluginFileAssetIds | undefined {
         const newReleaseVersion = this.getNewReleaseVersion();
         return newReleaseVersion?.fileAssetIds;
+    }
+
+    public getReleaseAssetIdsForVersion(versionNumber: string): PluginFileAssetIds | undefined {
+        const release = find(
+            this.releases?.newVersions,
+            (release) => release.versionNumber == versionNumber
+        );
+        return release?.fileAssetIds;
     }
 
     public isLatestVersionABetaVersion(): boolean {

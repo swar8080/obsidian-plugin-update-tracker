@@ -10,9 +10,13 @@ import { syncApp } from './syncApp';
 
 const SIMULATE_UPDATE_PLUGINS = process.env['OBSIDIAN_APP_SIMULATE_UPDATE_PLUGINS'] === 'true';
 
+type Params = {
+    visiblePluginVersionsById: Record<string, string>;
+};
+
 export const updatePlugins = createAsyncThunk(
     'obsidian/updatePlugins',
-    async (_: void, thunkAPI) => {
+    async (params: Params, thunkAPI) => {
         const state = thunkAPI.getState() as State;
         const dispatch = thunkAPI.dispatch;
         const app = window.app as ObsidianApp;
@@ -31,8 +35,9 @@ export const updatePlugins = createAsyncThunk(
         let isRateLimited = false;
         for (const pluginId of selectedPluginIds) {
             const installedPlugin = allPluginsById[pluginId];
-            const latestReleaseAssetIds = installedPlugin.getLatestReleaseAssetIds();
-            const latestVersionNumber = installedPlugin.getLatestVersionNumber();
+            const versionToInstall = params.visiblePluginVersionsById[pluginId];
+            const versionReleastAssetIds =
+                installedPlugin.getReleaseAssetIdsForVersion(versionToInstall);
             const pluginRepoPath = installedPlugin.getRepoPath();
             const isPluginEnabled =
                 state.obsidian.enabledPlugins != null && pluginId in state.obsidian.enabledPlugins;
@@ -57,7 +62,7 @@ export const updatePlugins = createAsyncThunk(
                 ) {
                     throw new Error('missing obsidian api');
                 }
-                if (!latestReleaseAssetIds?.mainJs || !latestReleaseAssetIds?.manifestJson) {
+                if (!versionReleastAssetIds?.mainJs || !versionReleastAssetIds?.manifestJson) {
                     throw new Error('missing asset ids');
                 }
                 if (!pluginRepoPath) {
@@ -69,14 +74,14 @@ export const updatePlugins = createAsyncThunk(
                 } else if (!SIMULATE_UPDATE_PLUGINS) {
                     //download and install seperately to reduce the chances of only some of the new files being written to disk
                     const [mainJs, manifestJson, styleCss] = await Promise.all([
-                        downloadPluginFile(latestReleaseAssetIds.mainJs, pluginRepoPath, dispatch),
+                        downloadPluginFile(versionReleastAssetIds.mainJs, pluginRepoPath, dispatch),
                         downloadPluginFile(
-                            latestReleaseAssetIds.manifestJson,
+                            versionReleastAssetIds.manifestJson,
                             pluginRepoPath,
                             dispatch
                         ),
                         downloadPluginFile(
-                            latestReleaseAssetIds.styleCss,
+                            versionReleastAssetIds.styleCss,
                             pluginRepoPath,
                             dispatch
                         ),
@@ -94,7 +99,7 @@ export const updatePlugins = createAsyncThunk(
                             pluginId,
                             'manifest.json',
                             manifestJson,
-                            latestVersionNumber
+                            versionToInstall
                         ),
                         installPluginFile(pluginId, 'styles.css', styleCss),
                     ]);
