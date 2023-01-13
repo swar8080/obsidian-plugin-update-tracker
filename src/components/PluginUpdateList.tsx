@@ -79,7 +79,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
 
     function handleClickInstall(): Promise<any> {
         const visiblePluginVersionsById = allPluginReleases.reduce((combined, next) => {
-            //get latest version number shouldn't include ignored versions at this point
+            //getLatestVersionNumber is the latest version that isn't ignored or filtered-out
             combined[next.getPluginId()] = next.getLatestVersionNumber();
             return combined;
         }, {} as Record<string, string>);
