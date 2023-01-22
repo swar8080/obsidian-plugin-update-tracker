@@ -14,7 +14,7 @@ import {
 } from './ReleaseApi';
 import { PluginRepository, PluginRecord } from './PluginRepository';
 import { ReleaseRepository, PluginReleasesRecord, MasterManifestInfo } from './ReleaseRepository';
-import { isEmpty, groupById, semverCompare } from './util';
+import { isEmpty, groupById, semverCompare, debug } from './util';
 
 const THIS_PLUGIN_ID = 'obsidian-plugin-update-tracker';
 
@@ -78,7 +78,7 @@ export class GetReleases {
 
         let releaseRecordUpdates: PluginReleasesRecord[] = [];
         for (const pluginId of pluginIds) {
-            console.log(`Processing ${pluginId}`);
+            debug(`Processing ${pluginId}`);
 
             if (this.config.ignoreReleasesForThisPlugin && pluginId === THIS_PLUGIN_ID) {
                 //disable surfacing updates for this plugin so that testing can be done before releasing it
@@ -130,7 +130,7 @@ export class GetReleases {
             return cachedReleases;
         }
 
-        console.log(`Fetching releases for ${plugin.id}`);
+        debug(`Fetching releases for ${plugin.id}`);
         let releasesApiResponse: ApiReleaseResponse;
         try {
             releasesApiResponse = await this.releaseApi.fetchReleases(
@@ -161,7 +161,7 @@ export class GetReleases {
         }
 
         if (!releasesApiResponse.hasChanges || masterManifestResponse?.hasChanges === false) {
-            console.log(
+            debug(
                 `Etag match on ${
                     plugin.id
                 }: releases=${!releasesApiResponse.hasChanges}, masterManifest=${
@@ -337,7 +337,7 @@ export class GetReleases {
             return false;
         }
 
-        console.log(
+        debug(
             `Fetching ${manifestAssetIdsToFetch.length} manifests for ${releasesApiResponse.releases[0].id}`
         );
 

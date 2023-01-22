@@ -41,6 +41,7 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
                     'OPUC_REDIS_PASSWORD',
                 ]),
                 OPUC_IS_PROD: deployment.isProd.toString(),
+                OPUC_DEBUG_LOGS_ENABLED: deployment.isDev.toString(),
             },
             bundling: {
                 minify: false,

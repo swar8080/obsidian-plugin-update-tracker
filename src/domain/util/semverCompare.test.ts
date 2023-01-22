@@ -30,7 +30,6 @@ describe('semverCompare', () => {
     function testCase(v1: string | null, v2: string | null, expected: EXPECTED) {
         const result = semverCompare(v1, v2);
 
-        console.log(v1, v2, expected);
         if (expected === 'equal') {
             expect(result).toBe(0);
         } else if (expected === 'greater') {
