@@ -1,6 +1,6 @@
 {
   "name": "obsidian-plugin-update-tracker",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Know when installed plugins have updates and evaluate the risk of upgrading",
   "main": "main.js",
   "scripts": {

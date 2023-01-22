@@ -96,7 +96,7 @@ export class S3PluginRepository implements PluginRepository {
                 url: PLUGINS_LIST_GITHUB_URL,
             }).then((res) => res.data);
         } catch (err) {
-            console.log('Error fetching plugin list from github', err);
+            console.warn('Error fetching plugin list from github', err);
             this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_PLUGIN_LIST');
             throw err;
         }

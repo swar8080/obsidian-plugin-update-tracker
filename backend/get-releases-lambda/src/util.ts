@@ -1,4 +1,5 @@
 const FUZZY_SEMVER_PATTERN = /^(\d+)\.(\d+)\.(\d+).*/;
+const DEBUG_LOGS_ENABLED = process.env['OPUC_DEBUG_LOGS_ENABLED'] === 'true';
 
 export function isEmpty(collection: any[] | null | undefined) {
     return collection == null || collection.length === 0;
@@ -56,4 +57,10 @@ export function semverCompare(version1: string | null, version2: string | null):
     }
 
     return 0;
+}
+
+export function debug(...args: any[]) {
+    if (DEBUG_LOGS_ENABLED) {
+        console.debug(...args);
+    }
 }
