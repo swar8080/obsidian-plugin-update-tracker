@@ -5,7 +5,7 @@ import {
     InstalledPluginVersion,
     ReleaseVersion,
     PluginFileAssetIds,
-} from '../../../shared-types';
+} from '../../../oput-common';
 import {
     ReleaseApi,
     ApiReleaseResponse,
@@ -14,7 +14,8 @@ import {
 } from './ReleaseApi';
 import { PluginRepository, PluginRecord } from './PluginRepository';
 import { ReleaseRepository, PluginReleasesRecord, MasterManifestInfo } from './ReleaseRepository';
-import { isEmpty, groupById, semverCompare, debug } from './util';
+import { isEmpty, groupById, debug } from './util';
+import { semverCompare } from '../../../oput-common/semverCompare';
 
 const THIS_PLUGIN_ID = 'obsidian-plugin-update-tracker';
 

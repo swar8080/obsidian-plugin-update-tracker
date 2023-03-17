@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
-import { NewPluginVersionRequest } from '../../../shared-types';
+import { NewPluginVersionRequest } from '../../../oput-common';
 import { CloudWatchMetricLogger } from './MetricLogger';
 import { DynamoDBReleaseRepository } from './ReleaseRepository/DynamoDBReleaseRepository';
 import { GetReleases, GetReleasesConfiguration } from './get-releases';

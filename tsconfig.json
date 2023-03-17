@@ -23,7 +23,8 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.tsx",
+    "oput-common/**/*.ts"
   ],
   "exclude": ["src/stories"]
 }

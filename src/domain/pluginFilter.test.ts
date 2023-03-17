@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { PluginManifest } from 'obsidian';
-import { PluginReleases, ReleaseVersion } from '../../shared-types';
+import { PluginReleases, ReleaseVersion } from '../../oput-common';
 import InstalledPluginReleases from './InstalledPluginReleases';
 import pluginFilter, { PluginFilters } from './pluginFilter';
 import { DismissedPluginVersion, PluginSettings } from './pluginSettings';

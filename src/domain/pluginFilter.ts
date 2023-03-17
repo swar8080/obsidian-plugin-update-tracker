@@ -2,9 +2,9 @@ import dayjs from 'dayjs';
 import { PluginManifest, requireApiVersion } from 'obsidian';
 import { PluginSettings } from './pluginSettings';
 
-import { PluginReleases } from 'shared-types';
+import { PluginReleases } from 'oput-common';
+import { semverCompare } from '../../oput-common/semverCompare';
 import InstalledPluginReleases from './InstalledPluginReleases';
-import { semverCompare } from './util/semverCompare';
 
 const HIDE_THIS_PLUGINS_UPDATES = process.env['OBSIDIAN_APP_HIDE_THIS_PLUGINS_UPDATES'] === 'true';
 const THIS_PLUGIN_ID = process.env['OBSIDIAN_APP_THIS_PLUGIN_ID'];

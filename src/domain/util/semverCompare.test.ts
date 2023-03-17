@@ -1,4 +1,4 @@
-import { semverCompare } from './semverCompare';
+import { semverCompare } from '../../../oput-common/semverCompare';
 
 describe('semverCompare', () => {
     type EXPECTED = 'greater' | 'equal' | 'less';

@@ -1,5 +1,5 @@
 import { request, requestUrl } from 'obsidian';
-import { NewPluginVersionRequest, PluginReleases } from 'shared-types';
+import { NewPluginVersionRequest, PluginReleases } from 'oput-common';
 
 type ReleaseApi = (request: NewPluginVersionRequest) => Promise<PluginReleases[]>;
 
