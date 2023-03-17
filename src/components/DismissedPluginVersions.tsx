@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PluginManifest } from 'obsidian';
 import * as React from 'react';
 import styled from 'styled-components';
+import { semverCompare } from '../../oput-common/semverCompare';
 import { PluginDismissedVersions, PluginSettings } from '../domain/pluginSettings';
 import { groupById } from '../domain/util/groupById';
-import { semverCompare } from '../domain/util/semverCompare';
 import { useAppDispatch, useAppSelector } from '../state';
 import { unDismissPluginVersion } from '../state/actionProducers/undismissPluginVersion';
 

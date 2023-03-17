@@ -13,19 +13,29 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === 'production');
 
+console.log('using .env')
 dotenv.config({path: '.env'})
 
+const mainEnvFile = prod ? '.env.prod' : '.env.dev'
+console.log(`using ${mainEnvFile}`)
 dotenv.config({
-	path: prod ? '.env.prod' : '.env.dev'
+	path: mainEnvFile
 })
 
 if (prod && existsSync('.env.local.prod')) {
+	console.log('using .env.local.prod')
 	dotenv.config({path: '.env.local.prod', override: true})
 }
-else if (existsSync('.env.local.dev')) {
+else if (!prod && existsSync('.env.local.dev')) {
+	console.log('using .env.local.dev')
 	dotenv.config({path: '.env.local.dev', override: true})
 }
 
+for (const key in process.env) {
+	if (key.startsWith('OBSIDIAN_APP')) {
+		console.log(key, '=', process.env[key])
+	}
+}
 
 const define = [
 	'OBSIDIAN_APP_UPDATE_CHECKER_URL',
@@ -37,6 +47,7 @@ const define = [
 	'OBSIDIAN_APP_THIS_PLUGIN_ID',
 	'OBSIDIAN_APP_SHOW_STATUS_BAR_ICON_ALL_PLATFORMS',
 	'OBSIDIAN_APP_SHOW_RIBBON_ICON_ALL_PLATFORMS',
+	'OBSIDIAN_APP_ACTION_BAR_LOCATION_MIDDLE',
 ].reduce((prev, current) => {
 	prev[`process.env.${current}`] = JSON.stringify(process.env[current])
 	return prev

@@ -4,7 +4,7 @@ import find from 'lodash/find';
 import map from 'lodash/map';
 import orderBy from 'lodash/orderBy';
 import { PluginManifest } from 'obsidian';
-import { PluginFileAssetIds, PluginReleases, ReleaseVersion } from 'shared-types';
+import { PluginFileAssetIds, PluginReleases, ReleaseVersion } from 'oput-common';
 export default class InstalledPluginReleases {
     private plugin: PluginManifest;
     private releases: PluginReleases | undefined;

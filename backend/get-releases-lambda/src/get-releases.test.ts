@@ -3,7 +3,7 @@ import {
     InstalledPluginVersion,
     NewPluginVersionRequest,
     PluginReleases,
-} from '../../../shared-types';
+} from '../../../oput-common';
 import { GetReleases, GetReleasesConfiguration } from './get-releases';
 import { PluginRecord, PluginRepository } from './PluginRepository';
 import { ApiReleases, ReleaseApi } from './ReleaseApi';

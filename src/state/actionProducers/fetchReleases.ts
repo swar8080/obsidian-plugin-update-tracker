@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { NewPluginVersionRequest } from 'shared-types';
+import { NewPluginVersionRequest } from 'oput-common';
 import { State } from '..';
 import { getReleases } from '../../domain/api';
 import { ObsidianState } from '../obsidianReducer';

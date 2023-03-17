@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { PluginReleases } from 'shared-types';
+import { PluginReleases } from 'oput-common';
 import { cleanupDismissedPluginVersions } from './actionProducers/cleanupDismissedPluginVersions';
 import { dismissSelectedPluginVersions } from './actionProducers/dismissPluginVersions';
 import { fetchReleases } from './actionProducers/fetchReleases';

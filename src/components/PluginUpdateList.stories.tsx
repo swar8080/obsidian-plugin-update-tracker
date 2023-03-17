@@ -72,6 +72,7 @@ export const MixOfPlugins: Story = () => {
         <PluginUpdateList
             plugins={[PLUGIN_VIEW_MODEL_BASE, noReleaseNotes, plugin3, plugin4]}
             {...PLUGIN_UPDATE_LIST_BASE}
+            actionBarLocation="bottom"
         />
     );
 };
@@ -111,6 +112,7 @@ export const MarkdownParsingAndEnrichment: Story = () => {
                 pluginWithNotes('Contains emoji', 'fix: 🐛'),
             ]}
             {...PLUGIN_UPDATE_LIST_BASE}
+            actionBarLocation="bottom"
         />
     );
 };

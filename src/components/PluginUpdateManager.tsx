@@ -1,3 +1,4 @@
+import { Platform } from 'obsidian';
 import * as React from 'react';
 import { PluginSettings } from '../domain/pluginSettings';
 import { useAppSelector } from '../state';
@@ -10,6 +11,9 @@ interface PluginUpdateManagerProps {
     closeObsidianTab: () => void;
 }
 
+const ACTION_BAR_LOCATION_MIDDLE =
+    process.env['OBSIDIAN_APP_ACTION_BAR_LOCATION_MIDDLE'] === 'true';
+
 const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
     titleEl,
     persistPluginSettings,
@@ -19,6 +23,12 @@ const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
         (state) => state.obsidian.isUpdatingPlugins || !state.obsidian.isUpdateResultAcknowledged
     );
 
+    //Action bar is cut-off on iphone https://github.com/swar8080/obsidian-plugin-update-tracker/issues/49
+    //@ts-ignore
+    const isPhone = Platform.isPhone;
+    const isIPhone = Platform.isIosApp && isPhone;
+    const actionBarLocation = isIPhone || ACTION_BAR_LOCATION_MIDDLE ? 'middle' : 'bottom';
+
     if (showUpdateProgressTracker) {
         return <PluginUpdateProgressTracker titleEl={titleEl} />;
     } else {
@@ -27,6 +37,7 @@ const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
                 titleEl={titleEl}
                 persistPluginSettings={persistPluginSettings}
                 closeObsidianTab={closeObsidianTab}
+                actionBarLocation={actionBarLocation}
             />
         );
     }

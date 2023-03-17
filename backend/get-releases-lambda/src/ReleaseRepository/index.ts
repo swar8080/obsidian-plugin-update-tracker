@@ -1,4 +1,4 @@
-import { PluginFileAssetIds } from '../../../../shared-types';
+import { PluginFileAssetIds } from '../../../../oput-common';
 
 export interface ReleaseRepository {
     //Sorted from most to least recent
