@@ -1,3 +1,4 @@
+import { Platform } from 'obsidian';
 import * as React from 'react';
 import { PluginSettings } from '../domain/pluginSettings';
 import { useAppSelector } from '../state';
@@ -10,6 +11,9 @@ interface PluginUpdateManagerProps {
     closeObsidianTab: () => void;
 }
 
+const ACTION_BAR_LOCATION_MIDDLE =
+    process.env['OBSIDIAN_APP_ACTION_BAR_LOCATION_MIDDLE'] === 'true';
+
 const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
     titleEl,
     persistPluginSettings,
@@ -18,6 +22,7 @@ const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
     const showUpdateProgressTracker = useAppSelector(
         (state) => state.obsidian.isUpdatingPlugins || !state.obsidian.isUpdateResultAcknowledged
     );
+    const actionBarLocation = Platform.isIosApp || ACTION_BAR_LOCATION_MIDDLE ? 'middle' : 'bottom';
 
     if (showUpdateProgressTracker) {
         return <PluginUpdateProgressTracker titleEl={titleEl} />;
@@ -27,6 +32,7 @@ const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
                 titleEl={titleEl}
                 persistPluginSettings={persistPluginSettings}
                 closeObsidianTab={closeObsidianTab}
+                actionBarLocation={actionBarLocation}
             />
         );
     }

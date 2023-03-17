@@ -35,12 +35,16 @@ interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;
     closeObsidianTab: () => void;
+    actionBarLocation: ACTION_BAR_LOCATION;
 }
+
+type ACTION_BAR_LOCATION = 'bottom' | 'middle';
 
 const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
     titleEl,
     persistPluginSettings,
     closeObsidianTab,
+    actionBarLocation,
 }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
     const isLoadingReleases = useAppSelector((state) => state.releases.isLoadingReleases);
@@ -134,6 +138,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
             selectedPluginCount={selectedPluginCount}
             selectedPluginIds={selectedPluginsById}
             isUpdatingDismissedVersions={isUpdatingDismissedVersions}
+            actionBarLocation={actionBarLocation}
             handleToggleSelection={handleToggleSelection}
             handleToggleSelectAll={handleToggleSelectAll}
             handleInstall={handleClickInstall}
@@ -147,6 +152,7 @@ export const PluginUpdateList: React.FC<{
     isInitiallyExpanded?: boolean;
     selectedPluginIds: string[];
     selectedPluginCount: number;
+    actionBarLocation: ACTION_BAR_LOCATION;
     handleToggleSelection: (pluginId: string, selected: boolean) => any;
     handleToggleSelectAll: (selectAll: boolean) => void;
     handleInstall: () => Promise<any>;
@@ -157,6 +163,7 @@ export const PluginUpdateList: React.FC<{
     isInitiallyExpanded,
     selectedPluginIds,
     selectedPluginCount,
+    actionBarLocation,
     handleToggleSelection,
     handleToggleSelectAll,
     handleInstall,
@@ -256,12 +263,13 @@ export const PluginUpdateList: React.FC<{
             </DivPluginUpdateListContainer>
 
             {selectedPluginCount > 0 && (
-                <ActionBarContainer>
+                <ActionBarContainer isLocationBottom={actionBarLocation === 'bottom'}>
                     <SelectedPluginActionBar
                         numberOfPluginsSelected={selectedPluginCount}
                         isDisabled={isDisabled}
                         onClickInstall={handleClickInstall}
                         onClickDismissVersions={handleClickDismissPluginVersions}
+                        hasBottomBorder={actionBarLocation === 'middle'}
                     />
                 </ActionBarContainer>
             )}
@@ -574,9 +582,9 @@ const DivReleaeseName = styled.div`
     text-decoration: underline;
 `;
 
-const ActionBarContainer = styled.div`
+const ActionBarContainer = styled.div<{ isLocationBottom: boolean }>`
     position: fixed;
-    bottom: 0;
+    bottom: ${({ isLocationBottom }) => (isLocationBottom ? '0' : '50%')};
     left: 50%;
     transform: translateX(-50%);
 

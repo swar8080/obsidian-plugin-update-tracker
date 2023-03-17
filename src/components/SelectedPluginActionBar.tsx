@@ -11,6 +11,7 @@ interface SelectedPluginActionBarProps {
     isDisabled: boolean;
     onClickInstall: () => Promise<any>;
     onClickDismissVersions: () => Promise<any>;
+    hasBottomBorder: boolean;
 }
 
 const LOADING_ANIMATION_SEQUENCE_MS = 1200;
@@ -38,6 +39,7 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
     onClickInstall,
     onClickDismissVersions,
     isDisabled,
+    hasBottomBorder,
 }) => {
     const [loadingAnimationState, setLoadingAnimationState] = React.useState<LoadingAnimationState>(
         {
@@ -98,7 +100,7 @@ const SelectedPluginActionBar: React.FC<SelectedPluginActionBarProps> = ({
     const actionButtonPaddingBottomPx = statusBarHeight + 3;
 
     return (
-        <DivSelectedPluginActionBarContainer>
+        <DivSelectedPluginActionBarContainer hasBottomBorder={hasBottomBorder}>
             <DivHeaderContainer>
                 {!loadingAnimationState.isInProgress && <H4HeaderText>{headerText}</H4HeaderText>}
                 {loadingAnimationState.isInProgress && (
@@ -141,7 +143,9 @@ type LoadingAnimationState = {
 
 type AnimationIcons = 'loading' | 'success' | 'error';
 
-const DivSelectedPluginActionBarContainer = styled.div`
+const CONTAINER_BORDER = '3px var(--background-modifier-border) solid';
+
+const DivSelectedPluginActionBarContainer = styled.div<{ hasBottomBorder: boolean }>`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -155,8 +159,8 @@ const DivSelectedPluginActionBarContainer = styled.div`
 
     background-color: var(--background-secondary);
 
-    border: 3px var(--background-modifier-border) solid;
-    border-bottom: none;
+    border: ${CONTAINER_BORDER};
+    border-bottom: ${({ hasBottomBorder }) => (hasBottomBorder ? CONTAINER_BORDER : 'none')};
 `;
 
 const DivHeaderContainer = styled.div`
