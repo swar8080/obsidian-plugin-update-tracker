@@ -22,6 +22,8 @@ const PluginUpdateManager: React.FC<PluginUpdateManagerProps> = ({
     const showUpdateProgressTracker = useAppSelector(
         (state) => state.obsidian.isUpdatingPlugins || !state.obsidian.isUpdateResultAcknowledged
     );
+
+    //Action bar is cut-off on iphone https://github.com/swar8080/obsidian-plugin-update-tracker/issues/49
     const actionBarLocation = Platform.isIosApp || ACTION_BAR_LOCATION_MIDDLE ? 'middle' : 'bottom';
 
     if (showUpdateProgressTracker) {

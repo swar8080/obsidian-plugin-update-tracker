@@ -35,10 +35,10 @@ interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
     persistPluginSettings: (settings: PluginSettings) => Promise<void>;
     closeObsidianTab: () => void;
-    actionBarLocation: ACTION_BAR_LOCATION;
+    actionBarLocation: ActionBarLocation;
 }
 
-type ACTION_BAR_LOCATION = 'bottom' | 'middle';
+type ActionBarLocation = 'bottom' | 'middle';
 
 const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
     titleEl,
@@ -152,7 +152,7 @@ export const PluginUpdateList: React.FC<{
     isInitiallyExpanded?: boolean;
     selectedPluginIds: string[];
     selectedPluginCount: number;
-    actionBarLocation: ACTION_BAR_LOCATION;
+    actionBarLocation: ActionBarLocation;
     handleToggleSelection: (pluginId: string, selected: boolean) => any;
     handleToggleSelectAll: (selectAll: boolean) => void;
     handleInstall: () => Promise<any>;
