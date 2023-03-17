@@ -1,4 +1,4 @@
-const FUZZY_SEMVER_PATTERN = /^(\d+)\.(\d+)\.(\d+).*/;
+const FUZZY_SEMVER_PATTERN = /^(\d+)(?:\.(\d+))?(?:\.(\d+))?.*/;
 
 export function semverCompare(version1: string | null, version2: string | null): number {
     if (version1 == version2) {
@@ -21,8 +21,8 @@ export function semverCompare(version1: string | null, version2: string | null):
 
     let versionPartIndex = 1;
     while (versionPartIndex <= 3) {
-        const v1Part = parseInt(v1Match[versionPartIndex]);
-        const v2Part = parseInt(v2Match[versionPartIndex]);
+        const v1Part = parseInt(v1Match[versionPartIndex] || '0');
+        const v2Part = parseInt(v2Match[versionPartIndex] || '0');
 
         if (v1Part !== v2Part) {
             return v1Part - v2Part;

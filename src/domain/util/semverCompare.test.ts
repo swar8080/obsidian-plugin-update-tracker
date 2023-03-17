@@ -9,6 +9,8 @@ describe('semverCompare', () => {
         testCase('1.0.0', '1.0.00', 'equal');
         testCase('01.0.0', '1.0.00', 'equal');
         testCase('1.2.3', '1.2.3beta.4', 'equal');
+        testCase('2.0.0', '2', 'equal');
+        testCase('2.0.0', '2.0', 'equal');
 
         testCase('2.0.0', '1.0.0', 'greater');
         testCase('1.2.0', '1.1.0', 'greater');
@@ -17,6 +19,8 @@ describe('semverCompare', () => {
         testCase('1.2.4beta', '1.2.3', 'greater');
         testCase('1.2.4beta.0', '1.2.3', 'greater');
         testCase('1.2.4.beta.0', '1.2.3', 'greater');
+        testCase('1.2.1', '1.2', 'greater');
+        testCase('1.2', '1.1.9', 'greater');
 
         testCase('1.0.0', '2.0.0', 'less');
         testCase('1.1.0', '1.2.0', 'less');
@@ -25,6 +29,8 @@ describe('semverCompare', () => {
         testCase('1.2.3', '1.2.4beta', 'less');
         testCase('1.2.3', '1.2.4beta.0', 'less');
         testCase('1.2.3', '1.2.4.beta.0', 'less');
+        testCase('1', '2.0.1', 'less');
+        testCase('1.9', '1.9.1', 'less');
     });
 
     function testCase(v1: string | null, v2: string | null, expected: EXPECTED) {
