@@ -39,6 +39,7 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
                     'OPUC_USE_REDIS_RELEASE_REPOSITORY',
                     'OPUC_REDIS_URL',
                     'OPUC_REDIS_PASSWORD',
+                    'OPUC_SALT',
                 ]),
                 OPUC_IS_PROD: deployment.isProd.toString(),
                 OPUC_DEBUG_LOGS_ENABLED: deployment.isDev.toString(),
