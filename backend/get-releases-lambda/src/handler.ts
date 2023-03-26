@@ -9,10 +9,13 @@ import { RedisReleaseRepository } from './ReleaseRepository/RedisReleaseReposito
 import { RedisClient } from './redisClient';
 import { ReleaseRepository } from './ReleaseRepository';
 import { FallbackReleaseRepository } from './ReleaseRepository/FallbackReleaseRepository';
+import { createHash } from 'crypto';
 
 let _getReleases: GetReleases | null = null;
 let _redisClient: RedisClient;
 let _metricsLogger: CloudWatchMetricLogger;
+
+const IP_HEADER = 'x-forwarded-for';
 
 export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     if (event.requestContext.http.method.toLowerCase() !== 'post') {
@@ -34,7 +37,9 @@ export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
         return badRequest('Request body is invalid');
     }
 
-    console.log(`Request for ${request?.currentPluginVersions.length} plugins`);
+    console.log(
+        `Request for ${request?.currentPluginVersions.length} plugins from ${getIdentifier(event)}`
+    );
     request.currentPluginVersions = (request.currentPluginVersions || []).slice(
         0,
         getIntEnv('OPUC_MAX_PLUGIN_COUNT_PROCESSED')
@@ -148,4 +153,15 @@ function getBooleanEnv(key: string): boolean {
         throw new Error(`Non-boolean key: ${key}: ${value}`);
     }
     return value === 'true';
+}
+
+function getIdentifier(event: APIGatewayProxyEventV2): string {
+    if (IP_HEADER in event.headers && !!event.headers[IP_HEADER]) {
+        const ip = event.headers[IP_HEADER];
+        const md5 = createHash('md5');
+        const salt = getEnv('OPUC_SALT');
+        md5.update(ip + salt);
+        return md5.digest('hex');
+    }
+    return '?';
 }
