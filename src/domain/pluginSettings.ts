@@ -5,6 +5,7 @@ export type PluginSettings = {
     excludeDisabledPlugins: boolean;
     showIconOnMobile: boolean;
     hideIconIfNoUpdatesAvailable: boolean;
+    hoursBetweenCheckingForUpdates: number;
 };
 
 export type PluginDismissedVersions = {
@@ -26,4 +27,5 @@ export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
     excludeBetaVersions: true,
     excludeDisabledPlugins: false,
     hideIconIfNoUpdatesAvailable: false,
+    hoursBetweenCheckingForUpdates: 0.5,
 };

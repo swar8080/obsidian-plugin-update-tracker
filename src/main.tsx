@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import {
     App,
     ItemView,
@@ -25,10 +26,15 @@ import { syncSettings, syncThisPluginId } from './state/obsidianReducer';
 
 export const PLUGIN_UPDATES_MANAGER_VIEW_TYPE = 'swar8080/AVAILABLE_PLUGIN_UPDATES';
 
-const PLUGIN_UPDATE_POLLING_MS =
-    parseInt(process.env['OBSIDIAN_APP_RELEASE_POLLING_SECONDS'] || '99999999') * 1000;
 const INSTALLED_VERSION_POLLING_MS =
     parseInt(process.env['OBSIDIAN_APP_INSTALLED_VERSION_POLLING_SECONDS'] || '99999999') * 1000;
+
+const MIN_RELEASE_POLLING_HOURS = parseFloat(
+    process.env['OBSIDIAN_APP_RELEASE_MIN_POLLING_HOURS'] || '0.5'
+);
+const DEV_POLLING_FREQUENCY_MULTIPLIER = parseInt(
+    process.env['OBSIDIAN_APP_POLLING_FREQUENCY_MULTIPLIER'] || '3600000'
+);
 
 const SHOW_STATUS_BAR_ICON_ALL_PLATFORMS =
     process.env['OBSIDIAN_APP_SHOW_STATUS_BAR_ICON_ALL_PLATFORMS'] === 'true';
@@ -42,6 +48,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
     private fileOpenCallback: (file: TFile | null) => any;
     private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
+    private releasePollingIntervalTimerId: number | undefined;
 
     async onload() {
         this.registerView(
@@ -55,7 +62,9 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
         await this.loadSettings();
         this.pollForInstalledPluginVersions();
-        this.pollForPluginReleases();
+
+        store.dispatch(fetchReleases());
+        this.pollForPluginReleases(this.settings, this.settings.hoursBetweenCheckingForUpdates);
 
         if (Platform.isDesktop || SHOW_STATUS_BAR_ICON_ALL_PLATFORMS) {
             this.renderStatusBarIcon();
@@ -95,12 +104,24 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         );
     }
 
-    pollForPluginReleases() {
-        store.dispatch(fetchReleases());
-        this.registerInterval(
+    pollForPluginReleases(settings: PluginSettings, newFrequencyInHours: number) {
+        const validatedFrequencyInHours = Math.max(newFrequencyInHours, MIN_RELEASE_POLLING_HOURS);
+
+        if (validatedFrequencyInHours !== this.settings.hoursBetweenCheckingForUpdates) {
+            this.saveSettings({
+                ...settings,
+                hoursBetweenCheckingForUpdates: validatedFrequencyInHours,
+            });
+        }
+
+        if (this.releasePollingIntervalTimerId !== undefined) {
+            clearInterval(this.releasePollingIntervalTimerId);
+        }
+        const intervalMs = validatedFrequencyInHours * DEV_POLLING_FREQUENCY_MULTIPLIER;
+        this.releasePollingIntervalTimerId = this.registerInterval(
             window.setInterval(() => {
                 store.dispatch(fetchReleases());
-            }, PLUGIN_UPDATE_POLLING_MS)
+            }, intervalMs)
         );
     }
 
@@ -311,6 +332,23 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                             hideIconIfNoUpdatesAvailable,
                         });
                     })
+            );
+
+        new Setting(containerEl)
+            .setName('Hours between checking for new plugin updates')
+            .setDesc('Check for updates when obsidian starts and whenever this many hours passes')
+            .addSlider((slider) =>
+                slider
+                    .setValue(this.plugin.settings.hoursBetweenCheckingForUpdates)
+                    .setLimits(MIN_RELEASE_POLLING_HOURS, 24, 0.5)
+                    .onChange(
+                        debounce(
+                            (hours) =>
+                                this.plugin.pollForPluginReleases(this.plugin.settings, hours),
+                            500
+                        )
+                    )
+                    .setDynamicTooltip()
             );
         new Setting(containerEl)
             .setName('Show on Mobile')
