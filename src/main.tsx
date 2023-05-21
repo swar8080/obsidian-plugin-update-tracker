@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import {
+    AbstractTextComponent,
     App,
     ItemView,
     Platform,
@@ -17,6 +18,7 @@ import DismissedPluginVersions from './components/DismissedPluginVersions';
 import PluginUpdateManager from './components/PluginUpdateManager';
 import RibbonIcon from './components/RibbonIcon';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
+import initiatePluginSettings from './domain/initiatePluginSettings';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
 import { cleanupDismissedPluginVersions } from './state/actionProducers/cleanupDismissedPluginVersions';
@@ -85,7 +87,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
     async loadSettings() {
         const savedSettings = await this.loadData();
-        this.settings = Object.assign({}, DEFAULT_PLUGIN_SETTINGS, savedSettings);
+        this.settings = initiatePluginSettings(savedSettings);
         store.dispatch(syncSettings(this.settings));
     }
 
@@ -275,22 +277,15 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
             .addText((text) =>
                 text
                     .setValue((this.plugin.settings.daysToSuppressNewUpdates ?? '').toString())
-                    .onChange(async (value) => {
-                        //allow numbers >= 0 and ''
-                        let days = parseInt(value);
-                        if (!!value && (isNaN(days) || days < 0)) {
-                            days = 0;
-                            text.setValue('0');
-                        }
-
-                        if (!isNaN(days)) {
+                    .onChange((value) =>
+                        handleNonNegativeNumericTextSettingChange(value, text, async (days) => {
                             const updatedSettings = {
                                 ...this.plugin.settings,
                                 daysToSuppressNewUpdates: days,
                             };
                             await this.plugin.saveSettings(updatedSettings);
-                        }
-                    })
+                        })
+                    )
             );
         new Setting(containerEl)
             .setName('Ignore Beta Versions')
@@ -322,16 +317,31 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
 
         containerEl.createEl('h2', { text: 'Appearance' });
         new Setting(containerEl)
-            .setName('Hide plugin icon if no updates are available')
-            .addToggle((toggle) =>
-                toggle
-                    .setValue(this.plugin.settings.hideIconIfNoUpdatesAvailable)
-                    .onChange(async (hideIconIfNoUpdatesAvailable) => {
-                        await this.plugin.saveSettings({
-                            ...this.plugin.settings,
-                            hideIconIfNoUpdatesAvailable,
-                        });
-                    })
+            .setName('Minimum update count to show plugin icon')
+            .setDesc(
+                'Hide the plugin icon if there are fewer than this many plugin updates available'
+            )
+            .addText((text) =>
+                text
+                    .setValue(
+                        (
+                            this.plugin.settings.minUpdateCountToShowIcon ??
+                            DEFAULT_PLUGIN_SETTINGS.minUpdateCountToShowIcon
+                        ).toString()
+                    )
+                    .onChange((value) =>
+                        handleNonNegativeNumericTextSettingChange(
+                            value,
+                            text,
+                            async (minUpdateCountToShowIcon) => {
+                                const updatedSettings = {
+                                    ...this.plugin.settings,
+                                    minUpdateCountToShowIcon,
+                                };
+                                await this.plugin.saveSettings(updatedSettings);
+                            }
+                        )
+                    )
             );
 
         new Setting(containerEl)
@@ -393,4 +403,20 @@ function renderRootComponent(rootEl: Element, component: JSX.Element): ReactDOM.
     const root = ReactDOM.createRoot(rootEl);
     root.render(<Provider store={store}>{component}</Provider>);
     return root;
+}
+
+async function handleNonNegativeNumericTextSettingChange(
+    value: string,
+    textInput: AbstractTextComponent<any>,
+    onNumberChange: (numericValue: number) => Promise<void>
+) {
+    let numValue = parseInt(value);
+    if (!!value && (isNaN(numValue) || numValue < 0)) {
+        numValue = 0;
+        textInput.setValue('0');
+    }
+
+    if (!isNaN(numValue)) {
+        await onNumberChange(numValue);
+    }
 }

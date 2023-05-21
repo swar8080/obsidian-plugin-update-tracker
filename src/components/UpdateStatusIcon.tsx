@@ -19,29 +19,18 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
     const isLoading = useAppSelector((state) => state.releases.isLoadingReleases);
     const isErrorLoading = useAppSelector((state) => state.releases.isErrorLoadingReleases);
     const pluginsWithUpdatesCount = usePluginReleaseFilter().length;
-    const hideIconIfNoUpdatesAvailable = useAppSelector(
-        (state) => state.obsidian.settings.hideIconIfNoUpdatesAvailable
+    const minUpdateCountToShowIcon = useAppSelector(
+        (state) => state.obsidian.settings.minUpdateCountToShowIcon
     );
     const defaultParentElDisplay = React.useRef(parentEl.style.display);
 
     React.useLayoutEffect(() => {
-        if (
-            !hideIconIfNoUpdatesAvailable ||
-            isLoading ||
-            pluginsWithUpdatesCount > 0 ||
-            isErrorLoading
-        ) {
+        if (isLoading || pluginsWithUpdatesCount >= minUpdateCountToShowIcon || isErrorLoading) {
             parentEl.style.display = defaultParentElDisplay.current;
         } else {
             parentEl.style.display = 'none';
         }
-    }, [
-        hideIconIfNoUpdatesAvailable,
-        pluginsWithUpdatesCount,
-        isLoading,
-        isErrorLoading,
-        parentEl,
-    ]);
+    }, [minUpdateCountToShowIcon, pluginsWithUpdatesCount, isLoading, isErrorLoading, parentEl]);
 
     return (
         <>

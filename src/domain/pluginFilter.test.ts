@@ -3,7 +3,7 @@ import { PluginManifest } from 'obsidian';
 import { PluginReleases, ReleaseVersion } from '../../oput-common';
 import InstalledPluginReleases from './InstalledPluginReleases';
 import pluginFilter, { PluginFilters } from './pluginFilter';
-import { DismissedPluginVersion, PluginSettings } from './pluginSettings';
+import { DEFAULT_PLUGIN_SETTINGS, DismissedPluginVersion, PluginSettings } from './pluginSettings';
 
 describe('pluginFilter', () => {
     let id = 1000;
@@ -20,12 +20,12 @@ describe('pluginFilter', () => {
 
     let pluginSettings: PluginSettings;
     const PLUGIN_SETTINGS_BASE: PluginSettings = {
+        ...DEFAULT_PLUGIN_SETTINGS,
         daysToSuppressNewUpdates: 0,
         dismissedVersionsByPluginId: {},
         showIconOnMobile: true,
         excludeDisabledPlugins: false,
         excludeBetaVersions: false,
-        hideIconIfNoUpdatesAvailable: false,
     };
 
     let pluginManifests: PluginManifest[];
