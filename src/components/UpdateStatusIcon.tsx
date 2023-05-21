@@ -18,26 +18,43 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
 }) => {
     const isLoading = useAppSelector((state) => state.releases.isLoadingReleases);
     const isErrorLoading = useAppSelector((state) => state.releases.isErrorLoadingReleases);
-    const pluginsWithUpdatesCount = usePluginReleaseFilter().length;
+
+    const pluginsWithUpdates = usePluginReleaseFilter();
+    const thisPluginId = useAppSelector((state) => state.obsidian.thisPluginId);
+    const hasUpdatesForThisPlugin = pluginsWithUpdates.some(
+        (plugin) => plugin.getPluginId() === thisPluginId
+    );
     const minUpdateCountToShowIcon = useAppSelector(
         (state) => state.obsidian.settings.minUpdateCountToShowIcon
     );
-    const defaultParentElDisplay = React.useRef(parentEl.style.display);
 
+    const defaultParentElDisplay = React.useRef(parentEl.style.display);
     React.useLayoutEffect(() => {
-        if (isLoading || pluginsWithUpdatesCount >= minUpdateCountToShowIcon || isErrorLoading) {
+        if (
+            isLoading ||
+            pluginsWithUpdates.length >= minUpdateCountToShowIcon ||
+            hasUpdatesForThisPlugin ||
+            isErrorLoading
+        ) {
             parentEl.style.display = defaultParentElDisplay.current;
         } else {
             parentEl.style.display = 'none';
         }
-    }, [minUpdateCountToShowIcon, pluginsWithUpdatesCount, isLoading, isErrorLoading, parentEl]);
+    }, [
+        minUpdateCountToShowIcon,
+        pluginsWithUpdates.length,
+        hasUpdatesForThisPlugin,
+        isLoading,
+        isErrorLoading,
+        parentEl,
+    ]);
 
     return (
         <>
             <UpdateStatusIconView
                 isLoading={isLoading}
                 isErrorLoading={isErrorLoading}
-                pluginsWithUpdatesCount={pluginsWithUpdatesCount}
+                pluginsWithUpdatesCount={pluginsWithUpdates.length}
                 onClickViewUpdates={onClickViewUpdates}
             />
         </>
