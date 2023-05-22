@@ -92,7 +92,7 @@ A warning will be shown for beta version updates:
 
 The following built-in settings exist:
 
-<img width="783" alt="image" src="https://user-images.githubusercontent.com/17691679/202866307-2461f38b-5413-47d8-a331-79e5a90791cf.png">
+![image](https://github.com/swar8080/obsidian-plugin-update-tracker/assets/17691679/562161cd-5eca-4f71-817a-417992d2e9b4)
 
 ### Custom CSS Snippets
 
