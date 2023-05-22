@@ -18,17 +18,22 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
 }) => {
     const isLoading = useAppSelector((state) => state.releases.isLoadingReleases);
     const isErrorLoading = useAppSelector((state) => state.releases.isErrorLoadingReleases);
-    const pluginsWithUpdatesCount = usePluginReleaseFilter().length;
-    const hideIconIfNoUpdatesAvailable = useAppSelector(
-        (state) => state.obsidian.settings.hideIconIfNoUpdatesAvailable
-    );
-    const defaultParentElDisplay = React.useRef(parentEl.style.display);
 
+    const pluginsWithUpdates = usePluginReleaseFilter();
+    const thisPluginId = useAppSelector((state) => state.obsidian.thisPluginId);
+    const hasUpdatesForThisPlugin = pluginsWithUpdates.some(
+        (plugin) => plugin.getPluginId() === thisPluginId
+    );
+    const minUpdateCountToShowIcon = useAppSelector(
+        (state) => state.obsidian.settings.minUpdateCountToShowIcon
+    );
+
+    const defaultParentElDisplay = React.useRef(parentEl.style.display);
     React.useLayoutEffect(() => {
         if (
-            !hideIconIfNoUpdatesAvailable ||
             isLoading ||
-            pluginsWithUpdatesCount > 0 ||
+            pluginsWithUpdates.length >= minUpdateCountToShowIcon ||
+            hasUpdatesForThisPlugin ||
             isErrorLoading
         ) {
             parentEl.style.display = defaultParentElDisplay.current;
@@ -36,8 +41,9 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
             parentEl.style.display = 'none';
         }
     }, [
-        hideIconIfNoUpdatesAvailable,
-        pluginsWithUpdatesCount,
+        minUpdateCountToShowIcon,
+        pluginsWithUpdates.length,
+        hasUpdatesForThisPlugin,
         isLoading,
         isErrorLoading,
         parentEl,
@@ -48,7 +54,7 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
             <UpdateStatusIconView
                 isLoading={isLoading}
                 isErrorLoading={isErrorLoading}
-                pluginsWithUpdatesCount={pluginsWithUpdatesCount}
+                pluginsWithUpdatesCount={pluginsWithUpdates.length}
                 onClickViewUpdates={onClickViewUpdates}
             />
         </>

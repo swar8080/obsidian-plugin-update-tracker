@@ -4,7 +4,10 @@ export type PluginSettings = {
     excludeBetaVersions: boolean;
     excludeDisabledPlugins: boolean;
     showIconOnMobile: boolean;
-    hideIconIfNoUpdatesAvailable: boolean;
+    // Deprecated for minUpdateCountToShowIcon
+    hideIconIfNoUpdatesAvailable?: boolean;
+    minUpdateCountToShowIcon: number;
+    hoursBetweenCheckingForUpdates: number;
 };
 
 export type PluginDismissedVersions = {
@@ -25,5 +28,6 @@ export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
     showIconOnMobile: true,
     excludeBetaVersions: true,
     excludeDisabledPlugins: false,
-    hideIconIfNoUpdatesAvailable: false,
+    minUpdateCountToShowIcon: 0,
+    hoursBetweenCheckingForUpdates: 0.5,
 };

@@ -1,4 +1,6 @@
+import debounce from 'lodash/debounce';
 import {
+    AbstractTextComponent,
     App,
     ItemView,
     Platform,
@@ -16,6 +18,7 @@ import DismissedPluginVersions from './components/DismissedPluginVersions';
 import PluginUpdateManager from './components/PluginUpdateManager';
 import RibbonIcon from './components/RibbonIcon';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
+import initiatePluginSettings from './domain/initiatePluginSettings';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
 import { cleanupDismissedPluginVersions } from './state/actionProducers/cleanupDismissedPluginVersions';
@@ -25,10 +28,15 @@ import { syncSettings, syncThisPluginId } from './state/obsidianReducer';
 
 export const PLUGIN_UPDATES_MANAGER_VIEW_TYPE = 'swar8080/AVAILABLE_PLUGIN_UPDATES';
 
-const PLUGIN_UPDATE_POLLING_MS =
-    parseInt(process.env['OBSIDIAN_APP_RELEASE_POLLING_SECONDS'] || '99999999') * 1000;
 const INSTALLED_VERSION_POLLING_MS =
     parseInt(process.env['OBSIDIAN_APP_INSTALLED_VERSION_POLLING_SECONDS'] || '99999999') * 1000;
+
+const MIN_RELEASE_POLLING_HOURS = parseFloat(
+    process.env['OBSIDIAN_APP_RELEASE_MIN_POLLING_HOURS'] || '0.5'
+);
+const DEV_POLLING_FREQUENCY_MULTIPLIER = parseInt(
+    process.env['OBSIDIAN_APP_POLLING_FREQUENCY_MULTIPLIER'] || '3600000'
+);
 
 const SHOW_STATUS_BAR_ICON_ALL_PLATFORMS =
     process.env['OBSIDIAN_APP_SHOW_STATUS_BAR_ICON_ALL_PLATFORMS'] === 'true';
@@ -42,6 +50,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private ribbonIconRootComponent: ReactDOM.Root | undefined;
     private fileOpenCallback: (file: TFile | null) => any;
     private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
+    private releasePollingIntervalTimerId: number | undefined;
 
     async onload() {
         this.registerView(
@@ -55,7 +64,9 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
         await this.loadSettings();
         this.pollForInstalledPluginVersions();
-        this.pollForPluginReleases();
+
+        store.dispatch(fetchReleases());
+        this.pollForPluginReleases(this.settings, this.settings.hoursBetweenCheckingForUpdates);
 
         if (Platform.isDesktop || SHOW_STATUS_BAR_ICON_ALL_PLATFORMS) {
             this.renderStatusBarIcon();
@@ -76,7 +87,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
 
     async loadSettings() {
         const savedSettings = await this.loadData();
-        this.settings = Object.assign({}, DEFAULT_PLUGIN_SETTINGS, savedSettings);
+        this.settings = initiatePluginSettings(savedSettings);
         store.dispatch(syncSettings(this.settings));
     }
 
@@ -95,12 +106,24 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         );
     }
 
-    pollForPluginReleases() {
-        store.dispatch(fetchReleases());
-        this.registerInterval(
+    pollForPluginReleases(settings: PluginSettings, newFrequencyInHours: number) {
+        const validatedFrequencyInHours = Math.max(newFrequencyInHours, MIN_RELEASE_POLLING_HOURS);
+
+        if (validatedFrequencyInHours !== this.settings.hoursBetweenCheckingForUpdates) {
+            this.saveSettings({
+                ...settings,
+                hoursBetweenCheckingForUpdates: validatedFrequencyInHours,
+            });
+        }
+
+        if (this.releasePollingIntervalTimerId !== undefined) {
+            clearInterval(this.releasePollingIntervalTimerId);
+        }
+        const intervalMs = validatedFrequencyInHours * DEV_POLLING_FREQUENCY_MULTIPLIER;
+        this.releasePollingIntervalTimerId = this.registerInterval(
             window.setInterval(() => {
                 store.dispatch(fetchReleases());
-            }, PLUGIN_UPDATE_POLLING_MS)
+            }, intervalMs)
         );
     }
 
@@ -254,22 +277,15 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
             .addText((text) =>
                 text
                     .setValue((this.plugin.settings.daysToSuppressNewUpdates ?? '').toString())
-                    .onChange(async (value) => {
-                        //allow numbers >= 0 and ''
-                        let days = parseInt(value);
-                        if (!!value && (isNaN(days) || days < 0)) {
-                            days = 0;
-                            text.setValue('0');
-                        }
-
-                        if (!isNaN(days)) {
+                    .onChange((value) =>
+                        handleNonNegativeNumericTextSettingChange(value, text, async (days) => {
                             const updatedSettings = {
                                 ...this.plugin.settings,
                                 daysToSuppressNewUpdates: days,
                             };
                             await this.plugin.saveSettings(updatedSettings);
-                        }
-                    })
+                        })
+                    )
             );
         new Setting(containerEl)
             .setName('Ignore Beta Versions')
@@ -301,16 +317,48 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
 
         containerEl.createEl('h2', { text: 'Appearance' });
         new Setting(containerEl)
-            .setName('Hide plugin icon if no updates are available')
-            .addToggle((toggle) =>
-                toggle
-                    .setValue(this.plugin.settings.hideIconIfNoUpdatesAvailable)
-                    .onChange(async (hideIconIfNoUpdatesAvailable) => {
-                        await this.plugin.saveSettings({
-                            ...this.plugin.settings,
-                            hideIconIfNoUpdatesAvailable,
-                        });
-                    })
+            .setName('Minimum update count to show plugin icon')
+            .setDesc(
+                'Hide the plugin icon if there are fewer than this many plugin updates available'
+            )
+            .addText((text) =>
+                text
+                    .setValue(
+                        (
+                            this.plugin.settings.minUpdateCountToShowIcon ??
+                            DEFAULT_PLUGIN_SETTINGS.minUpdateCountToShowIcon
+                        ).toString()
+                    )
+                    .onChange((value) =>
+                        handleNonNegativeNumericTextSettingChange(
+                            value,
+                            text,
+                            async (minUpdateCountToShowIcon) => {
+                                const updatedSettings = {
+                                    ...this.plugin.settings,
+                                    minUpdateCountToShowIcon,
+                                };
+                                await this.plugin.saveSettings(updatedSettings);
+                            }
+                        )
+                    )
+            );
+
+        new Setting(containerEl)
+            .setName('Hours between checking for new plugin updates')
+            .setDesc('Check for updates when obsidian starts and whenever this many hours passes')
+            .addSlider((slider) =>
+                slider
+                    .setValue(this.plugin.settings.hoursBetweenCheckingForUpdates)
+                    .setLimits(MIN_RELEASE_POLLING_HOURS, 24, 0.5)
+                    .onChange(
+                        debounce(
+                            (hours) =>
+                                this.plugin.pollForPluginReleases(this.plugin.settings, hours),
+                            500
+                        )
+                    )
+                    .setDynamicTooltip()
             );
         new Setting(containerEl)
             .setName('Show on Mobile')
@@ -355,4 +403,20 @@ function renderRootComponent(rootEl: Element, component: JSX.Element): ReactDOM.
     const root = ReactDOM.createRoot(rootEl);
     root.render(<Provider store={store}>{component}</Provider>);
     return root;
+}
+
+async function handleNonNegativeNumericTextSettingChange(
+    value: string,
+    textInput: AbstractTextComponent<any>,
+    onNumberChange: (numericValue: number) => Promise<void>
+) {
+    let numValue = parseInt(value);
+    if (!!value && (isNaN(numValue) || numValue < 0)) {
+        numValue = 0;
+        textInput.setValue('0');
+    }
+
+    if (!isNaN(numValue)) {
+        await onNumberChange(numValue);
+    }
 }
