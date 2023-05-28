@@ -2,6 +2,12 @@ import initiatePluginSettings from './initiatePluginSettings';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './pluginSettings';
 
 describe('initiatePluginSettings', () => {
+    test('loading plugin for first time with null existing settings uses default settings', () => {
+        const settings = initiatePluginSettings(null);
+
+        expect(settings).toEqual(DEFAULT_PLUGIN_SETTINGS);
+    });
+
     test('loading plugin for first time uses default settings', () => {
         const settings = initiatePluginSettings({});
 
