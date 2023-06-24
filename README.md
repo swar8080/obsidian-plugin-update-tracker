@@ -132,7 +132,7 @@ Position the icon at the beginning of the status bar:
 
 The API used to get plugin version info is free for anyone to use. This could be helpful for alerting your plugin's users about updates in a custom way.
 
-Cacheing + AWS Lambda is used to keep costs low, avoid hitting github rate limits, and scale automatically. Currently, cached values are used for up to `Math.ceil(number of requested plugins / 50) * 30` minutes and up to 300 plugins are processed. However, a large number of cache misses can still cause high latency.
+Cacheing + AWS Lambda is used to keep costs low, avoid hitting github rate limits, and scale automatically. Currently, cached values are used for up to `Math.ceil(number of requested plugins / 50) * 30` minutes and up to 400 plugins are processed. However, a large number of cache misses can still cause high latency.
 
 
 Example Request:
