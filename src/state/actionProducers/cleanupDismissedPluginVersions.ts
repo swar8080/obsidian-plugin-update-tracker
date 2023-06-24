@@ -29,8 +29,9 @@ export const cleanupDismissedPluginVersions = createAsyncThunk(
                         dismissedVersions: settings.dismissedVersionsByPluginId[
                             pluginId
                         ].dismissedVersions.filter((dismissedVersion) => {
-                            const installedVersion = manifestById[pluginId].version;
+                            const installedVersion = manifestById[pluginId]?.version;
                             return (
+                                !installedVersion ||
                                 semverCompare(dismissedVersion.versionNumber, installedVersion) > 0
                             );
                         }),
