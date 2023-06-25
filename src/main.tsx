@@ -319,7 +319,7 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
         new Setting(containerEl)
             .setName('Minimum update count to show plugin icon')
             .setDesc(
-                'Hide the plugin icon if there are fewer than this many plugin updates available'
+                'Hide the plugin icon if there are fewer than this many plugin updates available (unless this plugin has updates)'
             )
             .addText((text) =>
                 text
