@@ -61,7 +61,6 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
             );
         } else if (pluginsWithUpdates.length > 0) {
             onClickViewUpdates();
-            onClickViewUpdates();
         } else {
             new Notice(
                 "Up-to-date! There aren't any plugin updates ready based on the filters configured in this plugin's settings.",
