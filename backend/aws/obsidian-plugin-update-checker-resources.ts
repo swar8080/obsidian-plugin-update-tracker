@@ -21,7 +21,7 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
             entry: path.join(__dirname, '../get-releases-lambda/src/handler.ts'),
             handler: 'main',
             memorySize: 150,
-            timeout: Duration.seconds(90),
+            timeout: Duration.seconds(120),
             runtime: lambda.Runtime.NODEJS_16_X,
             architecture: lambda.Architecture.ARM_64,
             environment: {

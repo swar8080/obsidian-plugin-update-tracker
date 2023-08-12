@@ -15,7 +15,10 @@ export const getReleases: ReleaseApi = async (newPluginVersionRequest: NewPlugin
         });
         return JSON.parse(res);
     } catch (err) {
-        console.error('Error fetching releases', err);
+        console.warn(
+            `Failed checking for plugin updates at ${BACKEND_API_URL}. Check your internet connection and security settings or file a bug at https://github.com/swar8080/obsidian-plugin-update-tracker/issues.\nError details are:\n`,
+            err
+        );
         throw err;
     }
 };

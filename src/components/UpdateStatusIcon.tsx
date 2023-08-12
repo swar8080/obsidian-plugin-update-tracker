@@ -1,5 +1,6 @@
 import { faPlug } from '@fortawesome/free-solid-svg-icons/faPlug';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Notice } from 'obsidian';
 import * as React from 'react';
 import styled from 'styled-components';
 import { useAppSelector } from '../state';
@@ -11,6 +12,7 @@ interface UpdateStatusIconContainerProps {
 }
 
 const CSS_CLASS_BASE = 'plugin-update-tracker-icon';
+const TOAST_DELAY_MS = 5000;
 
 const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
     onClickViewUpdates,
@@ -49,13 +51,31 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
         parentEl,
     ]);
 
+    function handlePluginIconClicked() {
+        if (isLoading) {
+            return;
+        } else if (isErrorLoading) {
+            new Notice(
+                'Error checking for plugin updates. Please check your internet connection and report an issue on github if the issue continues',
+                TOAST_DELAY_MS
+            );
+        } else if (pluginsWithUpdates.length > 0) {
+            onClickViewUpdates();
+        } else {
+            new Notice(
+                "Up-to-date! There aren't any plugin updates ready based on the filters configured in this plugin's settings.",
+                TOAST_DELAY_MS
+            );
+        }
+    }
+
     return (
         <>
             <UpdateStatusIconView
                 isLoading={isLoading}
                 isErrorLoading={isErrorLoading}
                 pluginsWithUpdatesCount={pluginsWithUpdates.length}
-                onClickViewUpdates={onClickViewUpdates}
+                onPluginIconClicked={handlePluginIconClicked}
             />
         </>
     );
@@ -65,11 +85,11 @@ type UpdateStatusIconViewProps = {
     isLoading: boolean;
     isErrorLoading: boolean;
     pluginsWithUpdatesCount: number;
-    onClickViewUpdates: () => any;
+    onPluginIconClicked: () => any;
 };
 
 export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
-    onClickViewUpdates,
+    onPluginIconClicked,
     isLoading,
     isErrorLoading,
     pluginsWithUpdatesCount,
@@ -83,8 +103,8 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
     let width = '0.5rem';
     let padding = '0.3rem';
     let cursor: string = 'pointer';
+    let isPluginUpdatesAvailable = false;
     let title;
-    let isClickable = false;
     let cssSelector;
     if (isLoading) {
         chipText = '⌛';
@@ -112,31 +132,24 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
         title = `${pluginsWithUpdatesCount} plugin update${
             pluginsWithUpdatesCount > 1 ? 's' : ''
         } available`;
-        isClickable = true;
+        isPluginUpdatesAvailable = true;
         cssSelector = `${CSS_CLASS_BASE}--updates-available`;
     } else {
         chipText = '✓';
         chipColour = '#197300';
         title = 'All plugins up-to-date';
-        cursor = 'none';
         cssSelector = `${CSS_CLASS_BASE}--no-updates-available`;
+        cursor = 'default';
     }
 
-    const isHighlighted = isMouseOver && isClickable;
-
-    const handleClick = () => {
-        if (isClickable) {
-            onClickViewUpdates();
-        }
-    };
+    const isHighlighted = isMouseOver && isPluginUpdatesAvailable;
 
     return (
         <DivContainer
-            onClick={handleClick}
+            onClick={onPluginIconClicked}
             cursor={cursor}
-            title={title}
             aria-label={title}
-            aria-label-position="top"
+            data-tooltip-position="top"
             onMouseOver={() => setIsMouseOver(true)}
             onMouseLeave={() => setIsMouseOver(false)}
             isHighlighted={isHighlighted}

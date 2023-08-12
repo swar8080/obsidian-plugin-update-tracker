@@ -69,7 +69,7 @@ export const PluginUpdateProgressTracker: React.FC<{
     let errorInstructions = '';
     if (githubRateLimitTimestamp) {
         const time = dayjs(githubRateLimitTimestamp);
-        errorInstructions = `Try again ${time.fromNow()}, and if that doesn't fix it then report an issue `;
+        errorInstructions = `Your IP address has exceeded github's limit of 60 file downloads in an hour. The limit will reset in ${time.fromNow()}, but if that doesn't work then report an issue`;
     } else {
         errorInstructions = `Try again or report an issue `;
     }
