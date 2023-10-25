@@ -102,11 +102,14 @@ The following CSS selectors exist:
 
 - *.status-bar-item.plugin-obsidian-plugin-update-tracker*: The container of the +status bar plugin icon
 
-- *.plugin-update-tracker-icon--loading*: Plugic icon container in the loading state (⌛)
+- *.plugin-update-tracker-icon--loading*: Plugin icon container in the loading state (⌛)
 
-- *.plugin-update-tracker-icon--no-updates-available*: Plugic icon container when no updates are available (✓)
+- *.plugin-update-tracker-icon--no-updates-available*: Plugin icon container when no updates are available (✓)
 
-- *.plugin-update-tracker-icon--updates-available*: Plugic icon container when updates are available
+- *.plugin-update-tracker-icon--updates-available*: Plugin icon container when updates are available
+
+- *.plugin-update-tracker-icon--error*: Plugin icon container when there's an error checking for updates (![image](https://github.com/swar8080/obsidian-plugin-update-tracker/assets/17691679/9f7d156b-c54c-4a3d-9e81-97aadf5dc68e))
+
 
 - *.plugin-update-tracker-icon-plug-icon*: The plug icon (<img width="14" alt="image" src="https://user-images.githubusercontent.com/17691679/211116452-04d72518-4229-4013-88e5-ef4edc0b135c.png">
 )
