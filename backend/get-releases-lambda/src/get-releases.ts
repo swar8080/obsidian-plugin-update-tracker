@@ -452,6 +452,11 @@ export class GetReleases {
         masterManifest: MasterManifestInfo | undefined,
         releaseVersionNumber: string
     ): boolean {
+        releaseVersionNumber = releaseVersionNumber.toLowerCase();
+        if (releaseVersionNumber.includes('beta') || releaseVersionNumber.includes('alpha')) {
+            return true;
+        }
+
         if (masterManifest?.versionNumber == undefined) {
             //not enough info, assume it's not beta
             return false;
