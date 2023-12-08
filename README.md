@@ -14,6 +14,7 @@
   * [Ignore specific plugin updates](#ignore-specific-plugin-updates) 
   * [Customizing plugin appearance](#customizing-plugin-appearance)
 - [Using the public API to check for plugin updates](#using-the-public-api-to-check-for-plugin-updates)
+  * [API Privacy](#api-privacy)
 
 # Installation
 Visit this URL: obsidian://show-plugin?id=obsidian-plugin-update-tracker
@@ -238,3 +239,8 @@ Example Response, which contains info on the 10 latest versions of the plugin th
     }
 ]
 ```
+
+## API Privacy
+The goal is sending the API only information needed for the plugin to function. Currently that's your list of installed plugins and their versions. AWS also automatically collects your IP which I have access to, and have no way of disabling.
+
+Any changes in what's collected will be included in release notes, but it's unlikely to change.
