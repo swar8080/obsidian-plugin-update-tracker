@@ -14,7 +14,7 @@ import {
 } from './ReleaseApi';
 import { PluginRepository, PluginRecord } from './PluginRepository';
 import { ReleaseRepository, PluginReleasesRecord, MasterManifestInfo } from './ReleaseRepository';
-import { isEmpty, groupById, debug } from './util';
+import { isEmpty, isString, groupById, debug } from './util';
 import { semverCompare } from '../../../oput-common/semverCompare';
 
 const THIS_PLUGIN_ID = 'obsidian-plugin-update-tracker';
@@ -46,12 +46,15 @@ export class GetReleases {
         this.now = now;
         const clientResponses: PluginReleases[] = [];
 
-        request.currentPluginVersions = (request.currentPluginVersions || []).map(
-            (pluginVersion) => ({
+        request.currentPluginVersions = (request.currentPluginVersions || [])
+            .filter(
+                (pluginVersion) =>
+                    isString(pluginVersion?.obsidianPluginId) && isString(pluginVersion?.version)
+            )
+            .map((pluginVersion) => ({
                 ...pluginVersion,
                 obsidianPluginId: pluginVersion.obsidianPluginId.toLowerCase(),
-            })
-        );
+            }));
 
         const installedPluginsById: Record<string, InstalledPluginVersion> = groupById(
             request.currentPluginVersions,

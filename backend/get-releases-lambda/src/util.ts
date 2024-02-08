@@ -4,6 +4,10 @@ export function isEmpty(collection: any[] | null | undefined) {
     return collection == null || collection.length === 0;
 }
 
+export function isString(value: any) {
+    return typeof value === 'string';
+}
+
 export function groupById<T>(items: T[], idKey: keyof T): Record<string, T> {
     if (isEmpty(items)) {
         return {};
