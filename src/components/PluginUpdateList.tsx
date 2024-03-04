@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
+import { visit } from 'unist-util-visit';
 import InstalledPluginReleases from '../domain/InstalledPluginReleases';
 import { PluginSettings } from '../domain/pluginSettings';
 import enrichReleaseNotes from '../domain/releaseNoteEnricher';
@@ -30,6 +31,39 @@ import { NewTextFadeInThenOutAnimation } from './common/NewTextFadeOutThenInAnim
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 import SelectedPluginActionBar from './SelectedPluginActionBar';
 dayjs.extend(relativeTime);
+
+function rehypeReplaceUrls() {
+    return (tree: any) => {
+        visit(tree, 'text', (node, index, parent) => {
+            const urlRegex = /(\bhttps?:\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/gi;
+            const parts = node.value.split(urlRegex);
+
+            if (parts.length > 1) {
+                // Indicates URLs are present
+                const nodes = parts.flatMap((part: any) => {
+                    if (urlRegex.test(part)) {
+                        return [
+                            {
+                                type: 'element',
+                                tagName: 'a',
+                                properties: {
+                                    href: part,
+                                    target: '_blank',
+                                    rel: 'noopener noreferrer',
+                                },
+                                children: [{ type: 'text', value: part }],
+                            },
+                        ];
+                    } else {
+                        return part.length > 0 ? [{ type: 'text', value: part }] : [];
+                    }
+                });
+
+                parent.children.splice(index, 1, ...nodes);
+            }
+        });
+    };
+}
 
 interface PluginUpdateListProps {
     titleEl: HTMLElement | undefined;
@@ -385,7 +419,13 @@ const PluginUpdates: React.FC<{
                                     }`}
                                 </DivReleaeseName>
                                 <DivReleaseNoteText>
-                                    <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+                                    <ReactMarkdown
+                                        rehypePlugins={[
+                                            rehypeRaw,
+                                            rehypeSanitize,
+                                            rehypeReplaceUrls,
+                                        ]}
+                                    >
                                         {release.notes}
                                     </ReactMarkdown>
                                 </DivReleaseNoteText>
@@ -404,6 +444,8 @@ const BORDER_WIDTH = '2px';
 const BORDER = `${BORDER_WIDTH} var(--background-modifier-border) solid`;
 
 const DivPluginUpdateListContainer = styled.div`
+    user-select: text; /* enables selecting/copying of text */
+
     display: flex;
     flex-direction: column;
 
