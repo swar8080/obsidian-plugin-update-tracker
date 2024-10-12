@@ -22,7 +22,7 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
             handler: 'main',
             memorySize: 150,
             timeout: Duration.seconds(120),
-            reservedConcurrentExecutions: deployment.isProd ? 45 : 1,
+            reservedConcurrentExecutions: deployment.isProd ? 40 : 1,
             runtime: lambda.Runtime.NODEJS_20_X,
             architecture: lambda.Architecture.ARM_64,
             environment: {
