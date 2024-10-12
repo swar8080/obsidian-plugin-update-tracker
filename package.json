@@ -8,7 +8,7 @@
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "sh scripts/run-storybook.sh",
     "build-storybook": "build-storybook",
     "downgrade-self": "sh scripts/change-plugin-version.sh obsidian-plugin-update-tracker 0.0.0"
   },
