@@ -2,6 +2,7 @@
 /.env.local.prod
 *.js
 !jest.config.js
+!scripts/node-modules/obsidian/index.js
 manifest.json.bak
 styles.css
 
