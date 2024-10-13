@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Notice } from 'obsidian';
 import * as React from 'react';
 import styled from 'styled-components';
-import { useAppSelector } from '../state';
+import { useAppDispatch, useAppSelector } from '../state';
+import { fetchReleases } from '../state/actionProducers/fetchReleases';
 import usePluginReleaseFilter from './hooks/usePluginReleaseFilter';
 
 interface UpdateStatusIconContainerProps {
@@ -18,6 +19,7 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
     onClickViewUpdates,
     parentEl,
 }) => {
+    const dispatch = useAppDispatch();
     const isLoading = useAppSelector((state) => state.releases.isLoadingReleases);
     const isErrorLoading = useAppSelector((state) => state.releases.isErrorLoadingReleases);
 
@@ -55,10 +57,15 @@ const UpdateStatusIconContainer: React.FC<UpdateStatusIconContainerProps> = ({
         if (isLoading) {
             return;
         } else if (isErrorLoading) {
-            new Notice(
-                'Error checking for plugin updates. Please check your internet connection and report an issue on github if the issue continues',
-                TOAST_DELAY_MS
-            );
+            dispatch(fetchReleases())
+                .unwrap()
+                .catch(
+                    () =>
+                        new Notice(
+                            'Error checking for plugin updates. Please check your internet connection and security settings. Report an issue on github if the issue continues',
+                            TOAST_DELAY_MS
+                        )
+                );
         } else if (pluginsWithUpdates.length > 0) {
             onClickViewUpdates();
         } else {
@@ -117,8 +124,8 @@ export const UpdateStatusIconView: React.FC<UpdateStatusIconViewProps> = ({
     } else if (isErrorLoading) {
         chipText = 'x';
         chipColour = '#FF3333';
-        title = 'Error checking for plugin updates';
-        cursor = 'default';
+        title = 'Error checking for plugin updates - click to retry';
+        cursor = 'pointer';
         cssSelector = `${CSS_CLASS_BASE}--error`;
     } else if (pluginsWithUpdatesCount > 0) {
         chipText = (pluginsWithUpdatesCount || 0).toString();
