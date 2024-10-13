@@ -6,4 +6,5 @@ sh scripts/change-plugin-version.sh smart-random-note 0.1.3;
 sh scripts/change-plugin-version.sh obsidian42-brat 0.6.1;
 sh scripts/change-plugin-version.sh periodic-notes 0.0.17;
 sh scripts/change-plugin-version.sh obsidian-dynamic-highlights 0.3.1;
+sh scripts/change-plugin-version.sh obsidian-tasks-plugin 7.5.0;
 echo "{}" > data.json;

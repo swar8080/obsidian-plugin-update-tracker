@@ -77,24 +77,24 @@ export const MixOfPlugins: Story = () => {
     );
 };
 
-export const MarkdownParsingAndEnrichment: Story = () => {
-    function pluginWithNotes(name: string, notes: string): PluginViewModel {
-        return {
-            ...PLUGIN_VIEW_MODEL_BASE,
-            id: `Plugin ${pluginId++}`,
-            name,
-            releaseNotes: [
-                {
-                    releaseId: pluginId++,
-                    versionName: '1.2.3 Beta',
-                    versionNumber: '1.2.3',
-                    notes,
-                    isBetaVersion: true,
-                },
-            ],
-        };
-    }
+function pluginWithNotes(name: string, notes: string): PluginViewModel {
+    return {
+        ...PLUGIN_VIEW_MODEL_BASE,
+        id: `Plugin ${pluginId++}`,
+        name,
+        releaseNotes: [
+            {
+                releaseId: pluginId++,
+                versionName: '1.2.3 Beta',
+                versionNumber: '1.2.3',
+                notes,
+                isBetaVersion: true,
+            },
+        ],
+    };
+}
 
+export const MarkdownParsingAndEnrichment: Story = () => {
     return (
         <PluginUpdateList
             isInitiallyExpanded
@@ -110,7 +110,40 @@ export const MarkdownParsingAndEnrichment: Story = () => {
                     '<html> <head> <style> body { background-color: linen; } h1 { color: maroon; margin-left: 40px; } </style> </head><h2 id="foo" onclick="alert(1)">h2 header</h2><script>alert(1)</script><img width="782" alt="image" src="https://user-images.githubusercontent.com/17691679/202867410-8db3b025-3b16-48ff-958d-17605a84bc1b.png">'
                 ),
                 pluginWithNotes('Contains emoji', 'fix: 🐛'),
+                pluginWithNotes(
+                    'Contains raw URLs',
+                    `
+                * feat: Add date picker in Reading mode and Tasks Query results by @claremacrae in https://github.com/obsidian-tasks-group/obsidian-tasks/pull/3038
+                * feat: Add a date picker to the Edit Task modal by @claremacrae in https://github.com/obsidian-tasks-group/obsidian-tasks/pull/3052
+                `
+                ),
             ]}
+            {...PLUGIN_UPDATE_LIST_BASE}
+            actionBarLocation="bottom"
+        />
+    );
+};
+
+export const LotsOfReleaseNotesPerformance: Story = () => {
+    const plugins = [];
+    for (let i = 0; i < 30; i++) {
+        plugins.push(
+            pluginWithNotes(
+                `Contains raw URLs ${i}`,
+                `
+             * feat: Add date picker in Reading mode and Tasks Query results by @claremacrae in https://github.com/obsidian-tasks-group/obsidian-tasks/pull/3038
+             * feat: Add a date picker to the Edit Task modal by @claremacrae in https://github.com/obsidian-tasks-group/obsidian-tasks/pull/3052
+             * <html> <head> <style> body { background-color: linen; } h1 { color: maroon; margin-left: 40px; } </style> </head><h2 id="foo" onclick="alert(1)">h2 header</h2><script>alert(1)</script><img width="782" alt="image" src="https://user-images.githubusercontent.com/17691679/202867410-8db3b025-3b16-48ff-958d-17605a84bc1b.png
+             * - Fixed #123\r\n- Fixed #456 test\r\n- Blocked by [#5703](https://github.com/excalidraw/excalidraw/issues/5703)\r\n- Fixes #789
+        `
+            )
+        );
+    }
+
+    return (
+        <PluginUpdateList
+            isInitiallyExpanded
+            plugins={plugins}
             {...PLUGIN_UPDATE_LIST_BASE}
             actionBarLocation="bottom"
         />

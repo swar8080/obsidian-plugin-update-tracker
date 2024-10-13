@@ -62,6 +62,7 @@
     "rehype-raw": "^6.1.1",
     "rehype-sanitize": "^5.0.1",
     "styled-components": "^5.3.5",
+    "unist-util-visit": "^4.1.2",
     "use-change-aware-effect": "^1.0.1"
   }
 }
