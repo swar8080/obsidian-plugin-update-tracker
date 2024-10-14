@@ -49,6 +49,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
 }) => {
     const allPluginReleases: InstalledPluginReleases[] = usePluginReleaseFilter();
     const isLoadingReleases = useAppSelector((state) => state.releases.isLoadingReleases);
+    const enabledPlugins = useAppSelector((state) => state.obsidian.enabledPlugins) || {};
     const selectedPluginsById = useAppSelector(getSelectedPluginIds);
     const selectedPluginCount = useAppSelector(countSelectedPlugins);
     const isUpdatingDismissedVersions = useAppSelector(
@@ -129,6 +130,9 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
                     isBetaVersion: release.isBetaVersion,
                 })),
                 hasInstallableReleaseAssets: !!pluginReleases.getLatestReleaseAssetIds(),
+                isPluginEnabled:
+                    pluginReleases.getPluginId() in enabledPlugins &&
+                    enabledPlugins[pluginReleases.getPluginId()],
             })),
         [allPluginReleases]
     );
@@ -295,6 +299,7 @@ export type PluginViewModel = {
         isBetaVersion: boolean;
     }[];
     hasInstallableReleaseAssets: boolean;
+    isPluginEnabled: boolean;
 };
 
 const PluginUpdates: React.FC<{
@@ -327,6 +332,15 @@ const PluginUpdates: React.FC<{
                         >
                             ⚠️ Beta Version
                         </SpanBetaVersionBadge>
+                    )}
+                    {!plugin.isPluginEnabled && (
+                        <SpanDisabledPlugin
+                            aria-label="This plugin is disabled"
+                            aria-label-position="top"
+                            className="obsidian-plugin-update-tracker-disabled-plugin"
+                        >
+                            Disabled
+                        </SpanDisabledPlugin>
                     )}
                 </H2PluginName>
                 <DivSelectPluginContainer>
@@ -511,6 +525,24 @@ const SpanBetaVersionBadge = styled.span`
 
     padding: 0.25em 0.5em;
     margin-left: 0.4rem;
+    user-select: none;
+`;
+
+const SpanDisabledPlugin = styled.span`
+    font-size: 0.45em;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+
+    color: #212529;
+    background-color: #a0a0a0;
+    font-weight: 700;
+
+    border-radius: 10em;
+
+    padding: 0.25em 0.5em;
+    margin-left: 0.4rem;
+    user-select: none;
 `;
 
 const DivSelectPluginContainer = styled.div`

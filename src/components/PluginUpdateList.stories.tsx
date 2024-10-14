@@ -45,6 +45,7 @@ const PLUGIN_VIEW_MODEL_BASE: PluginViewModel = {
         },
     ],
     hasInstallableReleaseAssets: true,
+    isPluginEnabled: true,
 };
 
 export const MixOfPlugins: Story = () => {
@@ -68,9 +69,36 @@ export const MixOfPlugins: Story = () => {
         lastUpdatedTime: dayjs().subtract(48, 'hours'),
         name: 'Plugin 4',
     };
+    const pluginBeta = {
+        ...PLUGIN_VIEW_MODEL_BASE,
+        id: `Plugin ${pluginId++}`,
+        name: 'Plugin beta',
+        latestInstallableVersionIsBeta: true,
+    };
+    const pluginDisabled = {
+        ...PLUGIN_VIEW_MODEL_BASE,
+        id: `Plugin ${pluginId++}`,
+        name: 'Plugin disabled',
+        isPluginEnabled: false,
+    };
+    const pluginBetaAndDisabled = {
+        ...PLUGIN_VIEW_MODEL_BASE,
+        id: `Plugin ${pluginId++}`,
+        name: 'Plugin beta and disabled',
+        latestInstallableVersionIsBeta: true,
+        isPluginEnabled: false,
+    };
     return (
         <PluginUpdateList
-            plugins={[PLUGIN_VIEW_MODEL_BASE, noReleaseNotes, plugin3, plugin4]}
+            plugins={[
+                PLUGIN_VIEW_MODEL_BASE,
+                noReleaseNotes,
+                plugin3,
+                plugin4,
+                pluginBeta,
+                pluginDisabled,
+                pluginBetaAndDisabled,
+            ]}
             {...PLUGIN_UPDATE_LIST_BASE}
             actionBarLocation="bottom"
         />
