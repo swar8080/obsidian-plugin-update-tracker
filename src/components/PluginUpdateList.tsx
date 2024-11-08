@@ -250,7 +250,7 @@ export const PluginUpdateList: React.FC<{
                         disabled={isDisabled}
                         title={selectAllTitle}
                         aria-label={selectAllTitle}
-                        aria-label-position="top"
+                        data-tooltip-position="top"
                     />
                 </DivSelectAll>
             )}
@@ -327,7 +327,7 @@ const PluginUpdates: React.FC<{
                     {plugin.latestInstallableVersionIsBeta && (
                         <SpanBetaVersionBadge
                             aria-label="This version may be unstable"
-                            aria-label-position="top"
+                            data-tooltip-position="top"
                             className="obsidian-plugin-update-tracker-beta-version"
                         >
                             ⚠️ Beta Version
@@ -336,7 +336,7 @@ const PluginUpdates: React.FC<{
                     {!plugin.isPluginEnabled && (
                         <SpanDisabledPlugin
                             aria-label="This plugin is disabled"
-                            aria-label-position="top"
+                            data-tooltip-position="top"
                             className="obsidian-plugin-update-tracker-disabled-plugin"
                         >
                             Disabled
