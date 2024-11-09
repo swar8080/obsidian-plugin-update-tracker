@@ -116,7 +116,7 @@ const DismissedPluginVersions: React.FC<DismissedPluginVersionsProps> = ({
                                         onClickUndismissVersion(row.pluginId, row.versionNumber)
                                     }
                                     aria-label="Restore"
-                                    aria-label-position-="top"
+                                    data-tooltip-position="top"
                                     className="clickable-icon"
                                 >
                                     <FontAwesomeIcon icon={faRotateLeft} size="sm" />
