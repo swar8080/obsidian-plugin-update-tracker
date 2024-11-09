@@ -176,8 +176,13 @@ async function installManifestFile(
      * An example is periodic-notes version 1.0.0-beta.3 that uses version 0.0.17 in its manifest.
      */
     const manifestJson = JSON.parse(fileContents);
-    manifestJson.version = versionNumber;
-    await installPluginFile(pluginId, fileName, JSON.stringify(manifestJson));
+    let contents = fileContents;
+    // only update the manifest.json if changes need to be made
+    if (manifestJson.version !== versionNumber) {
+        manifestJson.version = versionNumber;
+        contents = JSON.stringify(manifestJson, null, '\t');
+    }
+    await installPluginFile(pluginId, fileName, contents);
 }
 
 async function installPluginFile(pluginId: string, fileName: string, fileContents: string) {
