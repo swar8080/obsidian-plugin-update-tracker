@@ -180,6 +180,9 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         if (!this.app.workspace.getActiveViewOfType(PluginUpdateManagerView)) {
             this.app.workspace.detachLeavesOfType(PLUGIN_UPDATES_MANAGER_VIEW_TYPE);
 
+            // Get the latest plugin state which may have recently changed (ex: after lazy-plugin finishes lazy enablement)
+            await store.dispatch(syncApp(this.app));
+
             //Desktop opens in new tab, mobile replaces the current note/tab
             const newLeafPaneType = Platform.isMobile ? false : 'tab';
             await this.app.workspace.getLeaf(newLeafPaneType).setViewState({
@@ -190,6 +193,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
             const pluginLeaf = this.app.workspace.getLeavesOfType(
                 PLUGIN_UPDATES_MANAGER_VIEW_TYPE
             )[0];
+
             if (pluginLeaf) {
                 this.app.workspace.revealLeaf(pluginLeaf);
             }

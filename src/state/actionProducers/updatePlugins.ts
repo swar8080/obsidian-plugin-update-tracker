@@ -17,9 +17,12 @@ type Params = {
 export const updatePlugins = createAsyncThunk(
     'obsidian/updatePlugins',
     async (params: Params, thunkAPI) => {
-        const state = thunkAPI.getState() as State;
         const dispatch = thunkAPI.dispatch;
         const app = window.app as ObsidianApp;
+
+        // Update cached values that may be stale before retrieving state
+        await dispatch(syncApp(app));
+        const state = thunkAPI.getState() as State;
 
         const allPlugins = InstalledPluginReleases.create(
             state.obsidian.pluginManifests,
