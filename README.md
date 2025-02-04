@@ -244,3 +244,9 @@ Example Response, which contains info on the 10 latest versions of the plugin th
 The goal is sending the API only information needed for the plugin to function. Currently that's your list of installed plugins and their versions. AWS also automatically collects your IP which I have access to, and have no way of disabling.
 
 Any changes in what's collected will be included in release notes, but it's unlikely to change.
+
+# Usage with lazy-plugin
+
+When combining the *Ignore Updates to Disabled Plugins* setting with lazy-plugin, ensure that this plugin is loaded with the longest delay or else it may incorrectly identify another plugin as disabled. 
+
+Also, when this plugin detects that lazy-plugin and *Ignore Updates to Disabled Plugins* are enabled, this plugin will remain in the loading state for an extra 10 seconds before actually checking for updates. This helps avoid the issue of incorrectly considering a plugin disabled.

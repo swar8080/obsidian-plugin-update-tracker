@@ -43,7 +43,7 @@ export const updatePlugins = createAsyncThunk(
                 installedPlugin.getReleaseAssetIdsForVersion(versionToInstall);
             const pluginRepoPath = installedPlugin.getRepoPath();
             const isPluginEnabled =
-                state.obsidian.enabledPlugins != null && pluginId in state.obsidian.enabledPlugins;
+                state.obsidian.enabledPlugins != null && state.obsidian.enabledPlugins[pluginId];
             const isUpdatingThisPlugin = pluginId === state.obsidian.thisPluginId;
 
             let success: boolean;
