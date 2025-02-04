@@ -63,9 +63,21 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         store.dispatch(syncThisPluginId(this.manifest.id));
 
         await this.loadSettings();
+        const {
+            payload: { enabledPlugins },
+        } = await store.dispatch(syncApp(this.app));
         this.pollForInstalledPluginVersions();
 
-        store.dispatch(fetchReleases());
+        if (this.settings.excludeDisabledPlugins && enabledPlugins?.['lazy-plugin']) {
+            setTimeout(async () => {
+                // Avoid race conditions checking whether a plugin is enabled. Wait a bit before lazy plugin is done enabling plugins before displaying the filtered update count.
+                await store.dispatch(syncApp(this.app));
+                store.dispatch(fetchReleases());
+            }, 10000);
+        } else {
+            store.dispatch(fetchReleases());
+        }
+
         this.pollForPluginReleases(this.settings, this.settings.hoursBetweenCheckingForUpdates);
 
         if (Platform.isDesktop || SHOW_STATUS_BAR_ICON_ALL_PLATFORMS) {
@@ -98,7 +110,6 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     }
 
     pollForInstalledPluginVersions() {
-        store.dispatch(syncApp(this.app));
         this.registerInterval(
             window.setInterval(() => {
                 store.dispatch(syncApp(this.app));
