@@ -6,7 +6,7 @@ import { State } from '..';
 import {
     DismissedPluginVersion,
     PluginDismissedVersions,
-    PluginSettings
+    PluginSettings,
 } from '../../domain/pluginSettings';
 import { groupById } from '../../domain/util/groupById';
 import { ObsidianState } from '../obsidianReducer';

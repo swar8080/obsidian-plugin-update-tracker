@@ -10,7 +10,7 @@ import {
     requireApiVersion,
     Setting,
     TFile,
-    WorkspaceLeaf
+    WorkspaceLeaf,
 } from 'obsidian';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -165,9 +165,13 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         const installed = state.obsidian.pluginManifests;
         const enabledPlugins = state.obsidian.enabledPlugins;
 
-        const filteredUpdates = pluginFilter({}, pluginSettings, installed, enabledPlugins, releases);
-
-        console.log(filteredUpdates);
+        const filteredUpdates = pluginFilter(
+            {},
+            pluginSettings,
+            installed,
+            enabledPlugins,
+            releases
+        );
 
         // If the setting is not enabled or there are no releases, return
         // And if there are no releases, there's no need to show a notification

@@ -21,7 +21,7 @@ import { groupById } from '../domain/util/groupById';
 import { useAppDispatch, useAppSelector } from '../state';
 import {
     dismissSelectedPluginVersions,
-    PluginVersionsToDismiss
+    PluginVersionsToDismiss,
 } from '../state/actionProducers/dismissPluginVersions';
 import { updatePlugins } from '../state/actionProducers/updatePlugins';
 import { togglePluginSelection, toggleSelectAllPlugins } from '../state/obsidianReducer';
