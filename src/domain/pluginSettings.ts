@@ -4,6 +4,7 @@ export type PluginSettings = {
     excludeBetaVersions: boolean;
     excludeDisabledPlugins: boolean;
     showIconOnMobile: boolean;
+    showNotificationOnNewUpdate: boolean;
     // Deprecated for minUpdateCountToShowIcon
     hideIconIfNoUpdatesAvailable?: boolean;
     minUpdateCountToShowIcon: number;
@@ -26,6 +27,7 @@ export const DEFAULT_PLUGIN_SETTINGS: PluginSettings = {
     daysToSuppressNewUpdates: 0,
     dismissedVersionsByPluginId: {},
     showIconOnMobile: true,
+    showNotificationOnNewUpdate: false,
     excludeBetaVersions: true,
     excludeDisabledPlugins: false,
     minUpdateCountToShowIcon: 0,

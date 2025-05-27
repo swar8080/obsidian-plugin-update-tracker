@@ -3,13 +3,14 @@ import {
     AbstractTextComponent,
     App,
     ItemView,
+    Notice,
     Platform,
     Plugin,
     PluginSettingTab,
     requireApiVersion,
     Setting,
     TFile,
-    WorkspaceLeaf,
+    WorkspaceLeaf
 } from 'obsidian';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -154,6 +155,44 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
                 parentEl={this.statusBarIconEl}
             />
         );
+    }
+
+    showNotificationOnNewUpdate() {
+        const releases = store.getState().releases.releases;
+
+        // If the setting is not enabled or there are no releases, return
+        // And if there are no releases, there's no need to show a notification
+        if (!this.settings.showNotificationOnNewUpdate || releases.length === 0) return;
+
+        // Convert the string to a fragment to allow for HTML elements
+        const stringToFragment = (string: string) => {
+            const wrapper = document.createElement('template');
+            wrapper.innerHTML = string;
+            return wrapper.content;
+        };
+
+        // Show a notice with a button to view updates for 15 seconds
+        new Notice(
+            stringToFragment(
+                `You have ${releases.length} plugin update${
+                    releases.length > 1 ? 's' : ''
+                } available.<br/><a id="tracker-notification-button">View Updates</a>`
+            ),
+            15000
+        );
+
+        const buttonEl = document.getElementById('tracker-notification-button');
+
+        if (buttonEl) {
+            // Bind the method to preserve the this context when running from top level Redux store middleware
+            buttonEl.addEventListener('click', this.showPluginUpdateManagerView.bind(this));
+
+            // Clean up the button and listener after 15 seconds
+            setTimeout(() => {
+                buttonEl.removeEventListener('click', this.showPluginUpdateManagerView.bind(this));
+                buttonEl.remove();
+            }, 15000);
+        }
     }
 
     updateRibonIconVisibilty() {
@@ -374,6 +413,19 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         )
                     )
                     .setDynamicTooltip()
+            );
+        new Setting(containerEl)
+            .setName('Show Notification on New Update')
+            .setDesc('Show a notification when a new update is available')
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.showNotificationOnNewUpdate)
+                    .onChange(async (showNotificationOnNewUpdate) => {
+                        await this.plugin.saveSettings({
+                            ...this.plugin.settings,
+                            showNotificationOnNewUpdate,
+                        });
+                    })
             );
         new Setting(containerEl)
             .setName('Show on Mobile')
