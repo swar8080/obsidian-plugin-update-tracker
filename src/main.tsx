@@ -20,6 +20,7 @@ import PluginUpdateManager from './components/PluginUpdateManager';
 import RibbonIcon from './components/RibbonIcon';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import initiatePluginSettings from './domain/initiatePluginSettings';
+import pluginFilter from './domain/pluginFilter';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
 import { cleanupDismissedPluginVersions } from './state/actionProducers/cleanupDismissedPluginVersions';
@@ -158,11 +159,19 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     }
 
     showNotificationOnNewUpdate() {
-        const releases = store.getState().releases.releases;
+        const state = store.getState();
+        const pluginSettings = this.settings;
+        const releases = state.releases.releases;
+        const installed = state.obsidian.pluginManifests;
+        const enabledPlugins = state.obsidian.enabledPlugins;
+
+        const filteredUpdates = pluginFilter({}, pluginSettings, installed, enabledPlugins, releases);
+
+        console.log(filteredUpdates);
 
         // If the setting is not enabled or there are no releases, return
         // And if there are no releases, there's no need to show a notification
-        if (!this.settings.showNotificationOnNewUpdate || releases.length === 0) return;
+        if (!this.settings.showNotificationOnNewUpdate || filteredUpdates.length === 0) return;
 
         // Convert the string to a fragment to allow for HTML elements
         const stringToFragment = (string: string) => {
@@ -174,8 +183,8 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         // Show a notice with a button to view updates for 15 seconds
         new Notice(
             stringToFragment(
-                `You have ${releases.length} plugin update${
-                    releases.length > 1 ? 's' : ''
+                `You have ${filteredUpdates.length} plugin update${
+                    filteredUpdates.length > 1 ? 's' : ''
                 } available.<br/><a id="tracker-notification-button">View Updates</a>`
             ),
             15000
