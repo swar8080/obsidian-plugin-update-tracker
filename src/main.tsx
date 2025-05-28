@@ -53,6 +53,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private fileOpenCallback: (file: TFile | null) => any;
     private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
     private releasePollingIntervalTimerId: number | undefined;
+    private previousFilteredUpdates: string[] = []; // Store previous updates for comparison
 
     async onload() {
         this.registerView(
@@ -174,8 +175,21 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         );
 
         // If the setting is not enabled or there are no releases, return
-        // And if there are no releases, there's no need to show a notification
         if (!this.settings.showNotificationOnNewUpdate || filteredUpdates.length === 0) return;
+
+        // Create a unique identifier for the current updates by combining plugin IDs and versions
+        // Saving to memory, but it's the only way to avoid showing the notification multiple times without saving to disk
+        // But if this plugin is disabled and re-enabled, the notification will be shown again
+        const currentUpdatesKey = filteredUpdates
+            .map((update) => `${update.getPluginId()}-${update.getLatestVersionNumber()}`)
+            .sort()
+            .join('|');
+
+        // If the updates are the same as before, don't show notification
+        if (currentUpdatesKey === this.previousFilteredUpdates.join('|')) return;
+
+        // Update the previous updates
+        this.previousFilteredUpdates = currentUpdatesKey.split('|');
 
         // Convert the string to a fragment to allow for HTML elements
         const stringToFragment = (string: string) => {
@@ -429,7 +443,9 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
             );
         new Setting(containerEl)
             .setName('Show Notification on New Update')
-            .setDesc('Show a notification when a new update is available. Useful on mobile since the plugin update icon is less visible.')
+            .setDesc(
+                'Show a notification when a new update is available. Useful on mobile since the plugin update icon is less visible.'
+            )
             .addToggle((toggle) =>
                 toggle
                     .setValue(this.plugin.settings.showNotificationOnNewUpdate)
