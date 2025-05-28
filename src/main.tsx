@@ -429,7 +429,7 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
             );
         new Setting(containerEl)
             .setName('Show Notification on New Update')
-            .setDesc('Show a notification when a new update is available')
+            .setDesc('Show a notification when a new update is available. Useful on mobile since the plugin update icon is less visible.')
             .addToggle((toggle) =>
                 toggle
                     .setValue(this.plugin.settings.showNotificationOnNewUpdate)
