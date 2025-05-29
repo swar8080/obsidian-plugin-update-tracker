@@ -460,6 +460,11 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                             ...this.plugin.settings,
                             showNotificationOnNewUpdate,
                         });
+                        
+                        if (showNotificationOnNewUpdate) {
+                            // Show notification immediately
+                            this.plugin.showNotificationOnNewUpdate();
+                        }
                     })
             );
         new Setting(containerEl)
