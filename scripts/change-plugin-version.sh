@@ -6,7 +6,11 @@ pluginVersion=$2;
 startDir=`pwd`;
 
 cd ../$pluginId;
-sed -i .bak "s/\"version\".*,/\"version\": \"$pluginVersion\",/" manifest.json;
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i ".bak" "s/\"version\".*,/\"version\": \"$pluginVersion\",/" manifest.json
+else
+  sed -i.bak "s/\"version\".*,/\"version\": \"$pluginVersion\",/" manifest.json
+fi
 cat manifest.json;
 
 cd $startDir;
