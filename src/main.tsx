@@ -1,8 +1,10 @@
+import { difference } from 'lodash';
 import debounce from 'lodash/debounce';
 import {
     AbstractTextComponent,
     App,
     ItemView,
+    Notice,
     Platform,
     Plugin,
     PluginSettingTab,
@@ -19,6 +21,7 @@ import PluginUpdateManager from './components/PluginUpdateManager';
 import RibbonIcon from './components/RibbonIcon';
 import UpdateStatusIcon from './components/UpdateStatusIcon';
 import initiatePluginSettings from './domain/initiatePluginSettings';
+import pluginFilter from './domain/pluginFilter';
 import { DEFAULT_PLUGIN_SETTINGS, PluginSettings } from './domain/pluginSettings';
 import { RESET_ACTION, store } from './state';
 import { cleanupDismissedPluginVersions } from './state/actionProducers/cleanupDismissedPluginVersions';
@@ -51,6 +54,7 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
     private fileOpenCallback: (file: TFile | null) => any;
     private activeLeafChangeCallback: (leaf: WorkspaceLeaf | null) => any;
     private releasePollingIntervalTimerId: number | undefined;
+    private previousFilteredUpdates: string[] = []; // Store previous updates for comparison
 
     async onload() {
         this.registerView(
@@ -154,6 +158,77 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
                 parentEl={this.statusBarIconEl}
             />
         );
+    }
+
+    showNotificationOnNewUpdate() {
+        const state = store.getState();
+        const pluginSettings = this.settings;
+        const releases = state.releases.releases;
+        const installed = state.obsidian.pluginManifests;
+        const enabledPlugins = state.obsidian.enabledPlugins;
+
+        const filteredUpdates = pluginFilter(
+            {},
+            pluginSettings,
+            installed,
+            enabledPlugins,
+            releases
+        );
+
+        // If the setting is not enabled or there are no releases, return
+        if (!this.settings.showNotificationOnNewUpdate || filteredUpdates.length === 0) return;
+
+        // Create a list of pluginId-versionNumber to memory.
+        // We will only show notification when there is new different pluginId-versionNumber in the list with the previous one.
+        // This is the only way to avoid showing the notification multiple times without saving to disk
+        // But if this plugin is disabled and re-enabled, the notification will be shown again
+        const currentUpdatesKeys = filteredUpdates.map(
+            (update) => `${update.getPluginId()}-${update.getLatestVersionNumber()}`
+        );
+
+        // If the updates are the same as before, don't show notification
+        // Lodash difference(new, old) will return the new items that are not in the old list.
+        // If the length is 0, it means there is no new update.
+        if (difference(currentUpdatesKeys, this.previousFilteredUpdates).length === 0) {
+            // We still want to update this list
+            // There is a case when user has downgraded any plguin from file system and wanted to check update again.
+            this.previousFilteredUpdates = currentUpdatesKeys;
+            return;
+        }
+
+        // Update the previous updates
+        this.previousFilteredUpdates = currentUpdatesKeys;
+
+        // Convert the string to a fragment to allow for HTML elements
+        const stringToFragment = (string: string) => {
+            const wrapper = document.createElement('template');
+            wrapper.innerHTML = string;
+            return wrapper.content;
+        };
+
+        // Show a notice with a button to view updates for 15 seconds
+        const trackerButtonID = 'tracker-notification-button';
+        new Notice(
+            stringToFragment(
+                `You have ${filteredUpdates.length} plugin update${
+                    filteredUpdates.length > 1 ? 's' : ''
+                } available.<br/><a id="${trackerButtonID}">View Updates</a>`
+            ),
+            15000
+        );
+
+        const buttonEl = document.getElementById(trackerButtonID);
+
+        if (buttonEl) {
+            // Bind the method to preserve the this context when running from top level Redux store middleware
+            buttonEl.addEventListener('click', this.showPluginUpdateManagerView.bind(this));
+
+            // Clean up the button and listener after 15 seconds
+            setTimeout(() => {
+                buttonEl.removeEventListener('click', this.showPluginUpdateManagerView.bind(this));
+                buttonEl.remove();
+            }, 15000);
+        }
     }
 
     updateRibonIconVisibilty() {
@@ -374,6 +449,26 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                         )
                     )
                     .setDynamicTooltip()
+            );
+        new Setting(containerEl)
+            .setName('Show Notification on New Update')
+            .setDesc(
+                'Show a notification when a new update is available. Useful on mobile since the plugin update icon is less visible.'
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.showNotificationOnNewUpdate)
+                    .onChange(async (showNotificationOnNewUpdate) => {
+                        await this.plugin.saveSettings({
+                            ...this.plugin.settings,
+                            showNotificationOnNewUpdate,
+                        });
+
+                        if (showNotificationOnNewUpdate) {
+                            // Show notification immediately
+                            this.plugin.showNotificationOnNewUpdate();
+                        }
+                    })
             );
         new Setting(containerEl)
             .setName('Show on Mobile')

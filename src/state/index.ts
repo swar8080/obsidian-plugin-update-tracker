@@ -1,6 +1,7 @@
 import { AnyAction, combineReducers, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import logger from 'redux-logger';
+import { showUpdateNotificationMiddleware } from './actionProducers/showUpdateNotification';
 import ObsidianReducer, { ObsidianState } from './obsidianReducer';
 import ReleaseReducer, { ReleaseState } from './releasesReducer';
 
@@ -19,10 +20,12 @@ export const store = configureStore({
         return reducers(state, action);
     },
     middleware: (getDefaultMiddleware) => {
+        const middleware = getDefaultMiddleware();
         if (process.env.OBSIDIAN_APP_ENABLE_REDUX_LOGGER === 'true') {
-            return getDefaultMiddleware().concat(logger);
+            middleware.push(logger);
         }
-        return getDefaultMiddleware();
+        middleware.push(showUpdateNotificationMiddleware);
+        return middleware;
     },
 });
 

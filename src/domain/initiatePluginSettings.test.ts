@@ -25,6 +25,7 @@ describe('initiatePluginSettings', () => {
                 },
             },
             showIconOnMobile: !DEFAULT_PLUGIN_SETTINGS.showIconOnMobile,
+            showNotificationOnNewUpdate: !DEFAULT_PLUGIN_SETTINGS.showNotificationOnNewUpdate,
             excludeBetaVersions: !DEFAULT_PLUGIN_SETTINGS.excludeBetaVersions,
             excludeDisabledPlugins: !DEFAULT_PLUGIN_SETTINGS.excludeDisabledPlugins,
             minUpdateCountToShowIcon: DEFAULT_PLUGIN_SETTINGS.minUpdateCountToShowIcon + 1,
