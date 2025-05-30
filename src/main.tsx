@@ -1,3 +1,4 @@
+import { difference } from 'lodash';
 import debounce from 'lodash/debounce';
 import {
     AbstractTextComponent,
@@ -186,7 +187,9 @@ export default class PluginUpdateCheckerPlugin extends Plugin {
         );
 
         // If the updates are the same as before, don't show notification
-        if (currentUpdatesKeys.every((key) => this.previousFilteredUpdates.includes(key))) {
+        // Lodash difference(new, old) will return the new items that are not in the old list.
+        // If the length is 0, it means there is no new update.
+        if (difference(currentUpdatesKeys, this.previousFilteredUpdates).length === 0) {
             // We still want to update this list
             // There is a case when user has downgraded any plguin from file system and wanted to check update again.
             this.previousFilteredUpdates = currentUpdatesKeys;
@@ -460,7 +463,7 @@ class PluginUpdateCheckerSettingsTab extends PluginSettingTab {
                             ...this.plugin.settings,
                             showNotificationOnNewUpdate,
                         });
-                        
+
                         if (showNotificationOnNewUpdate) {
                             // Show notification immediately
                             this.plugin.showNotificationOnNewUpdate();
