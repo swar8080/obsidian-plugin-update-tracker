@@ -1,5 +1,5 @@
-import { difference } from 'lodash';
 import debounce from 'lodash/debounce';
+import difference from 'lodash/difference';
 import {
     AbstractTextComponent,
     App,
