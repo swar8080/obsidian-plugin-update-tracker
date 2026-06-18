@@ -124,7 +124,7 @@ const PluginUpdateListConnected: React.FC<PluginUpdateListProps> = ({
                 latestInstallableVersionIsBeta: pluginReleases.isLatestVersionABetaVersion(),
                 releaseNotes: pluginReleases.getReleaseVersions().map((release) => ({
                     releaseId: release.releaseId,
-                    versionName: release.versionName,
+                    versionName: release.versionName ?? release.versionNumber,
                     versionNumber: release.versionNumber,
                     notes: release.notes,
                     isBetaVersion: release.isBetaVersion,

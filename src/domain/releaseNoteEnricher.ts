@@ -2,19 +2,23 @@ const REFERENCED_GITHUB_ISSUE_PATTERN = /#(\d+)([\s:,.!]|$)/g;
 
 export default function enrichReleaseNotes(
     notes: string,
-    versionName: string,
-    versionNumber: string,
+    versionName: string | null | undefined,
+    versionNumber: string | null | undefined,
     pluginRepoUrl: string
 ): string {
-    const repeatedVersionNameRemovalRegex = new RegExp(
-        `^#*\\s?${escapeStringRegexp(versionName)}\n*`
-    );
-    notes = notes.replace(repeatedVersionNameRemovalRegex, '');
+    if (versionName) {
+        const repeatedVersionNameRemovalRegex = new RegExp(
+            `^#*\\s?${escapeStringRegexp(versionName)}\n*`
+        );
+        notes = notes.replace(repeatedVersionNameRemovalRegex, '');
+    }
 
-    const repeatedVersionNumberRemovalRegex = new RegExp(
-        `^#*\\s?${escapeStringRegexp(versionNumber)}\n*`
-    );
-    notes = notes.replace(repeatedVersionNumberRemovalRegex, '');
+    if (versionNumber) {
+        const repeatedVersionNumberRemovalRegex = new RegExp(
+            `^#*\\s?${escapeStringRegexp(versionNumber)}\n*`
+        );
+        notes = notes.replace(repeatedVersionNumberRemovalRegex, '');
+    }
 
     notes = notes.replace(REFERENCED_GITHUB_ISSUE_PATTERN, `[#$1](${pluginRepoUrl}/issues/$1)$2`);
 
