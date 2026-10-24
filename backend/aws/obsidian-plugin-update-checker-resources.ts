@@ -28,7 +28,9 @@ export class ObsidianPluginUpdaterStack extends cdk.Stack {
             environment: {
                 ...getFromEnvironmentVariables([
                     'OPUC_MAX_PLUGIN_COUNT_PROCESSED',
-                    'OPUC_GITHUB_ACCESS_TOKEN',
+                    'OPUC_GITHUB_APP_ID',
+                    'OPUC_GITHUB_APP_INSTALLATION_ID',
+                    'OPUC_GITHUB_APP_PRIVATE_KEY',
                     'OPUC_RELEASES_CACHE_LENGTH_SECONDS_MULTIPLIER',
                     'OPUC_PLUGIN_CACHE_LENGTH_DIVISOR',
                     'OPUC_RELEASES_FETCHED_PER_PLUGIN',

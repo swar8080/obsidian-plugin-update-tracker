@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
+import { GithubAppTokenProvider } from './GithubAppTokenProvider';
 import { MetricLogger } from './MetricLogger';
 
 export interface ReleaseApi {
@@ -17,12 +18,16 @@ export interface ReleaseApi {
 }
 
 export class GithubReleaseApi implements ReleaseApi {
-    private githubAccessToken: string;
+    private tokenProvider: GithubAppTokenProvider;
     private metricLogger: MetricLogger;
     private timeoutMs: number;
 
-    constructor(githubAccessToken: string, metricLogger: MetricLogger, timeoutMs: number) {
-        this.githubAccessToken = githubAccessToken;
+    constructor(
+        tokenProvider: GithubAppTokenProvider,
+        metricLogger: MetricLogger,
+        timeoutMs: number
+    ) {
+        this.tokenProvider = tokenProvider;
         this.metricLogger = metricLogger;
         this.timeoutMs = timeoutMs;
     }
@@ -40,7 +45,7 @@ export class GithubReleaseApi implements ReleaseApi {
                 method: 'get',
                 url: `https://api.github.com/repos/${repositoryPath}/releases?per_page=${per_page}`,
                 headers: {
-                    Authorization: `Bearer ${this.githubAccessToken}`,
+                    Authorization: `Bearer ${await this.tokenProvider.getToken()}`,
                     Accept: 'application/vnd.github+json',
                     'If-None-Match': etag || '',
                 },
@@ -78,7 +83,7 @@ export class GithubReleaseApi implements ReleaseApi {
                 method: 'get',
                 url: `https://api.github.com/repos/${repositoryPath}/releases/assets/${assetId}`,
                 headers: {
-                    Authorization: `Bearer ${this.githubAccessToken}`,
+                    Authorization: `Bearer ${await this.tokenProvider.getToken()}`,
                     Accept: 'application/octet-stream',
                 },
                 timeout: this.timeoutMs,
@@ -101,7 +106,7 @@ export class GithubReleaseApi implements ReleaseApi {
                 method: 'get',
                 url: `https://api.github.com/repos/${repositoryPath}/contents/manifest.json`,
                 headers: {
-                    Authorization: `Bearer ${this.githubAccessToken}`,
+                    Authorization: `Bearer ${await this.tokenProvider.getToken()}`,
                     'If-None-Match': etag || '',
                 },
                 timeout: this.timeoutMs,
