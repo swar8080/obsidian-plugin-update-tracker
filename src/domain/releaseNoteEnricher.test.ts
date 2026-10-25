@@ -70,4 +70,15 @@ describe('releaseNoteEnricher', () => {
             expect(result).toBe(notes);
         });
     });
+
+    describe('Missing version name', () => {
+        it('does not throw when the release has no version name', () => {
+            const notes = `## ${VERSION_NUMBER}\nEtc`;
+            const missingVersionName = null as unknown as string;
+
+            const result = enrichReleaseNotes(notes, missingVersionName, VERSION_NUMBER, PLUGIN_URL);
+
+            expect(result).toBe('Etc');
+        });
+    });
 });
