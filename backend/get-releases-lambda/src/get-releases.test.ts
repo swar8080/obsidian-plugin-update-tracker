@@ -451,6 +451,59 @@ describe('get-releases', () => {
             expect(releaseApi.fetchMasterManifest).toHaveBeenCalledTimes(1);
         });
 
+        describe('manifests missing a min obsidian version', () => {
+            beforeEach(() => {
+                request = { currentPluginVersions: [PLUGIN_2_REQUEST] };
+                pluginRepository.getPluginsById = jest.fn().mockResolvedValue({
+                    [PLUGIN_2_ID]: PLUGIN_2_RECORD,
+                });
+                plugin2CachedReleaseRecord.lastFetchedFromGithub = now
+                    .subtract(config.releaseCacheLengthMultiplierSeconds + 1, 'seconds')
+                    .format();
+                plugin2CachedReleaseRecord.releases[0].fileAssetIds = {
+                    manifestJson: PLUGIN2_MANIFEST_ID,
+                    mainJs: PLUGIN2_MAIN_JS_ID,
+                };
+                releaseApi.fetchReleases = jest.fn().mockResolvedValueOnce({
+                    hasChanges: true,
+                    releases: [plugin2Release1],
+                    etag: 'some etag2',
+                });
+            });
+
+            it('are fetched again even though the manifest has not been updated', async () => {
+                plugin2CachedReleaseRecord.releases[0].minObsidianVersion = undefined;
+                releaseRepository.getReleases = jest
+                    .fn()
+                    .mockResolvedValue([plugin2CachedReleaseRecord]);
+                releaseApi.fetchReleaseManifest = jest.fn().mockResolvedValueOnce({
+                    version: PLUGIN_2_INSTALLED_VERSION,
+                    minAppVersion: '15.15.0',
+                });
+
+                await getReleases.execute(request, now);
+
+                expect(releaseApi.fetchReleaseManifest).toHaveBeenCalledTimes(1);
+                expect(releaseApi.fetchReleaseManifest).toHaveBeenCalledWith(
+                    downloadUrl(PLUGIN2_MANIFEST_ID, 'manifest.json')
+                );
+                //@ts-ignore
+                const saved = releaseRepository.save.mock.calls[0][0] as PluginReleasesRecord[];
+                expect(saved[0].releases[0].minObsidianVersion).toBe('15.15.0');
+            });
+
+            it('are not fetched again once the min obsidian version is known', async () => {
+                releaseRepository.getReleases = jest
+                    .fn()
+                    .mockResolvedValue([plugin2CachedReleaseRecord]);
+                releaseApi.fetchReleaseManifest = jest.fn();
+
+                await getReleases.execute(request, now);
+
+                expect(releaseApi.fetchReleaseManifest).not.toHaveBeenCalled();
+            });
+        });
+
         it("uses cached releases that haven't expired", () => {});
     });
 

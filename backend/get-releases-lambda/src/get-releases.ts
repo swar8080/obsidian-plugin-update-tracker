@@ -314,7 +314,11 @@ export class GetReleases {
 
         const cachedManifestsByReleaseId = (cachedReleases?.releases || []).reduce(
             (prev, current) => {
-                if (current.fileAssetIds?.manifestJson && current.manifestLastUpdatedAt) {
+                if (
+                    current.fileAssetIds?.manifestJson &&
+                    current.manifestLastUpdatedAt &&
+                    current.minObsidianVersion
+                ) {
                     prev[current.id.toString()] = {
                         manifestUpdatedTime: current.manifestLastUpdatedAt,
                         manifestAssetId: current.fileAssetIds.manifestJson,
@@ -328,7 +332,7 @@ export class GetReleases {
         const manifestsToFetch = Object.keys(currentManifestsByReleaseId)
             .filter(
                 (releaseId) =>
-                    //include if never fetched manifest or manifest has been updated
+                    //include if never successfully fetched manifest or manifest has been updated
                     !(releaseId in cachedManifestsByReleaseId) ||
                     currentManifestsByReleaseId[releaseId].manifestUpdatedTime >
                         cachedManifestsByReleaseId[releaseId].manifestUpdatedTime
