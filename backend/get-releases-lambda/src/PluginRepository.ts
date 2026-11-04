@@ -3,6 +3,7 @@ import { GetObjectCommand, S3Client, NoSuchKey, PutObjectCommand } from '@aws-sd
 import { groupById } from './util';
 import * as streamConsumers from 'stream/consumers';
 import { MetricLogger } from './MetricLogger';
+import { describeError } from './errors';
 
 export interface PluginRepository {
     getPluginsById(pluginIds: string[]): Promise<Record<string, PluginRecord>>;
@@ -96,7 +97,7 @@ export class S3PluginRepository implements PluginRepository {
                 url: PLUGINS_LIST_GITHUB_URL,
             }).then((res) => res.data);
         } catch (err) {
-            console.warn('Error fetching plugin list from github', err);
+            console.warn(`Error fetching plugin list from github: ${describeError(err)}`);
             this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_PLUGIN_LIST');
             throw err;
         }

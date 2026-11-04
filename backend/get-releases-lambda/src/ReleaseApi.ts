@@ -1,5 +1,9 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { MetricLogger } from './MetricLogger';
+import { describeError, RateLimitedError } from './errors';
+
+//github asks for at least a minute before retrying when a secondary rate limit has no retry-after header
+const DEFAULT_SECONDARY_RATE_LIMIT_PAUSE_MS = 60 * 1000;
 
 export interface ReleaseApi {
     fetchReleases(
@@ -20,6 +24,7 @@ export class GithubReleaseApi implements ReleaseApi {
     private githubAccessToken: string;
     private metricLogger: MetricLogger;
     private timeoutMs: number;
+    private rateLimitedUntilMs = 0;
 
     constructor(githubAccessToken: string, metricLogger: MetricLogger, timeoutMs: number) {
         this.githubAccessToken = githubAccessToken;
@@ -35,6 +40,7 @@ export class GithubReleaseApi implements ReleaseApi {
         //fetch more than needed because draft/prereleases may be included in the results
         const per_page = Math.min(100, limit * 2);
 
+        this.throwIfRateLimited();
         try {
             const response = await axios({
                 method: 'get',
@@ -63,7 +69,15 @@ export class GithubReleaseApi implements ReleaseApi {
                     hasChanges: false,
                 };
             }
-            console.error(`Unexpected error fetching github releases for ${repositoryPath}`, err);
+            const rateLimitedError = await this.pauseIfRateLimitRejection(err);
+            if (rateLimitedError != null) {
+                throw rateLimitedError;
+            }
+            console.error(
+                `Unexpected error fetching github releases for ${repositoryPath}: ${describeError(
+                    err
+                )}`
+            );
             await this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_RELEASES');
             throw err;
         }
@@ -92,6 +106,7 @@ export class GithubReleaseApi implements ReleaseApi {
         repositoryPath: string,
         etag: string | undefined
     ): Promise<ApiMasterPluginManifestResponse> {
+        this.throwIfRateLimited();
         try {
             const response = await axios({
                 method: 'get',
@@ -119,7 +134,15 @@ export class GithubReleaseApi implements ReleaseApi {
                     hasChanges: false,
                 };
             }
-            console.error(`Unexpected error fetching master manifest for ${repositoryPath}`, err);
+            const rateLimitedError = await this.pauseIfRateLimitRejection(err);
+            if (rateLimitedError != null) {
+                throw rateLimitedError;
+            }
+            console.error(
+                `Unexpected error fetching master manifest for ${repositoryPath}: ${describeError(
+                    err
+                )}`
+            );
             await this.metricLogger.trackErrorCodeOccurrence('GITHUB_FETCH_MASTER_MANIFEST');
             throw err;
         }
@@ -134,6 +157,55 @@ export class GithubReleaseApi implements ReleaseApi {
         } catch (err) {
             console.warn(`Error logging rate limit metric ${rateLimitRemaining}`, err);
         }
+
+        if (rateLimitRemaining === '0') {
+            const resetEpochSeconds = parseInt(response.headers['x-ratelimit-reset']);
+            if (!isNaN(resetEpochSeconds)) {
+                this.rateLimitedUntilMs = Math.max(
+                    this.rateLimitedUntilMs,
+                    resetEpochSeconds * 1000
+                );
+            }
+        }
+    }
+
+    private throwIfRateLimited() {
+        if (Date.now() < this.rateLimitedUntilMs) {
+            throw new RateLimitedError(this.rateLimitedUntilMs);
+        }
+    }
+
+    private async pauseIfRateLimitRejection(err: unknown): Promise<RateLimitedError | null> {
+        if (!(err instanceof AxiosError) || ![403, 429].includes(err.response?.status || 0)) {
+            return null;
+        }
+        const headers = err.response?.headers || {};
+        const retryAfterSeconds = parseInt(headers['retry-after']);
+        const resetEpochSeconds = parseInt(headers['x-ratelimit-reset']);
+        const responseMessage = String((err.response?.data as { message?: string })?.message);
+
+        let resumeAtMs: number;
+        if (!isNaN(retryAfterSeconds)) {
+            resumeAtMs = Date.now() + retryAfterSeconds * 1000;
+        } else if (headers['x-ratelimit-remaining'] === '0' && !isNaN(resetEpochSeconds)) {
+            resumeAtMs = resetEpochSeconds * 1000;
+        } else if (/rate limit/i.test(responseMessage)) {
+            resumeAtMs = Date.now() + DEFAULT_SECONDARY_RATE_LIMIT_PAUSE_MS;
+        } else {
+            return null;
+        }
+
+        const isNewPause = Date.now() >= this.rateLimitedUntilMs;
+        this.rateLimitedUntilMs = Math.max(this.rateLimitedUntilMs, resumeAtMs);
+        if (isNewPause) {
+            console.warn(
+                `GitHub api rate limit hit, skipping github api calls until ${new Date(
+                    this.rateLimitedUntilMs
+                ).toISOString()}`
+            );
+            await this.metricLogger.trackErrorCodeOccurrence('GITHUB_RATE_LIMITED');
+        }
+        return new RateLimitedError(this.rateLimitedUntilMs);
     }
 }
 

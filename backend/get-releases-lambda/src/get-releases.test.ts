@@ -7,6 +7,7 @@ import {
 import { GetReleases, GetReleasesConfiguration } from './get-releases';
 import { PluginRecord, PluginRepository } from './PluginRepository';
 import { ApiReleases, ReleaseApi } from './ReleaseApi';
+import { RateLimitedError } from './errors';
 import { PluginReleasesRecord, ReleaseRepository } from './ReleaseRepository';
 
 const PLUGIN_REQUEST_BASE: InstalledPluginVersion = { obsidianPluginId: '', version: '' };
@@ -451,6 +452,66 @@ describe('get-releases', () => {
         });
 
         it("uses cached releases that haven't expired", () => {});
+    });
+
+    describe('github rate limit pause', () => {
+        let consoleErrorSpy: jest.SpyInstance;
+
+        beforeEach(() => {
+            consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            request = { currentPluginVersions: [PLUGIN_2_REQUEST] };
+            pluginRepository.getPluginsById = jest.fn().mockResolvedValue({
+                [PLUGIN_2_ID]: PLUGIN_2_RECORD,
+            });
+            plugin2CachedReleaseRecord.lastFetchedFromGithub = now
+                .subtract(config.releaseCacheLengthMultiplierSeconds + 1, 'seconds')
+                .format();
+        });
+
+        afterEach(() => {
+            consoleErrorSpy.mockRestore();
+        });
+
+        it('falls back to cached releases without logging', async () => {
+            releaseRepository.getReleases = jest
+                .fn()
+                .mockResolvedValue([plugin2CachedReleaseRecord]);
+            releaseApi.fetchReleases = jest
+                .fn()
+                .mockRejectedValue(new RateLimitedError(now.add(1, 'hour').valueOf()));
+
+            result = await getReleases.execute(request, now);
+
+            expect(releaseApi.fetchReleases).toHaveBeenCalledTimes(1);
+            expect(releaseApi.fetchMasterManifest).not.toHaveBeenCalled();
+            expect(consoleErrorSpy).not.toHaveBeenCalled();
+        });
+
+        it('skips plugins without cached releases without logging', async () => {
+            releaseRepository.getReleases = jest.fn().mockResolvedValue([]);
+            releaseApi.fetchReleases = jest
+                .fn()
+                .mockRejectedValue(new RateLimitedError(now.add(1, 'hour').valueOf()));
+
+            result = await getReleases.execute(request, now);
+
+            expect(result).toEqual([]);
+            expect(consoleErrorSpy).not.toHaveBeenCalled();
+        });
+
+        it('still logs other errors, on a single line', async () => {
+            releaseRepository.getReleases = jest.fn().mockResolvedValue([]);
+            releaseApi.fetchReleases = jest.fn().mockRejectedValue(new Error('boom'));
+
+            result = await getReleases.execute(request, now);
+
+            expect(result).toEqual([]);
+            expect(consoleErrorSpy).toHaveBeenCalled();
+            consoleErrorSpy.mock.calls.forEach((loggedArguments) => {
+                expect(loggedArguments).toHaveLength(1);
+                expect(typeof loggedArguments[0]).toBe('string');
+            });
+        });
     });
 
     describe('processing of release data', () => {

@@ -15,6 +15,7 @@ import {
 import { PluginRepository, PluginRecord } from './PluginRepository';
 import { ReleaseRepository, PluginReleasesRecord, MasterManifestInfo } from './ReleaseRepository';
 import { isEmpty, isString, groupById, debug } from './util';
+import { logError } from './errors';
 import { semverCompare } from '../../../oput-common/semverCompare';
 
 const THIS_PLUGIN_ID = 'obsidian-plugin-update-tracker';
@@ -115,7 +116,7 @@ export class GetReleases {
                     releaseRecordUpdates = [];
                 }
             } catch (err) {
-                console.error('Error processing releases for', plugin, err);
+                logError(`Error processing releases for ${plugin.id}`, err);
             }
         }
 
@@ -144,13 +145,13 @@ export class GetReleases {
             );
         } catch (err) {
             if (cachedReleases != null) {
-                console.error(
+                logError(
                     `Error fetching releases for ${plugin.id}, falling back to cached value`,
                     err
                 );
                 return cachedReleases;
             }
-            console.error(`Error fetching releases for ${plugin.id}, no cached values exist`, err);
+            logError(`Error fetching releases for ${plugin.id}, no cached values exist`, err);
             throw err;
         }
 
@@ -161,7 +162,7 @@ export class GetReleases {
                 cachedReleases?.masterManifest?.etag
             );
         } catch (err) {
-            console.error(`Error fetching master manifest for ${plugin.id}`, err);
+            logError(`Error fetching master manifest for ${plugin.id}`, err);
         }
 
         if (!releasesApiResponse.hasChanges || masterManifestResponse?.hasChanges === false) {
@@ -356,7 +357,7 @@ export class GetReleases {
         try {
             manifests = await Promise.all(manifestRequests);
         } catch (err) {
-            console.error('Error fetching manifests', manifestRequests, err);
+            logError(`Error fetching manifests for ${releasesToUpdate.pluginId}`, err);
         }
 
         //update min app version for releases with missing or out-of-date values
@@ -386,7 +387,7 @@ export class GetReleases {
                 await this.pluginReleaseRepository.save(releases);
             }
         } catch (err) {
-            console.error('Error saving release record updates', releases, err);
+            logError(`Error saving release record updates for ${releases.length} plugins`, err);
         }
     }
 

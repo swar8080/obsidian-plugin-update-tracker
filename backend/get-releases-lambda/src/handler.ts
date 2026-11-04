@@ -10,6 +10,7 @@ import { RedisClient } from './redisClient';
 import { ReleaseRepository } from './ReleaseRepository';
 import { FallbackReleaseRepository } from './ReleaseRepository/FallbackReleaseRepository';
 import { createHash } from 'crypto';
+import { describeError } from './errors';
 
 let _getReleases: GetReleases | null = null;
 let _redisClient: RedisClient;
@@ -57,7 +58,11 @@ export async function main(event: APIGatewayProxyEventV2): Promise<APIGatewayPro
             },
         };
     } catch (err) {
-        console.error('Failed handling request', request, err);
+        console.error(
+            `Failed handling request for ${
+                request.currentPluginVersions.length
+            } plugins: ${describeError(err)}`
+        );
         throw err;
     } finally {
         if (_redisClient) {
