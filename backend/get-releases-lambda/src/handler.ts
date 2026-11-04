@@ -4,7 +4,6 @@ import { CloudWatchMetricLogger } from './MetricLogger';
 import { DynamoDBReleaseRepository } from './ReleaseRepository/DynamoDBReleaseRepository';
 import { GetReleases, GetReleasesConfiguration } from './get-releases';
 import { GithubReleaseApi } from './ReleaseApi';
-import { GithubAppTokenProvider } from './GithubAppTokenProvider';
 import { S3PluginRepository } from './PluginRepository';
 import { RedisReleaseRepository } from './ReleaseRepository/RedisReleaseRepository';
 import { RedisClient } from './redisClient';
@@ -93,16 +92,8 @@ function buildGetReleases(): GetReleases {
         _metricsLogger
     );
 
-    const githubTokenProvider = new GithubAppTokenProvider(
-        getEnv('OPUC_GITHUB_APP_ID'),
-        getEnv('OPUC_GITHUB_APP_INSTALLATION_ID'),
-        getEnv('OPUC_GITHUB_APP_PRIVATE_KEY'),
-        _metricsLogger,
-        getIntEnv('OPUC_GITHUB_API_TIMEOUT_MS')
-    );
-
     const releaseApi = new GithubReleaseApi(
-        githubTokenProvider,
+        getEnv('OPUC_GITHUB_ACCESS_TOKEN'),
         _metricsLogger,
         getIntEnv('OPUC_GITHUB_API_TIMEOUT_MS')
     );
