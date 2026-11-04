@@ -8,7 +8,7 @@ export interface ReleaseApi {
         etag?: string
     ): Promise<ApiReleaseResponse>;
 
-    fetchReleaseManifest(repositoryPath: string, assetId: number): Promise<ApiPluginManifest>;
+    fetchReleaseManifest(manifestDownloadUrl: string): Promise<ApiPluginManifest>;
 
     fetchMasterManifest(
         repositoryPath: string,
@@ -69,21 +69,17 @@ export class GithubReleaseApi implements ReleaseApi {
         }
     }
 
-    async fetchReleaseManifest(
-        repositoryPath: string,
-        assetId: number
-    ): Promise<ApiPluginManifest> {
+    /**
+     * Downloads from the asset's browser_download_url instead of the api.github.com asset endpoint
+     * because release asset downloads are served from github's file hosts and don't use the api rate limit.
+     */
+    async fetchReleaseManifest(manifestDownloadUrl: string): Promise<ApiPluginManifest> {
         try {
             const response = await axios({
                 method: 'get',
-                url: `https://api.github.com/repos/${repositoryPath}/releases/assets/${assetId}`,
-                headers: {
-                    Authorization: `Bearer ${this.githubAccessToken}`,
-                    Accept: 'application/octet-stream',
-                },
+                url: manifestDownloadUrl,
                 timeout: this.timeoutMs,
             });
-            this.emitRateLimitMetric(response);
 
             return response.data;
         } catch (err) {
@@ -171,6 +167,7 @@ export type ApiReleases = {
 type ApiReleaseAsset = {
     id: number;
     name: string;
+    browser_download_url: string;
     download_count: number;
     updated_at: string;
 };

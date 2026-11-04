@@ -305,10 +305,11 @@ export class GetReleases {
                 prev[current.id.toString()] = {
                     manifestUpdatedTime: manifestAsset.updated_at,
                     manifestAssetId: manifestAsset.id,
+                    manifestDownloadUrl: manifestAsset.browser_download_url,
                 };
             }
             return prev;
-        }, {} as Record<string, { manifestAssetId: number; manifestUpdatedTime: string }>);
+        }, {} as Record<string, { manifestAssetId: number; manifestUpdatedTime: string; manifestDownloadUrl: string }>);
 
         const cachedManifestsByReleaseId = (cachedReleases?.releases || []).reduce(
             (prev, current) => {
@@ -323,7 +324,7 @@ export class GetReleases {
             {} as Record<string, { manifestAssetId: number; manifestUpdatedTime: string }>
         );
 
-        const manifestAssetIdsToFetch = Object.keys(currentManifestsByReleaseId)
+        const manifestsToFetch = Object.keys(currentManifestsByReleaseId)
             .filter(
                 (releaseId) =>
                     //include if never fetched manifest or manifest has been updated
@@ -331,22 +332,24 @@ export class GetReleases {
                     currentManifestsByReleaseId[releaseId].manifestUpdatedTime >
                         cachedManifestsByReleaseId[releaseId].manifestUpdatedTime
             )
-            .map((releaseId) => currentManifestsByReleaseId[releaseId].manifestAssetId)
+            .map((releaseId) => currentManifestsByReleaseId[releaseId])
             //Take the most recent
-            .sort((v1, v2) => -(v1 - v2))
-            //Fetch a fixed amount to minimize impact on rate limit
+            .sort(
+                (manifest1, manifest2) => -(manifest1.manifestAssetId - manifest2.manifestAssetId)
+            )
+            //Fetch a fixed amount to limit requests made to github
             .slice(0, this.config.maxManifestsToFetchPerPlugin);
 
-        if (manifestAssetIdsToFetch.length === 0) {
+        if (manifestsToFetch.length === 0) {
             return false;
         }
 
         debug(
-            `Fetching ${manifestAssetIdsToFetch.length} manifests for ${releasesApiResponse.releases[0].id}`
+            `Fetching ${manifestsToFetch.length} manifests for ${releasesApiResponse.releases[0].id}`
         );
 
-        const manifestRequests = manifestAssetIdsToFetch.map((releaseId) =>
-            this.releaseApi.fetchReleaseManifest(releasesToUpdate.pluginRepo, releaseId)
+        const manifestRequests = manifestsToFetch.map((manifest) =>
+            this.releaseApi.fetchReleaseManifest(manifest.manifestDownloadUrl)
         );
 
         let manifests: ApiPluginManifest[] = [];

@@ -44,6 +44,9 @@ const now = dayjs('2022-09-30T18:44:09-04:00');
 
 let id = 1000;
 
+const downloadUrl = (assetId: number, assetName: string) =>
+    `https://github.com/download/${assetId}/${assetName}`;
+
 describe('get-releases', () => {
     let getReleases: GetReleases;
     let config: GetReleasesConfiguration;
@@ -106,12 +109,17 @@ describe('get-releases', () => {
                 {
                     id: PLUGIN1_RELEASE_1_MAIN_JS_ID,
                     name: 'main.js',
+                    browser_download_url: downloadUrl(PLUGIN1_RELEASE_1_MAIN_JS_ID, 'main.js'),
                     download_count: 1000,
                     updated_at: '2022-09-16T09:00:00Z',
                 },
                 {
                     id: PLUGIN1_RELEASE1_MANIFEST_ID,
                     name: 'manifest.json',
+                    browser_download_url: downloadUrl(
+                        PLUGIN1_RELEASE1_MANIFEST_ID,
+                        'manifest.json'
+                    ),
                     download_count: 1200,
                     updated_at: '2022-09-16T08:00:01Z',
                 },
@@ -129,18 +137,24 @@ describe('get-releases', () => {
                 {
                     id: PLUGIN1_RELEASE_2_MAIN_JS_ID,
                     name: 'main.js',
+                    browser_download_url: downloadUrl(PLUGIN1_RELEASE_2_MAIN_JS_ID, 'main.js'),
                     download_count: 2000,
                     updated_at: '2022-07-17T10:00:00Z',
                 },
                 {
                     id: PLUGIN1_RELEASE2_MANIFEST_ID,
                     name: 'manifest.json',
+                    browser_download_url: downloadUrl(
+                        PLUGIN1_RELEASE2_MANIFEST_ID,
+                        'manifest.json'
+                    ),
                     download_count: 2001,
                     updated_at: '2022-07-17T10:00:01Z',
                 },
                 {
                     id: 2324,
                     name: 'styles.css',
+                    browser_download_url: downloadUrl(2324, 'styles.css'),
                     download_count: 2002,
                     updated_at: '2022-07-17T10:00:02Z',
                 },
@@ -158,18 +172,21 @@ describe('get-releases', () => {
                 {
                     id: PLUGIN2_MAIN_JS_ID,
                     name: 'main.js',
+                    browser_download_url: downloadUrl(PLUGIN2_MAIN_JS_ID, 'main.js'),
                     download_count: 3000,
                     updated_at: '2022-07-16T09:00:00Z',
                 },
                 {
                     id: PLUGIN2_MANIFEST_ID,
                     name: 'manifest.json',
+                    browser_download_url: downloadUrl(PLUGIN2_MANIFEST_ID, 'manifest.json'),
                     download_count: 1200,
                     updated_at: '2022-07-16T08:00:01Z',
                 },
                 {
                     id: 3334,
                     name: 'styles.css',
+                    browser_download_url: downloadUrl(3334, 'styles.css'),
                     download_count: 2002,
                     updated_at: '2022-07-17T10:00:02Z',
                 },
@@ -312,18 +329,15 @@ describe('get-releases', () => {
             expect(releaseApi.fetchReleaseManifest).toHaveBeenCalledTimes(3);
             expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 1,
-                PLUGIN_1_REPO,
-                PLUGIN1_RELEASE2_MANIFEST_ID
+                downloadUrl(PLUGIN1_RELEASE2_MANIFEST_ID, 'manifest.json')
             );
             expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 2,
-                PLUGIN_1_REPO,
-                PLUGIN1_RELEASE1_MANIFEST_ID
+                downloadUrl(PLUGIN1_RELEASE1_MANIFEST_ID, 'manifest.json')
             );
             expect(releaseApi.fetchReleaseManifest).toHaveBeenNthCalledWith(
                 3,
-                PLUGIN_2_REPO,
-                PLUGIN2_MANIFEST_ID
+                downloadUrl(PLUGIN2_MANIFEST_ID, 'manifest.json')
             );
 
             expect(releaseRepository.save).toHaveBeenCalledTimes(1);
