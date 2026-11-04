@@ -1,6 +1,8 @@
 import { createClient } from 'redis';
-import { RedisClientType } from '@redis/client';
+import { RedisClientType, commandOptions } from '@redis/client';
+import { gunzipSync, gzipSync } from 'zlib';
 import { MetricLogger } from './MetricLogger';
+import { logError } from './errors';
 
 export class RedisClient {
     private url: string;
@@ -25,10 +27,30 @@ export class RedisClient {
         const client = await this.getClient();
 
         const namespacedKeys = keys.map((key) => this.makeNamespacedKey(namespace, key));
-        const results = await client.mGet(namespacedKeys);
-        const cacheHits = results
-            .filter((resultStr) => resultStr != null)
-            .map((resultStr) => JSON.parse(resultStr as string));
+        const results = (await client.mGet(
+            commandOptions({ returnBuffers: true }),
+            namespacedKeys
+        )) as unknown as (Buffer | null)[];
+
+        const cacheHits: T[] = [];
+        const legacyValuesCompressed: Record<string, Buffer> = {};
+        results.forEach((value, index) => {
+            if (value == null) {
+                return;
+            }
+            try {
+                if (isGzipped(value)) {
+                    cacheHits.push(JSON.parse(gunzipSync(value).toString('utf8')));
+                } else {
+                    cacheHits.push(JSON.parse(value.toString('utf8')));
+                    legacyValuesCompressed[namespacedKeys[index]] = gzipSync(value);
+                }
+            } catch (err) {
+                logError(`Ignoring unreadable redis value for ${namespacedKeys[index]}`, err);
+            }
+        });
+
+        await this.tryStoringCompressed(client, legacyValuesCompressed);
 
         return cacheHits;
     }
@@ -40,9 +62,9 @@ export class RedisClient {
 
         const client = await this.getClient();
 
-        const keyValues = items.reduce((combined: Record<string, string>, item) => {
+        const keyValues = items.reduce((combined: Record<string, Buffer>, item) => {
             const key = this.makeNamespacedKey(namespace, keyExtractor(item));
-            combined[key] = JSON.stringify(item);
+            combined[key] = gzipSync(JSON.stringify(item));
             return combined;
         }, {});
 
@@ -78,7 +100,25 @@ export class RedisClient {
         return this.redisClient;
     }
 
+    private async tryStoringCompressed(
+        client: RedisClientType,
+        keyValues: Record<string, Buffer>
+    ): Promise<void> {
+        if (Object.keys(keyValues).length === 0) {
+            return;
+        }
+        try {
+            await client.mSet(keyValues);
+        } catch (err) {
+            logError('Error replacing uncompressed redis values with compressed ones', err);
+        }
+    }
+
     private makeNamespacedKey(namespace: string, key: string) {
         return `${this.isProd ? 'prod' : 'dev'}:${namespace}:${key}`;
     }
+}
+
+function isGzipped(value: Buffer): boolean {
+    return value.length > 2 && value[0] === 0x1f && value[1] === 0x8b;
 }
